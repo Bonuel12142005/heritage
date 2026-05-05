@@ -708,6 +708,40 @@ app.get('/admin/heritage', requireAuth, requireRole('admin'), async (req, res) =
     }
 });
 
+// Alias route for heritage-gallery
+app.get('/admin/heritage-gallery', requireAuth, requireRole('admin'), async (req, res) => {
+    try {
+        // Fetch all heritage items
+        let items = [];
+        try {
+            const [itemsResult] = await db.execute(
+                'SELECT * FROM heritage_items ORDER BY created_at DESC'
+            );
+            items = itemsResult;
+        } catch (error) {
+            console.log('Heritage items table not found or error:', error.message);
+            items = [];
+        }
+        
+        const templatePath = path.join(__dirname, 'views/admin-heritage-gallery.xian');
+        const html = renderTemplate(templatePath, {
+            title: 'Heritage Gallery - Admin',
+            user: req.session.user,
+            items: items
+        });
+        res.send(html);
+    } catch (error) {
+        console.error('Admin heritage gallery error:', error);
+        const templatePath = path.join(__dirname, 'views/admin-heritage-gallery.xian');
+        const html = renderTemplate(templatePath, {
+            title: 'Heritage Gallery - Admin',
+            user: req.session.user,
+            items: []
+        });
+        res.send(html);
+    }
+});
+
 app.get('/admin/heritage/new', requireAuth, requireRole('admin'), (req, res) => {
     const templatePath = path.join(__dirname, 'views/admin-heritage-form.xian');
     const html = renderTemplate(templatePath, {
