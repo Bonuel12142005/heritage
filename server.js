@@ -150,6 +150,11 @@ app.use('/js', express.static(path.join(__dirname, 'public/js')));
 app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
 app.use('/assets', express.static(path.join(__dirname, 'public')));
 
+// Serve favicon
+app.get('/favicon.ico', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public/uploads/logo.jpg'));
+});
+
 // File upload configuration
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
@@ -283,6 +288,73 @@ app.post('/api/login', async (req, res) => {
         res.status(500).json({ 
             success: false, 
             message: 'Internal server error. Please try again.' 
+        });
+    }
+});
+
+app.post('/api/register', async (req, res) => {
+    try {
+        const { email, password, name, role } = req.body;
+        
+        // Validate input
+        if (!email || !password || !name) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'Email, password, and name are required' 
+            });
+        }
+        
+        // Check if user already exists
+        const [existingUsers] = await db.execute(
+            'SELECT id FROM users WHERE email = ?',
+            [email]
+        );
+        
+        if (existingUsers.length > 0) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'Email already registered' 
+            });
+        }
+        
+        // Hash password
+        const hashedPassword = await bcrypt.hash(password, 10);
+        
+        // Insert new user
+        const userRole = role || 'user'; // Default to 'user' if no role specified
+        const [result] = await db.execute(
+            'INSERT INTO users (email, password, name, role) VALUES (?, ?, ?, ?)',
+            [email, hashedPassword, name, userRole]
+        );
+        
+        // Create session for the new user
+        req.session.user = {
+            id: result.insertId,
+            email: email,
+            name: name,
+            role: userRole
+        };
+        
+        // Determine redirect URL based on role
+        let redirect = '/dashboard';
+        if (userRole === 'admin') {
+            redirect = '/admin';
+        } else if (userRole === 'artisan') {
+            redirect = '/artisan';
+        }
+        
+        res.json({ 
+            success: true, 
+            message: 'Registration successful',
+            user: req.session.user,
+            redirect: redirect
+        });
+        
+    } catch (error) {
+        console.error('Registration error:', error);
+        res.status(500).json({ 
+            success: false, 
+            message: 'Registration failed. Please try again.' 
         });
     }
 });
