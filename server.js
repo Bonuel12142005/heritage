@@ -1723,6 +1723,7 @@ app.get('/destinations', async (req, res) => {
 app.get('/destinations/:id', async (req, res) => {
     try {
         const destinationId = req.params.id;
+        console.log('📍 Loading destination:', destinationId);
         
         // Fetch destination details
         const [destinations] = await db.execute(
@@ -1731,19 +1732,28 @@ app.get('/destinations/:id', async (req, res) => {
         );
         
         if (!destinations || destinations.length === 0) {
+            console.log('❌ Destination not found:', destinationId);
             return res.status(404).send('Destination not found');
         }
         
         const destination = destinations[0];
+        console.log('✅ Destination found:', destination.name);
         
-        // Fetch images for this destination
-        const [images] = await db.execute(
-            'SELECT * FROM destination_images WHERE destination_id = ? ORDER BY is_primary DESC, created_at ASC',
-            [destinationId]
-        );
+        // Fetch images for this destination (with error handling)
+        let destinationImages = [];
+        try {
+            const [images] = await db.execute(
+                'SELECT * FROM destination_images WHERE destination_id = ? ORDER BY is_primary DESC, created_at ASC',
+                [destinationId]
+            );
+            destinationImages = images || [];
+            console.log('📸 Images found:', destinationImages.length);
+        } catch (imgError) {
+            console.log('⚠️ destination_images table may not exist, using fallback');
+            // Table might not exist, continue with empty array
+        }
         
         // If no images in destination_images table, create array from destination's image_url or photo
-        let destinationImages = images || [];
         if (destinationImages.length === 0 && (destination.image_url || destination.photo)) {
             destinationImages = [{
                 url: destination.image_url || destination.photo,
@@ -1751,19 +1761,54 @@ app.get('/destinations/:id', async (req, res) => {
                 photo: destination.image_url || destination.photo,
                 is_primary: 1
             }];
+            console.log('📸 Using fallback image from destination record');
         }
         
-        // Fetch reviews for this destination
-        const [reviews] = await db.execute(
-            'SELECT r.*, u.username, u.profile_photo FROM reviews r LEFT JOIN users u ON r.user_id = u.id WHERE r.destination_id = ? ORDER BY r.created_at DESC',
-            [destinationId]
-        );
+        // Fetch reviews for this destination (with error handling)
+        let reviews = [];
+        try {
+            const [reviewsData] = await db.execute(
+                'SELECT r.*, u.username, u.profile_photo FROM reviews r LEFT JOIN users u ON r.user_id = u.id WHERE r.destination_id = ? ORDER BY r.created_at DESC',
+                [destinationId]
+            );
+            reviews = reviewsData || [];
+            console.log('⭐ Reviews found:', reviews.length);
+        } catch (reviewError) {
+            console.log('⚠️ Error fetching reviews:', reviewError.message);
+            // Continue without reviews
+        }
         
-        // Fetch related destinations (same category/type)
-        const [relatedDests] = await db.execute(
-            'SELECT * FROM destinations WHERE id != ? AND (site_type = ? OR category = ?) AND status = "active" ORDER BY RAND() LIMIT 3',
-            [destinationId, destination.site_type || '', destination.category || '']
-        );
+        // Fetch related destinations (same category/type) - with error handling
+        let relatedDests = [];
+        try {
+            const [related] = await db.execute(
+                'SELECT * FROM destinations WHERE id != ? AND (site_type = ? OR category = ?) AND status = \'active\' ORDER BY RAND() LIMIT 3',
+                [destinationId, destination.site_type || '', destination.category || '']
+            );
+            relatedDests = related || [];
+            console.log('🔗 Related destinations found:', relatedDests.length);
+        } catch (relatedError) {
+            console.log('⚠️ Error fetching related destinations:', relatedError.message);
+            // Continue without related destinations
+        }
+        
+        // Parse amenities and facilities safely
+        let amenities = [];
+        let facilities = [];
+        try {
+            if (destination.amenities) {
+                amenities = typeof destination.amenities === 'string' ? JSON.parse(destination.amenities) : destination.amenities;
+            }
+        } catch (e) {
+            console.log('⚠️ Error parsing amenities');
+        }
+        try {
+            if (destination.facilities) {
+                facilities = typeof destination.facilities === 'string' ? JSON.parse(destination.facilities) : destination.facilities;
+            }
+        } catch (e) {
+            console.log('⚠️ Error parsing facilities');
+        }
         
         const templatePath = path.join(__dirname, 'views/destination.xian');
         const html = renderTemplate(templatePath, {
@@ -1771,15 +1816,16 @@ app.get('/destinations/:id', async (req, res) => {
             user: req.session.user,
             destination: destination,
             images: destinationImages,
-            reviews: reviews || [],
-            relatedDestinations: relatedDests || [],
-            amenities: destination.amenities ? (typeof destination.amenities === 'string' ? JSON.parse(destination.amenities) : destination.amenities) : [],
-            facilities: destination.facilities ? (typeof destination.facilities === 'string' ? JSON.parse(destination.facilities) : destination.facilities) : []
+            reviews: reviews,
+            relatedDestinations: relatedDests,
+            amenities: amenities,
+            facilities: facilities
         });
         res.send(html);
     } catch (error) {
-        console.error('Destination detail error:', error);
-        res.status(500).send('Error loading destination details');
+        console.error('❌ Destination detail error:', error);
+        console.error('Error stack:', error.stack);
+        res.status(500).send(`Error loading destination details: ${error.message}`);
     }
 });
 
