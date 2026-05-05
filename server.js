@@ -1719,6 +1719,43 @@ app.get('/destinations', async (req, res) => {
     }
 });
 
+// Individual destination detail route
+app.get('/destinations/:id', async (req, res) => {
+    try {
+        const destinationId = req.params.id;
+        
+        // Fetch destination details
+        const [destinations] = await db.execute(
+            'SELECT * FROM destinations WHERE id = ? LIMIT 1',
+            [destinationId]
+        );
+        
+        if (!destinations || destinations.length === 0) {
+            return res.status(404).send('Destination not found');
+        }
+        
+        const destination = destinations[0];
+        
+        // Fetch reviews for this destination
+        const [reviews] = await db.execute(
+            'SELECT r.*, u.username, u.profile_photo FROM reviews r LEFT JOIN users u ON r.user_id = u.id WHERE r.destination_id = ? ORDER BY r.created_at DESC',
+            [destinationId]
+        );
+        
+        const templatePath = path.join(__dirname, 'views/destination.xian');
+        const html = renderTemplate(templatePath, {
+            title: `${destination.name} - HeritageLink`,
+            user: req.session.user,
+            destination: destination,
+            reviews: reviews || []
+        });
+        res.send(html);
+    } catch (error) {
+        console.error('Destination detail error:', error);
+        res.status(500).send('Error loading destination details');
+    }
+});
+
 // Events routes
 app.get('/events', (req, res) => {
     const templatePath = path.join(__dirname, 'views/events.xian');
