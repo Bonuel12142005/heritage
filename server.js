@@ -980,6 +980,7 @@ app.get('/admin/analytics', requireAuth, requireRole('admin'), async (req, res) 
         let totalEvents = 0;
         let totalProducts = 0;
         let monthlyUsers = [];
+        let popularDestinations = [];
         
         try {
             const [usersResult] = await db.execute('SELECT COUNT(*) as count FROM users');
@@ -1026,6 +1027,38 @@ app.get('/admin/analytics', requireAuth, requireRole('admin'), async (req, res) 
             monthlyUsers = [];
         }
         
+        // Get popular destinations (by views or favorites)
+        try {
+            const [popularResult] = await db.execute(`
+                SELECT 
+                    id,
+                    name,
+                    location,
+                    views
+                FROM destinations
+                ORDER BY views DESC
+                LIMIT 10
+            `);
+            popularDestinations = popularResult;
+        } catch (error) {
+            console.log('Popular destinations query error:', error.message);
+            // Try without views column if it doesn't exist
+            try {
+                const [fallbackResult] = await db.execute(`
+                    SELECT 
+                        id,
+                        name,
+                        location
+                    FROM destinations
+                    LIMIT 10
+                `);
+                popularDestinations = fallbackResult.map(d => ({ ...d, views: 0 }));
+            } catch (fallbackError) {
+                console.log('Fallback destinations query error:', fallbackError.message);
+                popularDestinations = [];
+            }
+        }
+        
         const metrics = {
             totalUsers: totalUsers,
             totalDestinations: totalDestinations,
@@ -1040,7 +1073,8 @@ app.get('/admin/analytics', requireAuth, requireRole('admin'), async (req, res) 
             title: 'Analytics - Admin',
             user: req.session.user,
             metrics: metrics,
-            monthlyUsers: monthlyUsers
+            monthlyUsers: monthlyUsers,
+            popularDestinations: popularDestinations
         });
         res.send(html);
     } catch (error) {
@@ -1049,7 +1083,8 @@ app.get('/admin/analytics', requireAuth, requireRole('admin'), async (req, res) 
             title: 'Analytics - Admin',
             user: req.session.user,
             metrics: { totalUsers: 0, totalDestinations: 0, totalEvents: 0, totalProducts: 0, totalRevenue: 0, activeUsers: 0 },
-            monthlyUsers: []
+            monthlyUsers: [],
+            popularDestinations: []
         }));
     }
 });
