@@ -26,17 +26,31 @@ async function initializeDatabase() {
     try {
         console.log('🔄 Connecting to MySQL database...');
         
+        // Check if we're connecting to Aiven (production)
+        const isAiven = process.env.DB_HOST && process.env.DB_HOST.includes('aivencloud.com');
+        
         // Create connection to MySQL
-        db = await mysql.createConnection({
+        const connectionConfig = {
             host: process.env.DB_HOST || 'localhost',
             port: process.env.DB_PORT || 3306,
             user: process.env.DB_USER || 'root',
             password: process.env.DB_PASSWORD || '',
             database: process.env.DB_NAME || 'heritagelink',
             charset: 'utf8mb4'
-        });
+        };
+        
+        // Add SSL for Aiven production database
+        if (isAiven) {
+            connectionConfig.ssl = {
+                rejectUnauthorized: false
+            };
+            console.log('🔒 Using SSL for Aiven connection');
+        }
+        
+        db = await mysql.createConnection(connectionConfig);
         
         console.log('✅ MySQL database connected!');
+        console.log(`📍 Connected to: ${connectionConfig.host}:${connectionConfig.port}/${connectionConfig.database}`);
         
         // Create tables if they don't exist
         await db.execute(`
