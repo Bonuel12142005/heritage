@@ -863,22 +863,27 @@ app.get('/artisan/messages', requireAuth, requireRole('artisan'), async (req, re
     try {
         // Fetch messages for the artisan (if messages table exists)
         let conversations = [];
+        let conversationMessages = [];
+        
         try {
             const [messageResult] = await db.execute(
                 'SELECT * FROM messages WHERE recipient_id = ? ORDER BY created_at DESC',
                 [req.session.user.id]
             );
             conversations = messageResult;
+            conversationMessages = messageResult; // Same data for now
         } catch (error) {
             // Messages table might not exist
             conversations = [];
+            conversationMessages = [];
         }
         
         const templatePath = path.join(__dirname, 'views/artisan-messages.xian');
         const html = renderTemplate(templatePath, {
             title: 'Messages - Artisan',
             user: req.session.user,
-            conversations: conversations
+            conversations: conversations,
+            conversationMessages: conversationMessages
         });
         res.send(html);
     } catch (error) {
@@ -887,7 +892,8 @@ app.get('/artisan/messages', requireAuth, requireRole('artisan'), async (req, re
         const html = renderTemplate(templatePath, {
             title: 'Messages - Artisan',
             user: req.session.user,
-            conversations: []
+            conversations: [],
+            conversationMessages: []
         });
         res.send(html);
     }
