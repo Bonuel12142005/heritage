@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>My Messages - HeritageLink</title>
+    <%- include('partials/user-dashboard-styles.xian') %>
+    <style>
+        .messages-container { display: grid; grid-template-columns: 1fr 2fr; gap: 2rem; height: calc(100vh - 200px); }
+        .conversations-list { background: var(--bg-card); border-radius: 1rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); border: 2px solid var(--rock-gray); overflow-y: auto; }
+        .conversation-item { padding: 1.25rem; border-bottom: 1px solid var(--rock-gray); cursor: pointer; transition: all 0.2s; }
+        .conversation-item:hover, .conversation-item.active { background: var(--pebble-gray); }
+        .conversation-name { font-weight: 700; color: var(--forest-green); margin-bottom: 0.25rem; }
+        .conversation-preview { color: var(--slate-gray); font-size: 0.875rem; }
+        .conversation-time { color: var(--slate-gray); font-size: 0.75rem; margin-top: 0.25rem; }
+        .message-panel { background: var(--bg-card); border-radius: 1rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); border: 2px solid var(--rock-gray); display: flex; flex-direction: column; }
+        .message-header { padding: 1.5rem; border-bottom: 2px solid var(--rock-gray); }
+        .message-header h3 { color: var(--forest-green); font-size: 1.25rem; }
+        .messages-area { flex: 1; padding: 1.5rem; overflow-y: auto; }
+        .message { margin-bottom: 1rem; display: flex; gap: 1rem; }
+        .message.sent { flex-direction: row-reverse; }
+        .message-bubble { max-width: 70%; padding: 1rem; border-radius: 1rem; }
+        .message.received .message-bubble { background: var(--pebble-gray); color: var(--charcoal); }
+        .message.sent .message-bubble { background: linear-gradient(135deg, var(--sage-green), var(--mint-green)); color: white; }
+        .message-time { font-size: 0.75rem; color: var(--slate-gray); margin-top: 0.5rem; }
+        .message.sent .message-time { color: rgba(255,255,255,0.8); }
+        .message-input-area { padding: 1.5rem; border-top: 2px solid var(--rock-gray); }
+        .message-form { display: flex; gap: 1rem; }
+        .message-input { flex: 1; padding: 0.875rem 1rem; border: 2px solid var(--rock-gray); border-radius: 0.75rem; font-size: 1rem; background: var(--pebble-gray); font-family: 'Inter', sans-serif; }
+        .message-input:focus { outline: none; border-color: var(--sage-green); box-shadow: 0 0 0 3px rgba(45, 134, 89, 0.1); }
+        .empty-state { text-align: center; padding: 4rem 2rem; color: var(--slate-gray); }
+        .empty-state i { font-size: 4rem; margin-bottom: 1rem; }
+        @media (max-width: 768px) { .messages-container { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="sidebar-logo">
+            <h2>
+                <img src="/uploads/logo.jpg" alt="HeritageLink">
+                HeritageLink
+                <span class="badge badge-info">Explorer</span>
+            </h2>
+        </div>
+        <ul class="sidebar-menu">
+            <li class="menu-item">
+                <a href="/user/dashboard" class="menu-link">
+                    <i class="fas fa-th-large"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="/destinations" class="menu-link">
+                    <i class="fas fa-map-marked-alt"></i>
+                    <span>Explore Map & Sites</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="/events" class="menu-link">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span>Events</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="/artisans" class="menu-link">
+                    <i class="fas fa-palette"></i>
+                    <span>Artisans</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="/workshops" class="menu-link">
+                    <i class="fas fa-chalkboard-teacher"></i>
+                    <span>Workshops</span>
+                </a>
+            </li>
+            <div class="menu-section">My Activity</div>
+            <li class="menu-item">
+                <a href="/user/reviews" class="menu-link">
+                    <i class="fas fa-star"></i>
+                    <span>My Reviews</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="/user/favorites" class="menu-link">
+                    <i class="fas fa-heart"></i>
+                    <span>Favorites</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="/user/workshops" class="menu-link">
+                    <i class="fas fa-chalkboard-teacher"></i>
+                    <span>My Workshops</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="/user/gallery" class="menu-link">
+                    <i class="fas fa-images"></i>
+                    <span>My Gallery</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="/user/messages" class="menu-link active">
+                    <i class="fas fa-envelope"></i>
+                    <span>Messages</span>
+                </a>
+            </li>
+            <div class="menu-section">Account</div>
+            <li class="menu-item">
+                <a href="/user/profile" class="menu-link">
+                    <i class="fas fa-user-circle"></i>
+                    <span>My Profile</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="/" class="menu-link">
+                    <i class="fas fa-home"></i>
+                    <span>Home</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="/logout" class="menu-link">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Logout</span>
+                </a>
+            </li>
+        </ul>
+    </aside>
+
+    <main class="main-content">
+        <div class="topbar">
+            <div class="topbar-left">
+                <h1><i class="fas fa-envelope"></i> My Messages</h1>
+                <p>Communicate with artisans and administrators</p>
+            </div>
+        </div>
+
+        <div class="dashboard-content">
+            <div class="messages-container">
+                <div class="conversations-list">
+                    <% if (conversations && conversations.length > 0) { %>
+                        <% conversations.forEach((conv, index) => { %>
+                            <div class="conversation-item <%= (typeof selectedUserId !== 'undefined' && selectedUserId == conv.id) || (typeof selectedUserId === 'undefined' && index === 0) ? 'active' : '' %>" 
+                                 onclick="loadConversation(<%= conv.id %>)" 
+                                 data-user-id="<%= conv.id %>"
+                                 data-user-name="<%= conv.sender_name || 'Artisan' %>">
+                                <div class="conversation-name"><i class="fas fa-user-circle"></i> <%= conv.sender_name || 'Artisan' %></div>
+                                <div class="conversation-preview"><%= conv.last_message ? conv.last_message.substring(0, 50) + '...' : 'No messages yet' %></div>
+                                <div class="conversation-time"><%= conv.created_at ? new Date(conv.created_at).toLocaleDateString() : '' %></div>
+                            </div>
+                        <% }); %>
+                    <% } else { %>
+                        <div class="empty-state">
+                            <i class="fas fa-inbox"></i>
+                            <p>No messages yet</p>
+                            <small>Start a conversation with an artisan!</small>
+                        </div>
+                    <% } %>
+                </div>
+
+                <div class="message-panel">
+                    <div class="message-header">
+                        <h3 id="conversationHeader">
+                            <i class="fas fa-comments"></i> 
+                            <% if (typeof selectedUserName !== 'undefined' && selectedUserName) { %>
+                                Conversation with <%= selectedUserName %>
+                            <% } else if (conversations && conversations.length > 0) { %>
+                                Conversation with <%= conversations[0].sender_name %>
+                            <% } else { %>
+                                Conversation
+                            <% } %>
+                        </h3>
+                    </div>
+                    <div class="messages-area" id="messagesArea">
+                        <% if (conversationMessages && conversationMessages.length > 0) { %>
+                            <% conversationMessages.forEach(msg => { %>
+                                <div class="message <%= msg.sender_id === user.id ? 'sent' : 'received' %>">
+                                    <div class="message-bubble">
+                                        <%= msg.message %>
+                                        <div class="message-time"><%= new Date(msg.created_at).toLocaleString() %></div>
+                                    </div>
+                                </div>
+                            <% }); %>
+                        <% } else { %>
+                            <div class="empty-state">
+                                <i class="fas fa-comment-dots"></i>
+                                <p>Select a conversation to view messages</p>
+                            </div>
+                        <% } %>
+                    </div>
+                    <div class="message-input-area">
+                        <form class="message-form" id="messageForm" onsubmit="sendMessage(event)">
+                            <input type="hidden" id="receiverId" value="<%= typeof selectedUserId !== 'undefined' ? selectedUserId : (conversations && conversations.length > 0 ? conversations[0].id : '') %>">
+                            <input type="text" id="messageInput" class="message-input" placeholder="Type your message..." required <%= (conversations && conversations.length > 0) || typeof selectedUserId !== 'undefined' ? '' : 'disabled' %>>
+                            <button type="submit" class="btn btn-primary" <%= (conversations && conversations.length > 0) || typeof selectedUserId !== 'undefined' ? '' : 'disabled' %>>
+                                <i class="fas fa-paper-plane"></i> Send
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        function loadConversation(userId) {
+            window.location.href = '/user/messages?conversation=' + userId;
+        }
+
+        async function sendMessage(event) {
+            event.preventDefault();
+            
+            const receiverId = document.getElementById('receiverId').value;
+            const messageInput = document.getElementById('messageInput');
+            const message = messageInput.value.trim();
+            
+            if (!message || !receiverId) return;
+            
+            try {
+                const response = await fetch('/api/messages/send', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        receiver_id: receiverId,
+                        message: message
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Reload page to show new message
+                    window.location.reload();
+                } else {
+                    alert('Failed to send message: ' + (data.message || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('Error sending message:', error);
+                alert('Failed to send message. Please try again.');
+            }
+        }
+
+        // Auto-scroll to bottom of messages
+        const messagesArea = document.getElementById('messagesArea');
+        if (messagesArea) {
+            messagesArea.scrollTop = messagesArea.scrollHeight;
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%- include('partials/dashboard-head.xian') %>
+    <title>Event Management - HeritageLink</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --ocean-blue: #0077B6;
+            --turquoise: #00B4D8;
+            --palm-green: #2D6A4F;
+            --forest-green: #0077B6;
+            --sage-green: #00B4D8;
+            --leaf-green: #d1fae5;
+            --textile-orange: #D4AF37;
+            --textile-gold: #FFD700;
+            --stone-white: #fafaf9;
+            --pebble-gray: #f5f5f4;
+            --rock-gray: #e7e5e4;
+            --slate-gray: #78716c;
+            --charcoal: #292524;
+            --sidebar-width: 260px;
+        }
+        body { font-family: 'Inter', sans-serif; background: var(--stone-white); color: var(--charcoal); min-height: 100vh; }
+        
+        .sidebar {
+            position: fixed; left: 0; top: 0; height: 100vh; width: var(--sidebar-width);
+            background: linear-gradient(180deg, #005a8c 0%, #004a73 100%);
+            z-index: 1000; display: flex; flex-direction: column; transition: transform 0.3s ease;
+        }
+        .sidebar-header { padding: 1.75rem 1.5rem; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .sidebar-logo { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; }
+        .sidebar-logo img { width: 50px; height: 50px; object-fit: contain; border-radius: 12px; background: white; padding: 4px; }
+        .sidebar-logo-text { display: flex; flex-direction: column; align-items: center; gap: 0.35rem; }
+        .sidebar-logo h2 { color: white; font-size: 1.35rem; font-weight: 700; font-family: 'Poppins', sans-serif; }
+        .sidebar-badge { background: linear-gradient(135deg, #D4AF37, #FFD700); color: white; padding: 0.2rem 0.85rem; border-radius: 20px; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+        .sidebar-nav { flex: 1; padding: 1.5rem 0; }
+        .nav-section { margin-bottom: 1.5rem; }
+        .nav-section-title { color: rgba(255,255,255,0.5); font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; padding: 0 1.5rem; margin-bottom: 0.75rem; }
+        .nav-menu { list-style: none; }
+        .nav-item { margin: 0.2rem 0.75rem; }
+        .nav-link { display: flex; align-items: center; gap: 0.875rem; padding: 0.8rem 1rem; color: rgba(255,255,255,0.85); text-decoration: none; border-radius: 10px; transition: all 0.2s ease; font-weight: 500; font-size: 0.925rem; position: relative; }
+        .nav-link:hover { background: rgba(255,255,255,0.1); color: white; }
+        .nav-link.active { background: rgba(255,255,255,0.95); color: var(--forest-green); box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .nav-link.active::before { content: ''; position: absolute; left: 0; top: 50%; transform: translateY(-50%); width: 4px; height: 60%; background: var(--textile-orange); border-radius: 0 4px 4px 0; }
+        .nav-link.active i { color: var(--textile-orange); }
+        .nav-link i { width: 20px; text-align: center; font-size: 1.1rem; }
+        .sidebar-footer { padding: 1rem 0.75rem; border-top: 1px solid rgba(255,255,255,0.1); }
+        .sidebar-footer .nav-link { color: rgba(255,255,255,0.7); }
+        .sidebar-footer .nav-link:hover { color: white; background: rgba(255,255,255,0.1); }
+        
+        .menu-toggle { display: none; position: fixed; top: 1rem; left: 1rem; z-index: 1100; background: var(--forest-green); color: white; border: none; width: 44px; height: 44px; border-radius: 10px; cursor: pointer; font-size: 1.25rem; box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
+        .sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 999; }
+        .sidebar-overlay.open { display: block; }
+        
+        .main-content { margin-left: var(--sidebar-width); min-height: 100vh; }
+        .topbar { background: white; padding: 1.25rem 2rem; box-shadow: 0 1px 3px rgba(0,0,0,0.08); border-bottom: 3px solid #D4AF37; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; position: sticky; top: 0; z-index: 100; }
+        .topbar-left h1 { font-size: 1.5rem; font-weight: 700; color: var(--forest-green); font-family: 'Poppins', sans-serif; }
+        .topbar-left p { color: var(--slate-gray); font-size: 0.875rem; margin-top: 0.15rem; }
+        
+        .btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.7rem 1.25rem; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 0.875rem; border: none; cursor: pointer; transition: all 0.2s; }
+        .btn-primary { background: linear-gradient(135deg, #D4AF37, #FFD700); color: white; box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3); }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(212, 175, 55, 0.4); }
+        .btn-edit { background: var(--pebble-gray); color: var(--forest-green); border: 2px solid var(--sage-green); }
+        .btn-edit:hover { background: var(--sage-green); color: white; }
+        .btn-delete { background: #fee2e2; color: #991b1b; border: 2px solid #fecaca; }
+        .btn-delete:hover { background: #fecaca; }
+        .btn-sm { padding: 0.5rem 0.875rem; font-size: 0.8rem; }
+        
+        .content { padding: 1.5rem 2rem; }
+        .alert { padding: 1rem 1.25rem; border-radius: 10px; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem; font-size: 0.9rem; }
+        .alert-success { background: var(--leaf-green); color: var(--forest-green); border: 2px solid var(--sage-green); }
+        .alert-error { background: #fee2e2; color: #991b1b; border: 2px solid #fecaca; }
+        
+        .events-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem; }
+        .event-card { background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); overflow: hidden; transition: all 0.3s; border: 1px solid var(--rock-gray); display: flex; flex-direction: column; }
+        .event-card:hover { transform: translateY(-4px); box-shadow: 0 8px 20px rgba(0,0,0,0.12); border-color: var(--sage-green); }
+        .event-header { height: 100px; background: linear-gradient(135deg, var(--forest-green), var(--sage-green)); display: flex; align-items: center; justify-content: center; color: white; font-size: 2.5rem; }
+        .event-content { padding: 1.25rem; flex: 1; display: flex; flex-direction: column; }
+        .event-title { font-size: 1.125rem; font-weight: 700; color: var(--forest-green); margin-bottom: 0.875rem; line-height: 1.3; font-family: 'Poppins', sans-serif; }
+        .event-meta { display: flex; align-items: center; gap: 0.5rem; color: var(--slate-gray); margin-bottom: 0.4rem; font-size: 0.825rem; }
+        .event-meta i { width: 16px; color: var(--sage-green); }
+        .event-description { color: var(--slate-gray); margin: 0.875rem 0; line-height: 1.5; font-size: 0.85rem; flex: 1; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .event-organizer { font-size: 0.825rem; margin-bottom: 0.875rem; color: var(--slate-gray); }
+        .event-organizer strong { color: var(--forest-green); }
+        .event-category { background: linear-gradient(135deg, #D4AF37, #FFD700); color: white; padding: 0.25rem 0.7rem; border-radius: 6px; font-size: 0.75rem; font-weight: 600; display: inline-block; align-self: flex-start; }
+        .event-actions { display: flex; gap: 0.5rem; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--rock-gray); }
+        .event-actions .btn { flex: 1; }
+        .event-actions form { flex: 1; display: flex; }
+        .event-actions form .btn { width: 100%; }
+        .empty-state { grid-column: 1 / -1; text-align: center; padding: 4rem 2rem; background: white; border-radius: 12px; border: 2px dashed var(--rock-gray); }
+        .empty-state i { font-size: 3.5rem; color: var(--slate-gray); margin-bottom: 1.25rem; opacity: 0.5; }
+        .empty-state h3 { color: var(--forest-green); margin-bottom: 0.5rem; font-size: 1.2rem; }
+        .empty-state p { color: var(--slate-gray); margin-bottom: 1.5rem; }
+        
+        @media (max-width: 768px) {
+            .menu-toggle { display: flex; align-items: center; justify-content: center; }
+            .sidebar { transform: translateX(-100%); width: 280px; }
+            .sidebar.open { transform: translateX(0); }
+            .main-content { margin-left: 0; }
+            .topbar { padding: 1rem; padding-left: 4rem; }
+            .topbar-left h1 { font-size: 1.25rem; }
+            .content { padding: 1rem; }
+            .events-grid { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 480px) {
+            .topbar { flex-direction: column; align-items: stretch; padding-left: 1rem; padding-top: 4rem; }
+            .topbar-left { text-align: center; }
+            .topbar .btn-primary { width: 100%; justify-content: center; }
+            .event-actions { flex-direction: column; }
+        }
+        
+        /* Delete Confirmation Modal */
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 2000; align-items: center; justify-content: center; padding: 1rem; }
+        .modal-overlay.show { display: flex; }
+        .modal { background: white; border-radius: 16px; max-width: 400px; width: 100%; box-shadow: 0 20px 40px rgba(0,0,0,0.2); animation: modalIn 0.2s ease; }
+        @keyframes modalIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        .modal-header { padding: 1.5rem 1.5rem 1rem; text-align: center; }
+        .modal-icon { width: 60px; height: 60px; background: #fee2e2; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; }
+        .modal-icon i { font-size: 1.75rem; color: #dc2626; }
+        .modal-title { font-size: 1.25rem; font-weight: 700; color: var(--charcoal); margin-bottom: 0.5rem; font-family: 'Poppins', sans-serif; }
+        .modal-message { color: var(--slate-gray); font-size: 0.9rem; line-height: 1.5; }
+        .modal-event-name { font-weight: 600; color: var(--forest-green); }
+        .modal-actions { display: flex; gap: 0.75rem; padding: 1rem 1.5rem 1.5rem; }
+        .modal-actions .btn { flex: 1; padding: 0.75rem 1rem; }
+        .btn-cancel { background: var(--pebble-gray); color: var(--slate-gray); border: 2px solid var(--rock-gray); }
+        .btn-cancel:hover { background: var(--rock-gray); }
+        .btn-confirm-delete { background: #dc2626; color: white; }
+        .btn-confirm-delete:hover { background: #b91c1c; }
+
+        /* Locations dropdown nav */
+        .nav-dropdown-toggle{cursor:pointer;user-select:none;justify-content:space-between}
+        .nav-caret{font-size:0.65rem;margin-left:auto;transition:transform 0.2s}
+        .nav-submenu{overflow:hidden;max-height:0;transition:max-height 0.25s ease;padding-left:0.5rem}
+        .nav-submenu.open{max-height:200px}
+        .nav-sub-link{font-size:0.8rem;padding:0.5rem 0.9rem;color:#a7f3d0 !important}
+        .nav-sub-link:hover,.nav-sub-link.active{background:rgba(255,255,255,0.08);color:#fff !important}
+        .nav-submenu.open ~ .nav-dropdown-toggle .nav-caret,
+        .nav-dropdown-toggle.active .nav-caret{transform:rotate(180deg)}
+    </style>
+</head>
+<body>
+    <button class="menu-toggle" onclick="toggleSidebar()" aria-label="Toggle menu"><i class="fas fa-bars"></i></button>
+    <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
+    
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-logo">
+                <img src="/uploads/logo.jpg" alt="HeritageLink">
+                <div class="sidebar-logo-text">
+                    <h2>HeritageLink</h2>
+                    <span class="sidebar-badge">Admin</span>
+                </div>
+            </div>
+        </div>
+        <nav class="sidebar-nav">
+            <div class="nav-section">
+                <div class="nav-section-title">Main</div>
+                <ul class="nav-menu">
+                    <li class="nav-item"><a href="/admin/dashboard" class="nav-link"><i class="fas fa-th-large"></i><span>Dashboard</span></a></li>
+                    
+                    <li class="nav-item"><a href="/admin/events" class="nav-link active"><i class="fas fa-calendar-alt"></i><span>Events</span></a></li>
+                    <li class="nav-item"><a href="/admin/heritage-gallery" class="nav-link"><i class="fas fa-landmark"></i><span>Heritage Gallery</span></a></li>
+                    <li class="nav-item nav-dropdown">
+                        <a href="#" class="nav-link nav-dropdown-toggle" onclick="toggleLocationsMenu(event)">
+                            <i class="fas fa-globe-asia"></i><span>Locations</span><i class="fas fa-chevron-down nav-caret" id="locations-caret"></i>
+                        </a>
+                        <ul class="nav-submenu" id="locations-submenu">
+                            <li class="nav-item"><a href="/admin/destinations" class="nav-link nav-sub-link"><i class="fas fa-map-marked-alt"></i><span>Destinations</span></a></li>
+                            <li class="nav-item"><a href="/admin/map-places" class="nav-link nav-sub-link"><i class="fas fa-map"></i><span>Map Places</span></a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item"><a href="/admin/users" class="nav-link"><i class="fas fa-users"></i><span>Users</span></a></li>
+                </ul>
+            </div>
+            <div class="nav-section">
+                <div class="nav-section-title">Management</div>
+                <ul class="nav-menu">
+                    <li class="nav-item"><a href="/admin/moderate" class="nav-link"><i class="fas fa-shield-alt"></i><span>Moderation</span></a></li>
+                    <li class="nav-item"><a href="/admin/feedback" class="nav-link"><i class="fas fa-comment-dots"></i><span>Feedback</span></a></li>
+                </ul>
+            </div>
+        </nav>
+        <div class="sidebar-footer">
+            <ul class="nav-menu">
+                <li class="nav-item"><a href="/" class="nav-link"><i class="fas fa-home"></i><span>Home</span></a></li>
+                <li class="nav-item"><a href="/logout" class="nav-link"><i class="fas fa-sign-out-alt"></i><span>Logout</span></a></li>
+            </ul>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <div class="topbar">
+            <div class="topbar-left">
+                <h1>Event Management</h1>
+                <p>Manage cultural events and festivals</p>
+            </div>
+            <a href="/admin/events/add" class="btn btn-primary"><i class="fas fa-plus"></i> Add Event</a>
+        </div>
+        <div class="content">
+            <% if (typeof success !== 'undefined' && success) { %><div class="alert alert-success"><i class="fas fa-check-circle"></i> <%= success %></div><% } %>
+            <% if (typeof error !== 'undefined' && error) { %><div class="alert alert-error"><i class="fas fa-exclamation-circle"></i> <%= error %></div><% } %>
+            <div class="events-grid">
+                <% if (events && events.length > 0) { %>
+                    <% events.forEach(event => { %>
+                        <div class="event-card">
+                            <!-- Debug: <%= event.image_url ? 'Image URL: ' + event.image_url : 'No image URL' %> -->
+                            <div class="event-header">
+                                <% if (event.image_url) { %>
+                                    <img src="<%= event.image_url %>" alt="<%= event.title %>" style="width: 100%; height: 100%; object-fit: cover;" onerror="console.log('Image failed to load:', '<%= event.image_url %>'); this.style.display='none'; this.parentElement.innerHTML='<i class=\'fas fa-calendar-star\'></i>';">
+                                <% } else { %>
+                                    <i class="fas fa-calendar-star"></i>
+                                <% } %>
+                            </div>
+                            <div class="event-content">
+                                <h3 class="event-title"><%= event.title %></h3>
+                                <div class="event-meta"><i class="fas fa-calendar"></i> <%= new Date(event.event_date).toLocaleDateString() %></div>
+                                <div class="event-meta"><i class="fas fa-clock"></i> <%= event.event_time %></div>
+                                <div class="event-meta"><i class="fas fa-map-marker-alt"></i> <%= event.location %></div>
+                                <p class="event-description"><%= event.description || 'No description available' %></p>
+                                <div class="event-organizer"><strong>Organizer:</strong> <%= event.organizer %></div>
+                                <span class="event-category"><%= event.category || 'Cultural Event' %></span>
+                                <div class="event-actions">
+                                    <a href="/admin/events/edit/<%= event.id %>" class="btn btn-edit btn-sm"><i class="fas fa-edit"></i> Edit</a>
+                                    <button type="button" class="btn btn-delete btn-sm" onclick="showDeleteModal('<%= event.id %>', '<%= event.title.replace(/'/g, "\\'") %>')"><i class="fas fa-trash"></i> Delete</button>
+                                </div>
+                            </div>
+                        </div>
+                    <% }); %>
+                <% } else { %>
+                    <div class="empty-state">
+                        <i class="fas fa-calendar-alt"></i>
+                        <h3>No events found</h3>
+                        <p>Get started by creating your first cultural event.</p>
+                        <a href="/admin/events/add" class="btn btn-primary"><i class="fas fa-plus"></i> Add First Event</a>
+                    </div>
+                <% } %>
+            </div>
+        </div>
+    </main>
+    <!-- Delete Confirmation Modal -->
+    <div class="modal-overlay" id="deleteModal">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-icon"><i class="fas fa-trash-alt"></i></div>
+                <h3 class="modal-title">Delete Event?</h3>
+                <p class="modal-message">Are you sure you want to delete <span class="modal-event-name" id="deleteEventName"></span>? This action cannot be undone.</p>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-cancel" onclick="hideDeleteModal()"><i class="fas fa-times"></i> Cancel</button>
+                <form id="deleteForm" method="POST" style="flex: 1; display: flex;">
+                    <button type="submit" class="btn btn-confirm-delete" style="flex: 1;"><i class="fas fa-trash"></i> Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleSidebar() {
+            document.querySelector('.sidebar').classList.toggle('open');
+            document.querySelector('.sidebar-overlay').classList.toggle('open');
+        }
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', () => { if (window.innerWidth <= 768) toggleSidebar(); });
+        });
+        window.addEventListener('resize', () => {
+            if (window.innerWidth > 768) {
+                document.querySelector('.sidebar').classList.remove('open');
+                document.querySelector('.sidebar-overlay').classList.remove('open');
+            }
+        });
+        
+        // Delete modal functions
+        function showDeleteModal(eventId, eventName) {
+            document.getElementById('deleteEventName').textContent = eventName;
+            document.getElementById('deleteForm').action = '/admin/events/' + eventId + '/delete';
+            document.getElementById('deleteModal').classList.add('show');
+        }
+        
+        function hideDeleteModal() {
+            document.getElementById('deleteModal').classList.remove('show');
+        }
+        
+        // Close modal on overlay click
+        document.getElementById('deleteModal').addEventListener('click', function(e) {
+            if (e.target === this) hideDeleteModal();
+        });
+        
+        // Close modal on Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') hideDeleteModal();
+        });
+    
+        function toggleLocationsMenu(e) {
+            e.preventDefault();
+            const submenu = document.getElementById('locations-submenu');
+            const caret = document.getElementById('locations-caret');
+            if (submenu) submenu.classList.toggle('open');
+            if (caret) caret.style.transform = submenu && submenu.classList.contains('open') ? 'rotate(180deg)' : '';
+        }
+    </script>
+</body>
+</html>

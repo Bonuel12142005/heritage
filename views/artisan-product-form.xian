@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= product ? 'Edit' : 'Add' %> Product - HeritageLink</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --ocean-blue: #0077B6; --turquoise: #00B4D8; --palm-green: #2D6A4F;
+            --primary: #0077B6; --primary-dark: #005a8c; --primary-light: #00B4D8;
+            --accent: #D4AF37; --accent-dark: #B8941E;
+            --bg-main: #f8faf9; --bg-card: #ffffff;
+            --text-primary: #064e3b; --text-secondary: #6b7280; --text-muted: #9ca3af;
+            --border: #d1fae5; --sidebar-bg: #005a8c; --sidebar-hover: #004a73;
+            --gradient-gold: linear-gradient(135deg, #D4AF37 0%, #FFD700 100%);
+        }
+        body { font-family: 'Inter', sans-serif; background: var(--bg-main); color: var(--text-primary); }
+        .sidebar { position: fixed; left: 0; top: 0; height: 100vh; width: 260px; background: var(--sidebar-bg); padding: 2rem 0; z-index: 1000; box-shadow: 4px 0 10px rgba(0,0,0,0.1); }
+        .sidebar-logo { padding: 0 2rem 2rem; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 2rem; }
+        .sidebar-logo h2 { color: white; font-size: 1.5rem; font-weight: 700; display: flex; align-items: center; gap: 0.75rem; }
+        .sidebar-logo .badge { background: linear-gradient(135deg, var(--accent), var(--accent-dark)); color: var(--sidebar-bg); padding: 0.25rem 0.75rem; border-radius: 1rem; font-size: 0.75rem; font-weight: 600; }
+        .sidebar-menu { list-style: none; }
+        .menu-item { margin: 0.25rem 1rem; }
+        .menu-link { display: flex; align-items: center; gap: 1rem; padding: 0.875rem 1rem; color: #d1fae5; text-decoration: none; border-radius: 0.75rem; transition: all 0.2s; font-weight: 500; }
+        .menu-link:hover, .menu-link.active { background: var(--sidebar-hover); color: white; }
+        .menu-link i { width: 20px; text-align: center; }
+        .main-content { margin-left: 260px; min-height: 100vh; }
+        .topbar { background: var(--bg-card); padding: 1.5rem 2rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border-bottom: 3px solid #D4AF37; }
+        .topbar h1 { font-size: 1.75rem; font-weight: 700; background: linear-gradient(135deg, var(--primary), var(--primary-light)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .topbar p { color: var(--text-secondary); margin-top: 0.25rem; }
+        .content { padding: 2rem; max-width: 900px; }
+        .form-card { background: var(--bg-card); border-radius: 1rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); padding: 2rem; border: 2px solid var(--border); }
+        .form-group { margin-bottom: 1.5rem; }
+        .form-label { display: block; margin-bottom: 0.5rem; color: var(--text-primary); font-weight: 600; }
+        .form-input, .form-textarea { width: 100%; padding: 0.875rem 1rem; border: 2px solid var(--border); border-radius: 0.75rem; font-size: 1rem; transition: all 0.2s; background: var(--bg-main); font-family: 'Inter', sans-serif; }
+        .form-input:focus, .form-textarea:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1); }
+        .form-textarea { min-height: 120px; resize: vertical; }
+        .file-upload-area { border: 2px dashed var(--border); border-radius: 0.75rem; padding: 2rem; text-align: center; background: var(--bg-main); transition: all 0.2s; cursor: pointer; }
+        .file-upload-area:hover { border-color: var(--primary); background: white; }
+        .file-upload-area i { font-size: 3rem; color: var(--primary); margin-bottom: 1rem; }
+        .file-upload-area p { color: var(--text-secondary); margin-bottom: 0.5rem; }
+        .file-upload-area small { color: var(--text-muted); }
+        .image-preview { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 1rem; margin-top: 1rem; }
+        .preview-item { position: relative; border-radius: 0.75rem; overflow: hidden; border: 2px solid var(--border); }
+        .preview-item img { width: 100%; height: 150px; object-fit: cover; }
+        .btn { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.5rem; border-radius: 0.75rem; text-decoration: none; font-weight: 600; font-size: 0.875rem; transition: all 0.2s; border: none; cursor: pointer; }
+        .btn-primary { background: var(--gradient-gold); color: #064e3b; box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3); }
+        .btn-primary:hover { transform: translateY(-2px); }
+        .btn-secondary { background: var(--bg-main); color: var(--text-primary); border: 2px solid var(--border); }
+        @media (max-width: 768px) { .sidebar { transform: translateX(-100%); } .main-content { margin-left: 0; } }
+    </style>
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="sidebar-logo">
+            <h2><img src="/uploads/logo.jpg" alt="HeritageLink" style="width: 40px; height: 40px; object-fit: contain;"> HeritageLink <span class="badge">Artisan</span></h2>
+        </div>
+        <ul class="sidebar-menu">
+            <li class="menu-item"><a href="/artisan/dashboard" class="menu-link"><i class="fas fa-th-large"></i><span>Dashboard</span></a></li>
+            <li class="menu-item"><a href="/artisan/products" class="menu-link active"><i class="fas fa-box"></i><span>My Products</span></a></li>
+            <li class="menu-item"><a href="/artisan/orders" class="menu-link"><i class="fas fa-shopping-cart"></i><span>Orders</span></a></li>
+            <li class="menu-item"><a href="/artisan/messages" class="menu-link"><i class="fas fa-envelope"></i><span>Messages</span></a></li>
+            <li class="menu-item"><a href="/artisan/portfolio" class="menu-link"><i class="fas fa-images"></i><span>Portfolio</span></a></li>
+            <li class="menu-item"><a href="/artisan/workshops" class="menu-link"><i class="fas fa-calendar-check"></i><span>Workshops</span></a></li>
+            <li class="menu-item"><a href="/artisan/profile" class="menu-link"><i class="fas fa-user-circle"></i><span>My Profile</span></a></li>
+            <li class="menu-item"><a href="/" class="menu-link"><i class="fas fa-home"></i><span>Home</span></a></li>
+            <li class="menu-item"><a href="/logout" class="menu-link"><i class="fas fa-sign-out-alt"></i><span>Logout</span></a></li>
+        </ul>
+    </aside>
+
+    <main class="main-content">
+        <div class="topbar">
+            <h1><%= product ? 'Edit Product' : 'Add New Product' %></h1>
+            <p>Showcase your crafts to cultural enthusiasts</p>
+        </div>
+
+        <div class="content">
+            <div class="form-card">
+                <form action="/artisan/products/save" method="POST" enctype="multipart/form-data">
+                    <% if (product) { %>
+                        <input type="hidden" name="id" value="<%= product.id %>">
+                    <% } %>
+                    
+                    <div class="form-group">
+                        <label class="form-label"><i class="fas fa-tag"></i> Product Name *</label>
+                        <input type="text" name="name" class="form-input" value="<%= product ? product.name : '' %>" placeholder="e.g., Handwoven Basket" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label"><i class="fas fa-align-left"></i> Description *</label>
+                        <textarea name="description" class="form-textarea" placeholder="Describe your product, materials used, cultural significance..." required><%= product ? product.description : '' %></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label"><i class="fas fa-money-bill-wave"></i> Price (₱) *</label>
+                        <input type="number" name="price" class="form-input" step="0.01" value="<%= product ? product.price : '' %>" placeholder="0.00" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label"><i class="fas fa-folder"></i> Category</label>
+                        <input type="text" name="category" class="form-input" value="<%= product ? product.category : '' %>" placeholder="e.g., Textiles, Pottery, Wood Carving">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label"><i class="fas fa-camera"></i> Product Images</label>
+                        <% if (product && product.product_image) { %>
+                            <div class="image-preview">
+                                <div class="preview-item">
+                                    <img src="/<%= product.product_image %>" alt="Current product image">
+                                </div>
+                            </div>
+                            <p style="color: var(--text-secondary); font-size: 0.875rem; margin-top: 0.5rem;">
+                                <i class="fas fa-info-circle"></i> Upload new images to replace the current one
+                            </p>
+                        <% } %>
+                        <label for="images" class="file-upload-area" style="display: block; margin-top: 1rem;">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <p><strong>Click to upload</strong> or drag and drop</p>
+                            <small>PNG, JPG, GIF, WEBP up to 5MB (Max 5 images)</small>
+                        </label>
+                        <input type="file" id="images" name="images" class="form-input" accept="image/*" multiple style="display: none;" onchange="previewImages(this)">
+                        <div id="imagePreview" class="image-preview"></div>
+                    </div>
+
+                    <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> <%= product ? 'Update Product' : 'Add Product' %>
+                        </button>
+                        <a href="/artisan/products" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        function previewImages(input) {
+            const preview = document.getElementById('imagePreview');
+            preview.innerHTML = '';
+            
+            if (input.files) {
+                Array.from(input.files).forEach((file, index) => {
+                    if (index < 5) { // Limit to 5 images
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            const div = document.createElement('div');
+                            div.className = 'preview-item';
+                            div.innerHTML = `<img src="${e.target.result}" alt="Preview ${index + 1}">`;
+                            preview.appendChild(div);
+                        }
+                        reader.readAsDataURL(file);
+                    }
+                });
+            }
+        }
+
+        // Make file upload area clickable
+        document.querySelector('.file-upload-area').addEventListener('click', function(e) {
+            if (e.target.tagName !== 'INPUT') {
+                document.getElementById('images').click();
+            }
+        });
+    </script>
+</body>
+</html>

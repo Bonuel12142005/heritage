@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Heritage Gallery - HeritageLink Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        :root{
+            --ocean-blue:#0077B6;--turquoise:#00B4D8;--palm-green:#2D6A4F;
+            --primary:#0077B6;--primary-dark:#005a8c;--primary-light:#00B4D8;
+            --accent:#D4AF37;--accent-light:#FFD700;
+            --bg-main:#f0fdf4;--bg-card:#ffffff;
+            --text-primary:#064e3b;--text-secondary:#6b7280;--text-muted:#9ca3af;
+            --border:#d1fae5;--border-dark:#a7f3d0;
+            --sidebar-bg:linear-gradient(180deg,#005a8c 0%,#004a73 100%);
+            --gradient-nature:linear-gradient(135deg,#0077B6 0%,#00B4D8 50%,#2D6A4F 100%);
+            --gradient-gold:linear-gradient(135deg,#D4AF37 0%,#FFD700 100%);
+            --shadow-sm:0 1px 3px rgba(0,0,0,0.08);--shadow-md:0 4px 12px rgba(0,119,182,0.12);--shadow-lg:0 10px 25px rgba(0,119,182,0.15);
+            --radius-sm:0.5rem;--radius-md:0.75rem;--radius-lg:1rem;
+        }
+        body{font-family:'Inter',sans-serif;background:var(--bg-main);color:var(--text-primary);overflow-x:clip}
+        
+        /* Sidebar */
+        .sidebar{position:fixed;left:0;top:0;height:100vh;width:260px;background:var(--sidebar-bg);padding:0;z-index:1000;box-shadow:4px 0 20px rgba(0,0,0,0.15);display:flex;flex-direction:column;transition:transform 0.3s ease}
+        .sidebar-header{padding:1.25rem;background:rgba(255,255,255,0.05);border-bottom:1px solid rgba(255,255,255,0.1);flex-shrink:0}
+        .sidebar-logo{display:flex;align-items:center;gap:0.6rem;text-decoration:none}
+        .sidebar-logo img{width:38px;height:38px;border-radius:var(--radius-sm);object-fit:cover;border:2px solid rgba(255,255,255,0.2)}
+        .sidebar-logo h2{color:#fff;font-size:1.1rem;font-weight:700;font-family:'Poppins',sans-serif;display:flex;align-items:center;flex-wrap:wrap;gap:0.4rem}
+        .sidebar-logo .badge{background:var(--gradient-gold);color:#fff;padding:0.15rem 0.5rem;border-radius:var(--radius-sm);font-size:0.6rem;font-weight:700;text-transform:uppercase}
+        .sidebar-nav{flex:1;overflow-y:auto;padding:0.75rem 0;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,0.2) transparent}
+        .nav-section{padding:1rem 1.25rem 0.4rem;color:#a7f3d0;font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em}
+        .nav-item{margin:0.2rem 0.6rem}
+        .nav-link{display:flex;align-items:center;gap:0.75rem;padding:0.65rem 0.9rem;color:#d1fae5;text-decoration:none;border-radius:var(--radius-sm);transition:all 0.2s;font-weight:500;font-size:0.85rem}
+        .nav-link:hover{background:rgba(255,255,255,0.1);color:#fff}
+        .nav-link.active{background:rgba(255,255,255,0.15);color:#fff;border-left:3px solid var(--accent)}
+        .nav-link i{width:18px;text-align:center;font-size:0.9rem}
+        .nav-link.active i{color:var(--accent)}
+        .sidebar-footer{padding:1rem 1.25rem;border-top:1px solid rgba(255,255,255,0.1);background:rgba(0,0,0,0.1);flex-shrink:0}
+        .sidebar-footer-text{color:#a7f3d0;font-size:0.7rem;text-align:center}
+        .sidebar-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:999}
+        .sidebar-overlay.active{display:block}
+        .sidebar-close{display:none;position:absolute;top:1rem;right:1rem;background:rgba(255,255,255,0.1);border:none;color:#fff;width:32px;height:32px;border-radius:var(--radius-sm);cursor:pointer}
+        
+        /* Main Content */
+        .main-content{margin-left:260px;min-height:100vh;background:var(--bg-main)}
+        
+        /* Topbar */
+        .topbar{background:var(--bg-card);padding:0.875rem 1.25rem;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100;box-shadow:var(--shadow-sm);border-bottom:3px solid #D4AF37;gap:0.75rem}
+        .topbar-left{display:flex;align-items:center;gap:0.75rem;flex-shrink:0}
+        .topbar-right{display:flex;align-items:center;gap:0.75rem;flex-shrink:1;min-width:0}
+        .menu-toggle{display:none;background:none;border:none;font-size:1.1rem;color:var(--text-primary);cursor:pointer;padding:0.4rem}
+        .topbar-title h1{font-size:1.15rem;font-weight:700;color:var(--text-primary);font-family:'Poppins',sans-serif;display:flex;align-items:center;gap:0.4rem;white-space:nowrap}
+        .topbar-title h1 i{color:var(--accent);font-size:1rem}
+        .topbar-title p{font-size:0.75rem;color:var(--text-secondary);margin-top:0.1rem}
+        .topbar-search{position:relative;display:flex;align-items:center;flex-shrink:1;min-width:0}
+        .topbar-search input{padding:0.5rem 2.25rem 0.5rem 2.25rem;border:2px solid var(--border);border-radius:var(--radius-md);width:100%;max-width:200px;font-size:0.8rem;background:var(--bg-main);transition:all 0.2s}
+        .topbar-search input:focus{outline:none;border-color:var(--primary);background:#fff}
+        .topbar-search>i{position:absolute;left:0.75rem;color:var(--text-muted);font-size:0.8rem}
+        .btn{display:inline-flex;align-items:center;gap:0.4rem;padding:0.5rem 1rem;border-radius:var(--radius-md);text-decoration:none;font-weight:600;font-size:0.8rem;border:none;cursor:pointer;transition:all 0.2s;white-space:nowrap;flex-shrink:0}
+        .btn-primary{background:var(--gradient-gold);color:#fff;box-shadow:0 4px 12px rgba(212,175,55,0.3)}
+        .btn-primary:hover{transform:translateY(-2px);box-shadow:0 6px 16px rgba(212,175,55,0.4)}
+</style>
+</head>
+<body>
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    <aside class="sidebar" id="sidebar">
+        <button class="sidebar-close" id="sidebarClose"><i class="fas fa-times"></i></button>
+        <div class="sidebar-header">
+            <a href="/" class="sidebar-logo">
+                <img src="/uploads/logo.jpg" alt="HeritageLink">
+                <h2>HeritageLink <span class="badge">Admin</span></h2>
+            </a>
+        </div>
+        <nav class="sidebar-nav">
+            <div class="nav-section">Main</div>
+            <div class="nav-item"><a href="/admin/dashboard" class="nav-link"><i class="fas fa-th-large"></i>Dashboard</a></div>
+            
+            <div class="nav-item"><a href="/admin/events" class="nav-link"><i class="fas fa-calendar-alt"></i>Events</a></div>
+            <div class="nav-item"><a href="/admin/heritage-gallery" class="nav-link active"><i class="fas fa-landmark"></i>Heritage Gallery</a></div>
+            <div class="nav-item nav-dropdown">
+                <a href="#" class="nav-link nav-dropdown-toggle" onclick="toggleLocationsMenu(event)">
+                    <i class="fas fa-globe-asia"></i>Locations <i class="fas fa-chevron-down nav-caret" id="locations-caret"></i>
+                </a>
+                <div class="nav-submenu" id="locations-submenu">
+                    <div class="nav-item"><a href="/admin/destinations" class="nav-link nav-sub-link"><i class="fas fa-map-marked-alt"></i>Destinations</a></div>
+                    <div class="nav-item"><a href="/admin/map-places" class="nav-link nav-sub-link"><i class="fas fa-map"></i>Map Places</a></div>
+                </div>
+            </div>
+            <div class="nav-item"><a href="/admin/users" class="nav-link"><i class="fas fa-users"></i>Users</a></div>
+            <div class="nav-section">Management</div>
+            <div class="nav-item"><a href="/admin/moderate" class="nav-link"><i class="fas fa-shield-alt"></i>Moderation</a></div>
+            <div class="nav-item"><a href="/admin/feedback" class="nav-link"><i class="fas fa-comment-dots"></i>Feedback</a></div>
+            <div class="nav-item"><a href="/admin/analytics" class="nav-link"><i class="fas fa-chart-line"></i>Analytics</a></div>
+            <div class="nav-item"><a href="/admin/settings" class="nav-link"><i class="fas fa-cog"></i>Settings</a></div>
+            <div class="nav-section">Account</div>
+            <div class="nav-item"><a href="/" class="nav-link"><i class="fas fa-home"></i>View Site</a></div>
+            <div class="nav-item"><a href="/logout" class="nav-link"><i class="fas fa-sign-out-alt"></i>Logout</a></div>
+        </nav>
+        <div class="sidebar-footer"><p class="sidebar-footer-text">© 2024 HeritageLink</p></div>
+    </aside>
+
+    <main class="main-content">
+        <header class="topbar">
+            <div class="topbar-left">
+                <button class="menu-toggle" id="menuToggle"><i class="fas fa-bars"></i></button>
+                <div class="topbar-title">
+                    <h1><i class="fas fa-landmark"></i> Heritage Gallery</h1>
+                    <p>Cultural assets & multimedia archive</p>
+                </div>
+            </div>
+            <div class="topbar-right">
+                <div class="topbar-search">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="searchInput" placeholder="Search..." autocomplete="off">
+                </div>
+                <a href="/admin/heritage-gallery/add" class="btn btn-primary"><i class="fas fa-plus"></i> <span class="btn-text">Add Item</span></a>
+            </div>
+        </header>
+
+        <div class="page-content">
+            <% if (typeof success !== 'undefined' && success) { %>
+            <div class="alert alert-success"><i class="fas fa-check-circle"></i> <%= success %></div>
+            <% } %>
+            <% if (typeof error !== 'undefined' && error) { %>
+            <div class="alert alert-error"><i class="fas fa-exclamation-circle"></i> <%= error %></div>
+            <% } %>
+
+            <!-- Stats Row -->
+            <div class="stats-row">
+                <div class="mini-stat"><div class="mini-stat-icon"><i class="fas fa-archive"></i></div><div class="mini-stat-info"><span class="mini-stat-value"><%= stats.total %></span><span class="mini-stat-label">Total</span></div></div>
+                <div class="mini-stat"><div class="mini-stat-icon blue"><i class="fas fa-camera"></i></div><div class="mini-stat-info"><span class="mini-stat-value"><%= stats.photos %></span><span class="mini-stat-label">Photos</span></div></div>
+                <div class="mini-stat"><div class="mini-stat-icon purple"><i class="fas fa-video"></i></div><div class="mini-stat-info"><span class="mini-stat-value"><%= stats.videos %></span><span class="mini-stat-label">Videos</span></div></div>
+                <div class="mini-stat"><div class="mini-stat-icon orange"><i class="fas fa-microphone"></i></div><div class="mini-stat-info"><span class="mini-stat-value"><%= stats.audio %></span><span class="mini-stat-label">Audio</span></div></div>
+            </div>
+
+            <!-- Filter Bar -->
+            <div class="filter-bar">
+                <div class="filter-group">
+                    <select id="filterCategory">
+                        <option value="">All Categories</option>
+                        <option value="traditional_crafts">Traditional Crafts</option>
+                        <option value="festivals">Festivals</option>
+                        <option value="oral_history">Oral History</option>
+                        <option value="dance">Dance</option>
+                        <option value="music">Music</option>
+                        <option value="cuisine">Cuisine</option>
+                        <option value="architecture">Architecture</option>
+                        <option value="historical">Historical</option>
+                    </select>
+                    <select id="filterMediaType">
+                        <option value="">All Types</option>
+                        <option value="image">Photos</option>
+                        <option value="video">Videos</option>
+                        <option value="audio">Audio</option>
+                    </select>
+                </div>
+                <span class="results-count" id="resultsCount"><%= items ? items.length : 0 %> items</span>
+            </div>
+
+            <!-- Gallery Grid -->
+            <div class="gallery-grid" id="galleryGrid">
+                <% if (items && items.length > 0) { %>
+                    <% items.forEach(item => { %>
+                    <div class="gallery-card" data-category="<%= item.category %>" data-media="<%= item.media_type %>" data-title="<%= (item.title || '').toLowerCase() %>" data-tags="<%= item.tags ? item.tags.toLowerCase() : '' %>">
+                        <div class="gallery-thumb">
+                            <% if (item.thumbnail_url || item.file_url || item.media_url) { %>
+                            <img src="<%= item.thumbnail_url || item.file_url || item.media_url %>" alt="<%= item.title %>" onerror="this.style.display='none'">
+                            <% } else { %>
+                            <div class="thumb-placeholder"><i class="fas fa-<%= item.media_type === 'video' ? 'video' : item.media_type === 'audio' ? 'microphone' : 'image' %>"></i></div>
+                            <% } %>
+                            <span class="media-badge"><i class="fas fa-<%= item.media_type === 'video' ? 'video' : item.media_type === 'audio' ? 'microphone' : 'camera' %>"></i></span>
+                            <span class="category-badge"><%= item.category ? item.category.replace(/_/g, ' ') : 'Other' %></span>
+                        </div>
+                        <div class="gallery-body">
+                            <h3 class="gallery-title"><%= item.title %></h3>
+                            <p class="gallery-desc"><%= item.description ? item.description.substring(0, 60) + '...' : 'No description' %></p>
+                            <div class="gallery-meta">
+                                <% if (item.historical_date) { %><span><i class="fas fa-clock"></i> <%= item.historical_date %></span><% } %>
+                                <% if (item.location) { %><span><i class="fas fa-map-marker-alt"></i> <%= item.location %></span><% } %>
+                            </div>
+                            <div class="gallery-actions">
+                                <a href="/admin/heritage-gallery/edit/<%= item.id %>" class="btn-action btn-edit"><i class="fas fa-edit"></i> Edit</a>
+                                <button type="button" class="btn-action btn-view" onclick="showViewModal('<%= item.title ? item.title.replace(/'/g, "\\'") : 'Untitled' %>', '<%= item.description ? item.description.replace(/'/g, "\\'").replace(/\n/g, ' ') : 'No description' %>', '<%= item.thumbnail_url || item.file_url || item.media_url || '' %>', '<%= item.media_type || 'image' %>', '<%= item.category ? item.category.replace(/_/g, ' ') : 'Other' %>', '<%= item.location || '' %>', '<%= item.historical_date || '' %>', '<%= item.tags || '' %>')"><i class="fas fa-eye"></i> View</button>
+                                <button type="button" class="btn-action btn-delete" onclick="showDeleteModal('<%= item.id %>', '<%= item.title ? item.title.replace(/'/g, "\\'") : 'this item' %>')"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                    <% }); %>
+                <% } else { %>
+                <div class="empty-state">
+                    <i class="fas fa-landmark"></i>
+                    <h3>No Heritage Items Yet</h3>
+                    <p>Start preserving cultural assets by adding your first item.</p>
+                    <a href="/admin/heritage-gallery/add" class="btn btn-primary"><i class="fas fa-plus"></i> Add First Item</a>
+                </div>
+                <% } %>
+            </div>
+        </div>
+    </main>
+
+    <style>
+        /* Page Content */
+        .page-content{padding:1.25rem}
+        .alert{padding:0.875rem 1.25rem;border-radius:var(--radius-md);margin-bottom:1rem;display:flex;align-items:center;gap:0.75rem;font-size:0.85rem;font-weight:500}
+        .alert-success{background:#d1fae5;color:var(--primary-dark);border:1px solid var(--primary)}
+        .alert-error{background:#fee2e2;color:#991b1b;border:1px solid #fecaca}
+        
+        /* Stats Row */
+        .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.25rem}
+        .mini-stat{background:var(--bg-card);padding:1rem;border-radius:var(--radius-md);display:flex;align-items:center;gap:0.875rem;border:1px solid var(--border);box-shadow:var(--shadow-sm)}
+        .mini-stat-icon{width:44px;height:44px;border-radius:var(--radius-sm);background:var(--gradient-nature);display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.1rem}
+        .mini-stat-icon.blue{background:linear-gradient(135deg,#3b82f6,#60a5fa)}
+        .mini-stat-icon.purple{background:linear-gradient(135deg,#8b5cf6,#a78bfa)}
+        .mini-stat-icon.orange{background:linear-gradient(135deg,#ff6b35,#f59e0b)}
+        .mini-stat-value{font-size:1.5rem;font-weight:800;color:var(--text-primary);display:block}
+        .mini-stat-label{font-size:0.7rem;color:var(--text-secondary)}
+        
+        /* Filter Bar */
+        .filter-bar{background:var(--bg-card);padding:1rem;border-radius:var(--radius-md);margin-bottom:1.25rem;border:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.75rem}
+        .filter-group{display:flex;gap:0.5rem;flex-wrap:wrap}
+        .filter-bar select{padding:0.5rem 0.75rem;border:2px solid var(--border);border-radius:var(--radius-sm);font-size:0.8rem;background:var(--bg-main);cursor:pointer}
+        .filter-bar select:focus{outline:none;border-color:var(--primary)}
+        .results-count{font-size:0.8rem;color:var(--text-secondary);font-weight:500}
+        
+        /* Gallery Grid */
+        .gallery-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1.25rem}
+        .gallery-card{background:var(--bg-card);border-radius:var(--radius-md);overflow:hidden;border:1px solid var(--border);transition:all 0.3s}
+        .gallery-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-md);border-color:var(--primary)}
+        .gallery-thumb{height:140px;position:relative;background:var(--gradient-nature);overflow:hidden}
+        .gallery-thumb img{width:100%;height:100%;object-fit:cover}
+        .thumb-placeholder{width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,0.4);font-size:2.5rem}
+        .media-badge{position:absolute;top:0.6rem;left:0.6rem;background:rgba(0,0,0,0.6);color:#fff;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.7rem}
+        .category-badge{position:absolute;top:0.6rem;right:0.6rem;background:var(--gradient-gold);color:#fff;padding:0.2rem 0.5rem;border-radius:var(--radius-sm);font-size:0.6rem;font-weight:700;text-transform:uppercase}
+        .gallery-body{padding:1rem}
+        .gallery-title{font-size:0.95rem;font-weight:700;color:var(--text-primary);margin-bottom:0.35rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .gallery-desc{font-size:0.75rem;color:var(--text-muted);line-height:1.5;margin-bottom:0.5rem;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+        .gallery-meta{display:flex;flex-wrap:wrap;gap:0.75rem;font-size:0.7rem;color:var(--text-secondary);margin-bottom:0.75rem}
+        .gallery-meta i{color:var(--primary);margin-right:0.2rem}
+        .gallery-actions{display:flex;gap:0.5rem;padding-top:0.75rem;border-top:1px solid var(--border)}
+        .btn-action{flex:1;height:36px;border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;gap:0.4rem;border:none;cursor:pointer;font-size:0.75rem;font-weight:600;transition:all 0.2s;text-decoration:none}
+        .btn-edit{background:rgba(45,134,89,0.1);color:var(--primary);border:2px solid var(--primary)}
+        .btn-edit:hover{background:var(--primary);color:#fff;transform:translateY(-2px);box-shadow:0 4px 12px rgba(45,134,89,0.3)}
+        .btn-view{background:var(--gradient-gold);color:#fff;box-shadow:0 4px 12px rgba(212,175,55,0.3)}
+        .btn-view:hover{transform:translateY(-2px);box-shadow:0 6px 16px rgba(212,175,55,0.4)}
+        .btn-delete{background:rgba(239,68,68,0.1);color:#ef4444;border:2px solid #fecaca}
+        .btn-delete:hover{background:#ef4444;color:#fff;transform:translateY(-2px);box-shadow:0 4px 12px rgba(239,68,68,0.3)}
+        
+        /* Empty State */
+        .empty-state{grid-column:1/-1;text-align:center;padding:3rem 1.5rem;background:var(--bg-card);border-radius:var(--radius-md);border:1px solid var(--border)}
+        .empty-state i{font-size:3rem;color:var(--border-dark);margin-bottom:1rem}
+        .empty-state h3{font-size:1.1rem;color:var(--text-primary);margin-bottom:0.5rem}
+        .empty-state p{color:var(--text-secondary);margin-bottom:1.25rem;font-size:0.85rem}
+        
+        /* Responsive */
+        @media(max-width:1100px){.stats-row{grid-template-columns:repeat(2,1fr)}}
+        @media(max-width:900px){
+            .sidebar{transform:translateX(-100%);width:280px}
+            .sidebar.open{transform:translateX(0)}
+            .sidebar-overlay.active{display:block}
+            .sidebar-close{display:flex;align-items:center;justify-content:center}
+            .main-content{margin-left:0}
+            .menu-toggle{display:flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:var(--radius-sm);background:var(--bg-main);border:2px solid var(--border)}
+            .topbar-title p{display:none}
+            .topbar-search{order:3;width:100%;margin-top:0.5rem}
+            .topbar-search input{max-width:100%}
+            .topbar{flex-wrap:wrap}
+            .btn-text{display:none}
+        }
+        @media(max-width:640px){
+            .stats-row{grid-template-columns:1fr 1fr}
+            .gallery-grid{grid-template-columns:1fr}
+            .page-content{padding:1rem}
+            .filter-bar{flex-direction:column;align-items:stretch}
+            .filter-group{width:100%}
+            .filter-bar select{flex:1}
+        }
+        @media(max-width:400px){.stats-row{grid-template-columns:1fr}}
+    </style>
+
+    <!-- View Item Modal -->
+    <div class="modal-overlay" id="viewModal">
+        <div class="view-modal">
+            <button class="view-modal-close" onclick="hideViewModal()"><i class="fas fa-times"></i></button>
+            <div class="view-modal-media" id="viewModalMedia"></div>
+            <div class="view-modal-content">
+                <span class="view-modal-category" id="viewModalCategory"></span>
+                <h2 class="view-modal-title" id="viewModalTitle"></h2>
+                <p class="view-modal-desc" id="viewModalDesc"></p>
+                <div class="view-modal-meta">
+                    <div class="view-meta-item" id="viewModalLocation"><i class="fas fa-map-marker-alt"></i> <span></span></div>
+                    <div class="view-meta-item" id="viewModalDate"><i class="fas fa-calendar"></i> <span></span></div>
+                    <div class="view-meta-item" id="viewModalTags"><i class="fas fa-tags"></i> <span></span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        /* View Modal */
+        .view-modal{background:#fff;border-radius:16px;max-width:600px;width:100%;max-height:90vh;overflow:hidden;box-shadow:0 20px 40px rgba(0,0,0,0.3);animation:modalIn 0.2s ease;position:relative;display:flex;flex-direction:column}
+        .view-modal-close{position:absolute;top:1rem;right:1rem;width:40px;height:40px;border-radius:50%;background:rgba(0,0,0,0.5);color:#fff;border:none;cursor:pointer;font-size:1.1rem;z-index:10;display:flex;align-items:center;justify-content:center;transition:all 0.2s}
+        .view-modal-close:hover{background:rgba(0,0,0,0.7);transform:scale(1.1)}
+        .view-modal-media{height:280px;background:var(--gradient-nature);display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0}
+        .view-modal-media img{width:100%;height:100%;object-fit:cover}
+        .view-modal-media video,.view-modal-media audio{max-width:100%;max-height:100%}
+        .view-modal-media .media-placeholder{color:rgba(255,255,255,0.4);font-size:4rem}
+        .view-modal-content{padding:1.5rem;overflow-y:auto}
+        .view-modal-category{background:var(--gradient-gold);color:#fff;padding:0.3rem 0.75rem;border-radius:var(--radius-sm);font-size:0.75rem;font-weight:700;text-transform:uppercase;display:inline-block;margin-bottom:0.75rem}
+        .view-modal-title{font-size:1.5rem;font-weight:700;color:var(--text-primary);margin-bottom:0.75rem;font-family:'Poppins',sans-serif;line-height:1.3}
+        .view-modal-desc{color:var(--text-secondary);font-size:0.95rem;line-height:1.7;margin-bottom:1.25rem}
+        .view-modal-meta{display:flex;flex-wrap:wrap;gap:1rem;padding-top:1rem;border-top:1px solid var(--border)}
+        .view-meta-item{display:flex;align-items:center;gap:0.5rem;font-size:0.85rem;color:var(--text-secondary)}
+        .view-meta-item i{color:var(--primary);font-size:0.9rem}
+        .view-meta-item.hidden{display:none}
+        @media(max-width:640px){
+            .view-modal{max-width:95%;border-radius:12px}
+            .view-modal-media{height:200px}
+            .view-modal-content{padding:1.25rem}
+            .view-modal-title{font-size:1.25rem}
+        }
+    </style>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal-overlay" id="deleteModal">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-icon"><i class="fas fa-trash-alt"></i></div>
+                <h3 class="modal-title">Delete Item?</h3>
+                <p class="modal-message">Are you sure you want to delete <span class="modal-item-name" id="deleteItemName"></span>? This action cannot be undone.</p>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn-modal btn-cancel" onclick="hideDeleteModal()"><i class="fas fa-times"></i> Cancel</button>
+                <form id="deleteForm" method="POST" style="flex:1;display:flex;">
+                    <button type="submit" class="btn-modal btn-confirm-delete"><i class="fas fa-trash"></i> Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:2000;align-items:center;justify-content:center;padding:1rem}
+        .modal-overlay.show{display:flex}
+        .modal{background:#fff;border-radius:16px;max-width:400px;width:100%;box-shadow:0 20px 40px rgba(0,0,0,0.2);animation:modalIn 0.2s ease}
+        @keyframes modalIn{from{opacity:0;transform:scale(0.95)}to{opacity:1;transform:scale(1)}}
+        .modal-header{padding:1.5rem 1.5rem 1rem;text-align:center}
+        .modal-icon{width:60px;height:60px;background:#fee2e2;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem}
+        .modal-icon i{font-size:1.75rem;color:#dc2626}
+        .modal-title{font-size:1.25rem;font-weight:700;color:var(--text-primary);margin-bottom:0.5rem;font-family:'Poppins',sans-serif}
+        .modal-message{color:var(--text-secondary);font-size:0.9rem;line-height:1.5}
+        .modal-item-name{font-weight:600;color:var(--primary-dark)}
+        .modal-actions{display:flex;gap:0.75rem;padding:1rem 1.5rem 1.5rem}
+        .btn-modal{flex:1;padding:0.75rem 1rem;border-radius:var(--radius-md);font-weight:600;font-size:0.875rem;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:0.5rem;transition:all 0.2s}
+        .btn-cancel{background:var(--bg-main);color:var(--text-secondary);border:2px solid var(--border)}
+        .btn-cancel:hover{background:var(--border)}
+        .btn-confirm-delete{background:#dc2626;color:#fff;flex:1}
+        .btn-confirm-delete:hover{background:#b91c1c}
+    
+        /* Locations dropdown nav */
+        .nav-dropdown-toggle{cursor:pointer;user-select:none;justify-content:space-between}
+        .nav-caret{font-size:0.65rem;margin-left:auto;transition:transform 0.2s}
+        .nav-submenu{overflow:hidden;max-height:0;transition:max-height 0.25s ease;padding-left:0.5rem}
+        .nav-submenu.open{max-height:200px}
+        .nav-sub-link{font-size:0.8rem;padding:0.5rem 0.9rem;color:#a7f3d0 !important}
+        .nav-sub-link:hover,.nav-sub-link.active{background:rgba(255,255,255,0.08);color:#fff !important}
+        .nav-submenu.open ~ .nav-dropdown-toggle .nav-caret,
+        .nav-dropdown-toggle.active .nav-caret{transform:rotate(180deg)}
+    </style>
+
+    <script>
+        // View modal functions
+        function showViewModal(title, description, mediaUrl, mediaType, category, location, date, tags) {
+            document.getElementById('viewModalTitle').textContent = title;
+            document.getElementById('viewModalDesc').textContent = description;
+            document.getElementById('viewModalCategory').textContent = category;
+            
+            // Handle media
+            const mediaContainer = document.getElementById('viewModalMedia');
+            if (mediaUrl) {
+                if (mediaType === 'video') {
+                    mediaContainer.innerHTML = '<video controls src="' + mediaUrl + '"></video>';
+                } else if (mediaType === 'audio') {
+                    mediaContainer.innerHTML = '<div class="media-placeholder"><i class="fas fa-microphone"></i></div><audio controls src="' + mediaUrl + '" style="position:absolute;bottom:1rem;left:50%;transform:translateX(-50%);width:90%"></audio>';
+                    mediaContainer.style.position = 'relative';
+                } else {
+                    mediaContainer.innerHTML = '<img src="' + mediaUrl + '" alt="' + title + '" onerror="this.outerHTML=\'<div class=media-placeholder><i class=fas fa-image></i></div>\'">';
+                }
+            } else {
+                mediaContainer.innerHTML = '<div class="media-placeholder"><i class="fas fa-' + (mediaType === 'video' ? 'video' : mediaType === 'audio' ? 'microphone' : 'image') + '"></i></div>';
+            }
+            
+            // Handle meta items
+            const locationEl = document.getElementById('viewModalLocation');
+            const dateEl = document.getElementById('viewModalDate');
+            const tagsEl = document.getElementById('viewModalTags');
+            
+            if (location) { locationEl.querySelector('span').textContent = location; locationEl.classList.remove('hidden'); }
+            else { locationEl.classList.add('hidden'); }
+            
+            if (date) { dateEl.querySelector('span').textContent = date; dateEl.classList.remove('hidden'); }
+            else { dateEl.classList.add('hidden'); }
+            
+            if (tags) { tagsEl.querySelector('span').textContent = tags; tagsEl.classList.remove('hidden'); }
+            else { tagsEl.classList.add('hidden'); }
+            
+            document.getElementById('viewModal').classList.add('show');
+        }
+        
+        function hideViewModal() {
+            document.getElementById('viewModal').classList.remove('show');
+            // Stop any playing media
+            const video = document.querySelector('#viewModalMedia video');
+            const audio = document.querySelector('#viewModalMedia audio');
+            if (video) video.pause();
+            if (audio) audio.pause();
+        }
+        
+        document.getElementById('viewModal').addEventListener('click', function(e) {
+            if (e.target === this) hideViewModal();
+        });
+
+        // Delete modal functions
+        function showDeleteModal(itemId, itemName) {
+            document.getElementById('deleteItemName').textContent = itemName;
+            document.getElementById('deleteForm').action = '/admin/heritage-gallery/' + itemId + '/delete';
+            document.getElementById('deleteModal').classList.add('show');
+        }
+        function hideDeleteModal() {
+            document.getElementById('deleteModal').classList.remove('show');
+        }
+        document.getElementById('deleteModal').addEventListener('click', function(e) {
+            if (e.target === this) hideDeleteModal();
+        });
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') { hideDeleteModal(); hideViewModal(); }
+        });
+    </script>
+
+    <script>
+        // Sidebar toggle
+        const sidebar = document.getElementById('sidebar');
+        const sidebarOverlay = document.getElementById('sidebarOverlay');
+        const menuToggle = document.getElementById('menuToggle');
+        const sidebarClose = document.getElementById('sidebarClose');
+        
+        function openSidebar() { sidebar.classList.add('open'); sidebarOverlay.classList.add('active'); document.body.style.overflow = 'hidden'; }
+        function closeSidebar() { sidebar.classList.remove('open'); sidebarOverlay.classList.remove('active'); document.body.style.overflow = ''; }
+        
+        menuToggle?.addEventListener('click', openSidebar);
+        sidebarClose?.addEventListener('click', closeSidebar);
+        sidebarOverlay?.addEventListener('click', closeSidebar);
+        window.addEventListener('resize', () => { if (window.innerWidth > 900) closeSidebar(); });
+
+        // Filter functionality
+        const filterCategory = document.getElementById('filterCategory');
+        const filterMediaType = document.getElementById('filterMediaType');
+        const searchInput = document.getElementById('searchInput');
+        const resultsCount = document.getElementById('resultsCount');
+
+        function applyFilters() {
+            const category = filterCategory.value.toLowerCase();
+            const mediaType = filterMediaType.value.toLowerCase();
+            const search = searchInput.value.toLowerCase();
+            const cards = document.querySelectorAll('.gallery-card');
+            let visible = 0;
+
+            cards.forEach(card => {
+                const cardCategory = (card.dataset.category || '').toLowerCase();
+                const cardMedia = (card.dataset.media || '').toLowerCase();
+                const cardTitle = card.dataset.title || '';
+                const cardTags = card.dataset.tags || '';
+
+                const matchCategory = !category || cardCategory === category;
+                const matchMedia = !mediaType || cardMedia === mediaType;
+                const matchSearch = !search || cardTitle.includes(search) || cardTags.includes(search);
+
+                const show = matchCategory && matchMedia && matchSearch;
+                card.style.display = show ? '' : 'none';
+                if (show) visible++;
+            });
+
+            resultsCount.textContent = visible + ' item' + (visible !== 1 ? 's' : '');
+        }
+
+        filterCategory?.addEventListener('change', applyFilters);
+        filterMediaType?.addEventListener('change', applyFilters);
+        searchInput?.addEventListener('input', applyFilters);
+
+        // Keyboard shortcut
+        document.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+                e.preventDefault();
+                searchInput?.focus();
+            }
+            if (e.key === 'Escape') {
+                searchInput.value = '';
+                applyFilters();
+            }
+        });
+    
+        function toggleLocationsMenu(e) {
+            e.preventDefault();
+            const submenu = document.getElementById('locations-submenu');
+            const caret = document.getElementById('locations-caret');
+            if (submenu) submenu.classList.toggle('open');
+            if (caret) caret.style.transform = submenu && submenu.classList.contains('open') ? 'rotate(180deg)' : '';
+        }
+    </script>
+</body>
+</html>

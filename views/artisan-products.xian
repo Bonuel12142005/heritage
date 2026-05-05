@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Products - HeritageLink</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --ocean-blue: #0077B6; --turquoise: #00B4D8; --palm-green: #2D6A4F;
+            --primary: #0077B6; --primary-dark: #005a8c; --primary-light: #00B4D8;
+            --accent: #D4AF37; --accent-dark: #B8941E;
+            --bg-main: #f8faf9; --bg-card: #ffffff;
+            --text-primary: #064e3b; --text-secondary: #6b7280; --text-muted: #9ca3af;
+            --border: #d1fae5; --sidebar-bg: #005a8c; --sidebar-hover: #004a73;
+            --sidebar-width: 260px;
+            --gradient-gold: linear-gradient(135deg, #D4AF37 0%, #FFD700 100%);
+        }
+        
+        html, body { 
+            height: 100%; 
+            overflow-x: clip;
+        }
+        
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background: var(--bg-main); 
+            color: var(--text-primary);
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        /* Sidebar */
+        .sidebar { 
+            position: fixed; 
+            left: 0; 
+            top: 0; 
+            height: 100vh; 
+            width: var(--sidebar-width); 
+            background: var(--sidebar-bg); 
+            padding: 1.5rem 0; 
+            z-index: 1000; 
+            box-shadow: 4px 0 15px rgba(0,0,0,0.15);
+            transition: transform 0.3s ease;
+            overflow-y: auto;
+        }
+        
+        .sidebar-logo { 
+            padding: 0 1.25rem 1.5rem; 
+            border-bottom: 1px solid rgba(255,255,255,0.1); 
+            margin-bottom: 1.5rem; 
+        }
+        
+        .sidebar-logo h2 { 
+            color: white; 
+            font-size: 1.25rem; 
+            font-weight: 700; 
+            display: flex; 
+            align-items: center; 
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+        
+        .sidebar-logo .badge { 
+            background: linear-gradient(135deg, var(--accent), var(--accent-dark)); 
+            color: white; 
+            padding: 0.2rem 0.6rem; 
+            border-radius: 1rem; 
+            font-size: 0.7rem; 
+            font-weight: 600; 
+        }
+        
+        .sidebar-menu { list-style: none; }
+        .menu-item { margin: 0.2rem 0.75rem; }
+        
+        .menu-link { 
+            display: flex; 
+            align-items: center; 
+            gap: 0.75rem; 
+            padding: 0.75rem 1rem; 
+            color: #d1fae5; 
+            text-decoration: none; 
+            border-radius: 0.6rem; 
+            transition: all 0.2s; 
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+        
+        .menu-link:hover, .menu-link.active { 
+            background: var(--sidebar-hover); 
+            color: white; 
+        }
+        
+        .menu-link i { width: 20px; text-align: center; font-size: 0.95rem; }
+        
+        /* Main Content */
+        .main-content { 
+            margin-left: var(--sidebar-width); 
+            flex: 1;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            width: calc(100% - var(--sidebar-width));
+        }
+        
+        /* Mobile Menu Toggle */
+        .mobile-menu-toggle {
+            display: none;
+            position: fixed;
+            top: 1rem;
+            left: 1rem;
+            z-index: 1001;
+            background: var(--sidebar-bg);
+            color: white;
+            border: none;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+        
+        .mobile-menu-toggle i { font-size: 1.25rem; }
+        
+        /* Overlay */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+        }
+        
+        .sidebar-overlay.active { display: block; }
+        
+        /* Topbar */
+        .topbar { 
+            background: var(--bg-card); 
+            padding: 1.25rem 1.5rem; 
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1); 
+            border-bottom: 3px solid var(--accent); 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        
+        .topbar-left h1 { 
+            font-size: 1.5rem; 
+            font-weight: 700; 
+            background: linear-gradient(135deg, var(--primary), var(--primary-light)); 
+            -webkit-background-clip: text; 
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .topbar-left p { 
+            color: var(--text-secondary); 
+            margin-top: 0.25rem;
+            font-size: 0.875rem;
+        }
+        
+        /* Buttons */
+        .btn { 
+            display: inline-flex; 
+            align-items: center; 
+            gap: 0.5rem; 
+            padding: 0.65rem 1.25rem; 
+            border-radius: 0.6rem; 
+            text-decoration: none; 
+            font-weight: 600; 
+            font-size: 0.85rem; 
+            transition: all 0.2s; 
+            border: none; 
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        
+        .btn-primary { 
+            background: linear-gradient(135deg, var(--accent), var(--accent-dark)); 
+            color: white; 
+            box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3); 
+        }
+        
+        .btn-primary:hover { 
+            transform: translateY(-2px); 
+            box-shadow: 0 6px 16px rgba(255, 107, 53, 0.4); 
+        }
+        
+        .btn-edit { 
+            background: var(--bg-main); 
+            color: var(--primary); 
+            border: 2px solid var(--primary); 
+        }
+        
+        .btn-edit:hover {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .btn-delete { 
+            background: #fee2e2; 
+            color: #991b1b; 
+            border: 2px solid #fecaca; 
+        }
+        
+        .btn-delete:hover {
+            background: #991b1b;
+            color: white;
+        }
+        
+        .btn-sm { 
+            padding: 0.4rem 0.75rem; 
+            font-size: 0.8rem; 
+        }
+        
+        /* Content Area */
+        .content { 
+            padding: 1.5rem; 
+            flex: 1;
+            overflow-y: auto;
+        }
+        
+        /* Alerts */
+        .alert { 
+            padding: 0.875rem 1.25rem; 
+            border-radius: 0.6rem; 
+            margin-bottom: 1.25rem; 
+            display: flex; 
+            align-items: center; 
+            gap: 0.75rem;
+            font-size: 0.9rem;
+        }
+        
+        .alert-success { 
+            background: #d1fae5; 
+            color: var(--primary-dark); 
+            border: 2px solid var(--primary); 
+        }
+        
+        .alert-error { 
+            background: #fee2e2; 
+            color: #991b1b; 
+            border: 2px solid #fecaca; 
+        }
+        
+        /* Products Grid */
+        .products-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); 
+            gap: 1.25rem;
+        }
+        
+        .product-card { 
+            background: var(--bg-card); 
+            border-radius: 0.875rem; 
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08); 
+            overflow: hidden; 
+            transition: all 0.3s; 
+            border: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .product-card:hover { 
+            transform: translateY(-4px); 
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12); 
+        }
+        
+        .product-image { 
+            height: 180px; 
+            background: linear-gradient(135deg, var(--primary), var(--primary-light)); 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            color: white; 
+            font-size: 3.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .product-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s;
+        }
+        
+        .product-card:hover .product-image img {
+            transform: scale(1.05);
+        }
+        
+        .product-content { 
+            padding: 1.25rem;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .product-name { 
+            font-size: 1.1rem; 
+            font-weight: 700; 
+            color: var(--text-primary); 
+            margin-bottom: 0.5rem;
+            line-height: 1.3;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        
+        .product-description {
+            color: var(--text-secondary); 
+            margin-bottom: 0.875rem; 
+            line-height: 1.5;
+            font-size: 0.85rem;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            flex: 1;
+        }
+        
+        .product-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        
+        .product-price { 
+            font-size: 1.25rem; 
+            font-weight: 800; 
+            color: var(--primary);
+        }
+        
+        .product-status { 
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            padding: 0.2rem 0.6rem; 
+            border-radius: 0.4rem; 
+            font-size: 0.75rem; 
+            font-weight: 600;
+        }
+        
+        .status-available { background: #d1fae5; color: var(--primary-dark); }
+        .status-sold { background: #fee2e2; color: #991b1b; }
+        
+        .product-actions { 
+            display: flex; 
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+        
+        .product-actions .btn {
+            flex: 1;
+            justify-content: center;
+            min-width: 80px;
+        }
+        
+        .product-actions form {
+            flex: 1;
+            display: flex;
+        }
+        
+        .product-actions form .btn {
+            width: 100%;
+        }
+        
+        /* Empty State */
+        .empty-state {
+            grid-column: 1 / -1; 
+            text-align: center; 
+            padding: 3rem 2rem; 
+            background: var(--bg-card); 
+            border-radius: 1rem; 
+            border: 2px dashed var(--border);
+        }
+        
+        .empty-state i {
+            font-size: 3.5rem; 
+            color: var(--text-muted); 
+            margin-bottom: 1rem;
+        }
+        
+        .empty-state h3 {
+            color: var(--text-primary); 
+            margin-bottom: 0.5rem;
+            font-size: 1.25rem;
+        }
+        
+        .empty-state p {
+            color: var(--text-secondary); 
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+        }
+        
+        /* Responsive Breakpoints */
+        @media (max-width: 1024px) {
+            :root { --sidebar-width: 240px; }
+            .products-grid { grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); }
+        }
+        
+        @media (max-width: 768px) {
+            .mobile-menu-toggle { display: block; }
+            
+            .sidebar { 
+                transform: translateX(-100%);
+                width: 280px;
+            }
+            
+            .sidebar.active { transform: translateX(0); }
+            
+            .main-content { 
+                margin-left: 0;
+                width: 100%;
+            }
+            
+            .topbar {
+                padding: 1rem;
+                padding-left: 4rem;
+            }
+            
+            .topbar-left h1 { font-size: 1.25rem; }
+            .topbar-left p { font-size: 0.8rem; }
+            
+            .content { padding: 1rem; }
+            
+            .products-grid { 
+                grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+                gap: 1rem;
+            }
+            
+            .product-image { height: 160px; }
+            .product-content { padding: 1rem; }
+            .product-name { font-size: 1rem; }
+            .product-price { font-size: 1.1rem; }
+        }
+        
+        @media (max-width: 480px) {
+            .topbar {
+                flex-direction: column;
+                align-items: flex-start;
+                padding: 1rem;
+                padding-left: 3.5rem;
+            }
+            
+            .topbar .btn-primary {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .products-grid { 
+                grid-template-columns: 1fr;
+            }
+            
+            .product-card {
+                max-width: 100%;
+            }
+            
+            .product-image { height: 200px; }
+            
+            .product-actions {
+                flex-direction: row;
+            }
+            
+            .btn-sm {
+                padding: 0.5rem 0.6rem;
+                font-size: 0.75rem;
+            }
+            
+            .empty-state {
+                padding: 2rem 1rem;
+            }
+            
+            .empty-state i { font-size: 3rem; }
+            .empty-state h3 { font-size: 1.1rem; }
+        }
+        
+        /* Scrollbar Styling */
+        .sidebar::-webkit-scrollbar,
+        .content::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .sidebar::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.1);
+        }
+        
+        .sidebar::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.3);
+            border-radius: 3px;
+        }
+        
+        .content::-webkit-scrollbar-track {
+            background: var(--bg-main);
+        }
+        
+        .content::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Mobile Menu Toggle -->
+    <button class="mobile-menu-toggle" onclick="toggleSidebar()">
+        <i class="fas fa-bars"></i>
+    </button>
+    
+    <!-- Sidebar Overlay -->
+    <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
+    
+    <aside class="sidebar">
+        <div class="sidebar-logo">
+            <h2>
+                <img src="/uploads/logo.jpg" alt="HeritageLink" style="width: 36px; height: 36px; object-fit: contain; border-radius: 6px;">
+                HeritageLink 
+                <span class="badge">Artisan</span>
+            </h2>
+        </div>
+        <ul class="sidebar-menu">
+            <li class="menu-item"><a href="/artisan/dashboard" class="menu-link"><i class="fas fa-th-large"></i><span>Dashboard</span></a></li>
+            <li class="menu-item"><a href="/artisan/products" class="menu-link active"><i class="fas fa-box"></i><span>My Products</span></a></li>
+            <li class="menu-item"><a href="/artisan/orders" class="menu-link"><i class="fas fa-shopping-cart"></i><span>Orders</span></a></li>
+            <li class="menu-item"><a href="/artisan/messages" class="menu-link"><i class="fas fa-envelope"></i><span>Messages</span></a></li>
+            <li class="menu-item"><a href="/artisan/portfolio" class="menu-link"><i class="fas fa-images"></i><span>Portfolio</span></a></li>
+            <li class="menu-item"><a href="/artisan/workshops" class="menu-link"><i class="fas fa-calendar-check"></i><span>Workshops</span></a></li>
+            <li class="menu-item"><a href="/artisan/profile" class="menu-link"><i class="fas fa-user-circle"></i><span>My Profile</span></a></li>
+            <li class="menu-item"><a href="/" class="menu-link"><i class="fas fa-home"></i><span>Home</span></a></li>
+            <li class="menu-item"><a href="/logout" class="menu-link"><i class="fas fa-sign-out-alt"></i><span>Logout</span></a></li>
+        </ul>
+    </aside>
+
+    <main class="main-content">
+        <div class="topbar">
+            <div class="topbar-left">
+                <h1>My Products</h1>
+                <p>Manage your craft listings and inventory</p>
+            </div>
+            <a href="/artisan/products/add" class="btn btn-primary"><i class="fas fa-plus"></i> Add Product</a>
+        </div>
+
+        <div class="content">
+            <% if (typeof success !== 'undefined' && success) { %>
+                <div class="alert alert-success"><i class="fas fa-check-circle"></i> <%= success %></div>
+            <% } %>
+            <% if (typeof error !== 'undefined' && error) { %>
+                <div class="alert alert-error"><i class="fas fa-exclamation-circle"></i> <%= error %></div>
+            <% } %>
+
+            <div class="products-grid">
+                <% if (products && products.length > 0) { %>
+                    <% products.forEach(product => { %>
+                        <div class="product-card">
+                            <div class="product-image">
+                                <% if (product.product_image) { %>
+                                    <img src="/<%= product.product_image %>" alt="<%= product.name %>">
+                                <% } else { %>
+                                    <i class="fas fa-box-open"></i>
+                                <% } %>
+                            </div>
+                            <div class="product-content">
+                                <h3 class="product-name"><%= product.name || product.title %></h3>
+                                <p class="product-description"><%= product.description ? product.description.substring(0, 100) + '...' : 'No description' %></p>
+                                <div class="product-meta">
+                                    <div class="product-price">₱<%= product.price ? parseFloat(product.price).toLocaleString('en-PH', {minimumFractionDigits: 2, maximumFractionDigits: 2}) : '0.00' %></div>
+                                    <span class="product-status <%= product.status === 'available' ? 'status-available' : 'status-sold' %>">
+                                        <i class="fas <%= product.status === 'available' ? 'fa-check' : 'fa-times' %>"></i> 
+                                        <%= product.status || 'Available' %>
+                                    </span>
+                                </div>
+                                <div class="product-actions">
+                                    <a href="/artisan/products/edit/<%= product.id %>" class="btn btn-edit btn-sm"><i class="fas fa-edit"></i> Edit</a>
+                                    <form action="/artisan/products/<%= product.id %>/delete" method="POST">
+                                        <button type="submit" class="btn btn-delete btn-sm" onclick="return confirm('Delete this product?')"><i class="fas fa-trash"></i> Delete</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    <% }); %>
+                <% } else { %>
+                    <div class="empty-state">
+                        <i class="fas fa-box"></i>
+                        <h3>No products yet</h3>
+                        <p>Start showcasing your crafts by adding your first product.</p>
+                        <a href="/artisan/products/add" class="btn btn-primary"><i class="fas fa-plus"></i> Add First Product</a>
+                    </div>
+                <% } %>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        function toggleSidebar() {
+            document.querySelector('.sidebar').classList.toggle('active');
+            document.querySelector('.sidebar-overlay').classList.toggle('active');
+        }
+        
+        // Close sidebar when clicking a menu link on mobile
+        document.querySelectorAll('.menu-link').forEach(link => {
+            link.addEventListener('click', () => {
+                if (window.innerWidth <= 768) {
+                    document.querySelector('.sidebar').classList.remove('active');
+                    document.querySelector('.sidebar-overlay').classList.remove('active');
+                }
+            });
+        });
+        
+        // Close sidebar on window resize if larger than mobile
+        window.addEventListener('resize', () => {
+            if (window.innerWidth > 768) {
+                document.querySelector('.sidebar').classList.remove('active');
+                document.querySelector('.sidebar-overlay').classList.remove('active');
+            }
+        });
+    </script>
+</body>
+</html>

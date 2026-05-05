@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orders - HeritageLink</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --ocean-blue: #0077B6; --turquoise: #00B4D8; --palm-green: #2D6A4F;
+            --primary: #0077B6; --primary-dark: #005a8c; --primary-light: #00B4D8;
+            --accent: #D4AF37; --accent-dark: #B8941E;
+            --bg-main: #f8faf9; --bg-card: #ffffff;
+            --text-primary: #064e3b; --text-secondary: #6b7280; --text-muted: #9ca3af;
+            --border: #d1fae5; --sidebar-bg: #005a8c; --sidebar-hover: #004a73;
+            --sidebar-width: 260px;
+            --gradient-gold: linear-gradient(135deg, #D4AF37 0%, #FFD700 100%);
+        }
+        
+        html, body { 
+            height: 100%; 
+            overflow-x: clip;
+        }
+        
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background: var(--bg-main); 
+            color: var(--text-primary);
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        /* Sidebar */
+        .sidebar { 
+            position: fixed; 
+            left: 0; 
+            top: 0; 
+            height: 100vh; 
+            width: var(--sidebar-width); 
+            background: var(--sidebar-bg); 
+            padding: 1.5rem 0; 
+            z-index: 1000; 
+            box-shadow: 4px 0 15px rgba(0,0,0,0.15);
+            transition: transform 0.3s ease;
+            overflow-y: auto;
+        }
+        
+        .sidebar-logo { 
+            padding: 0 1.25rem 1.5rem; 
+            border-bottom: 1px solid rgba(255,255,255,0.1); 
+            margin-bottom: 1.5rem; 
+        }
+        
+        .sidebar-logo h2 { 
+            color: white; 
+            font-size: 1.25rem; 
+            font-weight: 700; 
+            display: flex; 
+            align-items: center; 
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+        
+        .sidebar-logo .badge { 
+            background: linear-gradient(135deg, var(--accent), var(--accent-dark)); 
+            color: white; 
+            padding: 0.2rem 0.6rem; 
+            border-radius: 1rem; 
+            font-size: 0.7rem; 
+            font-weight: 600; 
+        }
+        
+        .sidebar-menu { list-style: none; }
+        .menu-item { margin: 0.2rem 0.75rem; }
+        
+        .menu-link { 
+            display: flex; 
+            align-items: center; 
+            gap: 0.75rem; 
+            padding: 0.75rem 1rem; 
+            color: #d1fae5; 
+            text-decoration: none; 
+            border-radius: 0.6rem; 
+            transition: all 0.2s; 
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+        
+        .menu-link:hover, .menu-link.active { 
+            background: var(--sidebar-hover); 
+            color: white; 
+        }
+        
+        .menu-link i { width: 20px; text-align: center; font-size: 0.95rem; }
+        
+        /* Main Content */
+        .main-content { 
+            margin-left: var(--sidebar-width); 
+            flex: 1;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            width: calc(100% - var(--sidebar-width));
+        }
+        
+        /* Mobile Menu Toggle */
+        .mobile-menu-toggle {
+            display: none;
+            position: fixed;
+            top: 1rem;
+            left: 1rem;
+            z-index: 1001;
+            background: var(--sidebar-bg);
+            color: white;
+            border: none;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+        
+        .mobile-menu-toggle i { font-size: 1.25rem; }
+        
+        /* Overlay */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+        }
+        
+        .sidebar-overlay.active { display: block; }
+        
+        /* Topbar */
+        .topbar { 
+            background: var(--bg-card); 
+            padding: 1.25rem 1.5rem; 
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1); 
+            border-bottom: 3px solid var(--accent);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        
+        .topbar-left h1 { 
+            font-size: 1.5rem; 
+            font-weight: 700; 
+            background: linear-gradient(135deg, var(--primary), var(--primary-light)); 
+            -webkit-background-clip: text; 
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .topbar-left p { 
+            color: var(--text-secondary); 
+            margin-top: 0.25rem;
+            font-size: 0.875rem;
+        }
+        
+        /* Stats Summary */
+        .stats-bar {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+        
+        .stat-badge {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: var(--bg-main);
+            border-radius: 0.5rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        
+        .stat-badge.pending { color: #92400e; background: #fef3c7; }
+        .stat-badge.processing { color: #1e40af; background: #dbeafe; }
+        .stat-badge.completed { color: var(--primary-dark); background: #d1fae5; }
+        
+        /* Content Area */
+        .content { 
+            padding: 1.5rem; 
+            flex: 1;
+            overflow-y: auto;
+        }
+        
+        /* Filter Bar */
+        .filter-bar {
+            display: flex;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+        
+        .filter-btn {
+            padding: 0.5rem 1rem;
+            border: 2px solid var(--border);
+            background: var(--bg-card);
+            border-radius: 0.5rem;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .filter-btn:hover, .filter-btn.active {
+            border-color: var(--primary);
+            color: var(--primary);
+            background: #d1fae5;
+        }
+        
+        /* Orders Grid */
+        .orders-grid { 
+            display: grid; 
+            gap: 1.25rem;
+        }
+        
+        .order-card { 
+            background: var(--bg-card); 
+            border-radius: 0.875rem; 
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08); 
+            padding: 1.25rem; 
+            border: 1px solid var(--border); 
+            transition: all 0.3s;
+        }
+        
+        .order-card:hover { 
+            transform: translateY(-2px); 
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12); 
+        }
+        
+        .order-header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            margin-bottom: 1rem; 
+            padding-bottom: 1rem; 
+            border-bottom: 1px solid var(--border);
+            flex-wrap: wrap;
+            gap: 0.75rem;
+        }
+        
+        .order-id { 
+            font-size: 1.1rem; 
+            font-weight: 700; 
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .order-id i {
+            color: var(--primary);
+        }
+        
+        .order-status { 
+            padding: 0.4rem 0.875rem; 
+            border-radius: 0.5rem; 
+            font-size: 0.75rem; 
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .status-pending { background: #fef3c7; color: #92400e; }
+        .status-processing { background: #dbeafe; color: #1e40af; }
+        .status-completed { background: #d1fae5; color: var(--primary-dark); }
+        .status-cancelled { background: #fee2e2; color: #991b1b; }
+        
+        .order-details { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); 
+            gap: 1rem; 
+            margin-bottom: 1rem;
+        }
+        
+        .detail-item { 
+            display: flex; 
+            flex-direction: column; 
+            gap: 0.25rem;
+        }
+        
+        .detail-label { 
+            color: var(--text-secondary); 
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+        
+        .detail-label i {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+        
+        .detail-value { 
+            color: var(--text-primary); 
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+        
+        .detail-value.price {
+            color: var(--primary);
+            font-size: 1.1rem;
+        }
+        
+        .order-items { 
+            background: var(--bg-main); 
+            padding: 1rem; 
+            border-radius: 0.6rem; 
+            margin-bottom: 1rem;
+        }
+        
+        .order-items-header {
+            color: var(--text-primary); 
+            font-weight: 600;
+            font-size: 0.85rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .order-item { 
+            display: flex; 
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0;
+            font-size: 0.9rem;
+            border-bottom: 1px dashed var(--border);
+        }
+        
+        .order-item:last-child {
+            border-bottom: none;
+        }
+        
+        .order-item-name {
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+        
+        .order-item-qty {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+        
+        .order-actions { 
+            display: flex; 
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+        
+        /* Buttons */
+        .btn { 
+            display: inline-flex; 
+            align-items: center; 
+            gap: 0.4rem; 
+            padding: 0.5rem 1rem; 
+            border-radius: 0.5rem; 
+            text-decoration: none; 
+            font-weight: 600; 
+            font-size: 0.8rem; 
+            transition: all 0.2s; 
+            border: none; 
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        
+        .btn-primary { 
+            background: linear-gradient(135deg, var(--accent), var(--accent-dark)); 
+            color: white;
+        }
+        
+        .btn-success { 
+            background: var(--primary); 
+            color: white;
+        }
+        
+        .btn-info {
+            background: var(--bg-main);
+            color: var(--primary);
+            border: 2px solid var(--primary);
+        }
+        
+        .btn-danger { 
+            background: #fee2e2;
+            color: #991b1b;
+            border: 2px solid #fecaca;
+        }
+        
+        .btn:hover { 
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        .btn-success:hover { background: var(--primary-dark); }
+        .btn-info:hover { background: var(--primary); color: white; }
+        .btn-danger:hover { background: #991b1b; color: white; }
+        
+        /* Empty State */
+        .empty-state { 
+            text-align: center; 
+            padding: 3rem 2rem; 
+            background: var(--bg-card); 
+            border-radius: 1rem; 
+            border: 2px dashed var(--border);
+        }
+        
+        .empty-state i {
+            font-size: 3.5rem; 
+            color: var(--text-muted); 
+            margin-bottom: 1rem;
+        }
+        
+        .empty-state h3 {
+            color: var(--text-primary); 
+            margin-bottom: 0.5rem;
+            font-size: 1.25rem;
+        }
+        
+        .empty-state p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+        
+        /* Responsive Breakpoints */
+        @media (max-width: 1024px) {
+            :root { --sidebar-width: 240px; }
+            
+            .order-details {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .mobile-menu-toggle { display: block; }
+            
+            .sidebar { 
+                transform: translateX(-100%);
+                width: 280px;
+            }
+            
+            .sidebar.active { transform: translateX(0); }
+            
+            .main-content { 
+                margin-left: 0;
+                width: 100%;
+            }
+            
+            .topbar {
+                padding: 1rem;
+                padding-left: 4rem;
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .topbar-left h1 { font-size: 1.25rem; }
+            .topbar-left p { font-size: 0.8rem; }
+            
+            .stats-bar {
+                width: 100%;
+            }
+            
+            .stat-badge {
+                flex: 1;
+                justify-content: center;
+                min-width: 80px;
+            }
+            
+            .content { padding: 1rem; }
+            
+            .filter-bar {
+                overflow-x: auto;
+                flex-wrap: nowrap;
+                padding-bottom: 0.5rem;
+                -webkit-overflow-scrolling: touch;
+            }
+            
+            .filter-btn {
+                flex-shrink: 0;
+            }
+            
+            .order-card {
+                padding: 1rem;
+            }
+            
+            .order-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .order-details {
+                grid-template-columns: 1fr 1fr;
+                gap: 0.75rem;
+            }
+            
+            .order-actions {
+                width: 100%;
+            }
+            
+            .order-actions .btn {
+                flex: 1;
+                justify-content: center;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .topbar {
+                padding-left: 3.5rem;
+            }
+            
+            .stats-bar {
+                flex-direction: column;
+            }
+            
+            .stat-badge {
+                width: 100%;
+            }
+            
+            .order-id {
+                font-size: 1rem;
+            }
+            
+            .order-details {
+                grid-template-columns: 1fr;
+            }
+            
+            .order-actions {
+                flex-direction: column;
+            }
+            
+            .order-actions .btn {
+                width: 100%;
+            }
+            
+            .empty-state {
+                padding: 2rem 1rem;
+            }
+            
+            .empty-state i { font-size: 3rem; }
+        }
+        
+        /* Scrollbar Styling */
+        .sidebar::-webkit-scrollbar,
+        .content::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .sidebar::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.1);
+        }
+        
+        .sidebar::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.3);
+            border-radius: 3px;
+        }
+        
+        .content::-webkit-scrollbar-track {
+            background: var(--bg-main);
+        }
+        
+        .content::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 3px;
+        }
+        
+        .filter-bar::-webkit-scrollbar {
+            height: 4px;
+        }
+        
+        .filter-bar::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 2px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Mobile Menu Toggle -->
+    <button class="mobile-menu-toggle" onclick="toggleSidebar()">
+        <i class="fas fa-bars"></i>
+    </button>
+    
+    <!-- Sidebar Overlay -->
+    <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
+    
+    <aside class="sidebar">
+        <div class="sidebar-logo">
+            <h2>
+                <img src="/uploads/logo.jpg" alt="HeritageLink" style="width: 36px; height: 36px; object-fit: contain; border-radius: 6px;">
+                HeritageLink 
+                <span class="badge">Artisan</span>
+            </h2>
+        </div>
+        <ul class="sidebar-menu">
+            <li class="menu-item"><a href="/artisan/dashboard" class="menu-link"><i class="fas fa-th-large"></i><span>Dashboard</span></a></li>
+            <li class="menu-item"><a href="/artisan/products" class="menu-link"><i class="fas fa-box"></i><span>My Products</span></a></li>
+            <li class="menu-item"><a href="/artisan/orders" class="menu-link active"><i class="fas fa-shopping-cart"></i><span>Orders</span></a></li>
+            <li class="menu-item"><a href="/artisan/messages" class="menu-link"><i class="fas fa-envelope"></i><span>Messages</span></a></li>
+            <li class="menu-item"><a href="/artisan/portfolio" class="menu-link"><i class="fas fa-images"></i><span>Portfolio</span></a></li>
+            <li class="menu-item"><a href="/artisan/workshops" class="menu-link"><i class="fas fa-calendar-check"></i><span>Workshops</span></a></li>
+            <li class="menu-item"><a href="/artisan/profile" class="menu-link"><i class="fas fa-user-circle"></i><span>My Profile</span></a></li>
+            <li class="menu-item"><a href="/" class="menu-link"><i class="fas fa-home"></i><span>Home</span></a></li>
+            <li class="menu-item"><a href="/logout" class="menu-link"><i class="fas fa-sign-out-alt"></i><span>Logout</span></a></li>
+        </ul>
+    </aside>
+
+    <main class="main-content">
+        <div class="topbar">
+            <div class="topbar-left">
+                <h1>Orders & Commissions</h1>
+                <p>Manage customer orders and track commissions</p>
+            </div>
+            <div class="stats-bar">
+                <% 
+                    const pendingCount = orders ? orders.filter(o => o.status === 'pending').length : 0;
+                    const processingCount = orders ? orders.filter(o => o.status === 'processing').length : 0;
+                    const completedCount = orders ? orders.filter(o => o.status === 'completed').length : 0;
+                %>
+                <span class="stat-badge pending"><i class="fas fa-clock"></i> <%= pendingCount %> Pending</span>
+                <span class="stat-badge processing"><i class="fas fa-spinner"></i> <%= processingCount %> Processing</span>
+                <span class="stat-badge completed"><i class="fas fa-check"></i> <%= completedCount %> Completed</span>
+            </div>
+        </div>
+
+        <div class="content">
+            <!-- Filter Bar -->
+            <div class="filter-bar">
+                <button class="filter-btn active" onclick="filterOrders('all')">All Orders</button>
+                <button class="filter-btn" onclick="filterOrders('pending')">Pending</button>
+                <button class="filter-btn" onclick="filterOrders('processing')">Processing</button>
+                <button class="filter-btn" onclick="filterOrders('completed')">Completed</button>
+                <button class="filter-btn" onclick="filterOrders('cancelled')">Cancelled</button>
+            </div>
+            
+            <div class="orders-grid">
+                <% if (orders && orders.length > 0) { %>
+                    <% orders.forEach(order => { %>
+                        <div class="order-card" data-status="<%= order.status || 'pending' %>">
+                            <div class="order-header">
+                                <div class="order-id"><i class="fas fa-receipt"></i> Order #<%= order.id %></div>
+                                <span class="order-status status-<%= order.status || 'pending' %>">
+                                    <%= (order.status || 'pending').toUpperCase() %>
+                                </span>
+                            </div>
+                            <div class="order-details">
+                                <div class="detail-item">
+                                    <span class="detail-label"><i class="fas fa-user"></i> Customer</span>
+                                    <span class="detail-value"><%= order.customer_name || 'N/A' %></span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label"><i class="fas fa-calendar"></i> Order Date</span>
+                                    <span class="detail-value"><%= new Date(order.created_at).toLocaleDateString() %></span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label"><i class="fas fa-money-bill-wave"></i> Total Amount</span>
+                                    <span class="detail-value price">₱<%= order.total_amount ? parseFloat(order.total_amount).toLocaleString('en-PH', {minimumFractionDigits: 2}) : '0.00' %></span>
+                                </div>
+                            </div>
+                            <div class="order-items">
+                                <div class="order-items-header"><i class="fas fa-box"></i> Items</div>
+                                <div class="order-item">
+                                    <span class="order-item-name"><%= order.product_name || 'Product' %></span>
+                                    <span class="order-item-qty">Qty: <%= order.quantity || 1 %></span>
+                                </div>
+                            </div>
+                            <div class="order-actions">
+                                <% if (order.status === 'pending') { %>
+                                    <button class="btn btn-success" onclick="updateStatus(<%= order.id %>, 'processing')">
+                                        <i class="fas fa-check"></i> Approve
+                                    </button>
+                                <% } else if (order.status === 'processing') { %>
+                                    <button class="btn btn-success" onclick="updateStatus(<%= order.id %>, 'completed')">
+                                        <i class="fas fa-check-double"></i> Mark Completed
+                                    </button>
+                                <% } %>
+                                <button class="btn btn-info">
+                                    <i class="fas fa-eye"></i> View
+                                </button>
+                                <% if (order.status !== 'cancelled' && order.status !== 'completed') { %>
+                                    <button class="btn btn-danger" onclick="updateStatus(<%= order.id %>, 'cancelled')">
+                                        <i class="fas fa-times"></i> Cancel
+                                    </button>
+                                <% } %>
+                            </div>
+                        </div>
+                    <% }); %>
+                <% } else { %>
+                    <div class="empty-state">
+                        <i class="fas fa-shopping-cart"></i>
+                        <h3>No orders yet</h3>
+                        <p>Orders from customers will appear here.</p>
+                    </div>
+                <% } %>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        function toggleSidebar() {
+            document.querySelector('.sidebar').classList.toggle('active');
+            document.querySelector('.sidebar-overlay').classList.toggle('active');
+        }
+        
+        // Close sidebar when clicking a menu link on mobile
+        document.querySelectorAll('.menu-link').forEach(link => {
+            link.addEventListener('click', () => {
+                if (window.innerWidth <= 768) {
+                    document.querySelector('.sidebar').classList.remove('active');
+                    document.querySelector('.sidebar-overlay').classList.remove('active');
+                }
+            });
+        });
+        
+        // Close sidebar on window resize if larger than mobile
+        window.addEventListener('resize', () => {
+            if (window.innerWidth > 768) {
+                document.querySelector('.sidebar').classList.remove('active');
+                document.querySelector('.sidebar-overlay').classList.remove('active');
+            }
+        });
+        
+        // Filter orders
+        function filterOrders(status) {
+            const cards = document.querySelectorAll('.order-card');
+            const buttons = document.querySelectorAll('.filter-btn');
+            
+            buttons.forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            cards.forEach(card => {
+                if (status === 'all' || card.dataset.status === status) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+        
+        // Update order status (placeholder - implement actual API call)
+        async function updateStatus(orderId, status) {
+            if (confirm(`Are you sure you want to mark this order as ${status}?`)) {
+                try {
+                    const res = await fetch(`/api/orders/${orderId}/status`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ status })
+                    });
+                    const data = await res.json();
+                    if (data.success) {
+                        window.location.reload();
+                    } else {
+                        alert(data.message || 'Failed to update status');
+                    }
+                } catch (err) {
+                    console.error('Update status error:', err);
+                    alert('Error updating status');
+                }
+            }
+        }
+    </script>
+</body>
+</html>

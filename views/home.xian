@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;800;900&family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/heritagelink-unified.css">
+    <style>
+        /* Ensure content is above background */
+        .navbar, .hero, .features, .footer {
+            position: relative;
+            z-index: 1;
+        }
+        
+        /* Remove underlines from all links */
+        a {
+            text-decoration: none;
+        }
+        
+        .hero {
+            background: 
+                linear-gradient(135deg, rgba(0, 119, 182, 0.85) 0%, rgba(0, 180, 216, 0.75) 50%, rgba(45, 106, 79, 0.85) 100%),
+                url('/uploads/festival-bg.jpg') center/cover no-repeat;
+            color: white;
+            padding: 5rem 2rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            min-height: 500px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #D4AF37, #FFD700, #FFC107, #FFD700, #D4AF37);
+            z-index: 2;
+        }
+        
+        .hero::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 200px;
+            background: linear-gradient(to bottom, 
+                transparent 0%,
+                rgba(224, 242, 241, 0.2) 20%,
+                rgba(232, 245, 233, 0.3) 35%,
+                rgba(255, 248, 225, 0.5) 50%,
+                rgba(255, 245, 230, 0.7) 65%,
+                rgba(250, 240, 220, 0.85) 80%,
+                #F5F0E8 100%
+            );
+            z-index: 1;
+        }
+        
+        .hero-content {
+            max-width: 900px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .hero-title {
+            font-size: 4rem;
+            font-weight: 900;
+            margin-bottom: 1.5rem;
+            line-height: 1.1;
+            font-family: 'Playfair Display', serif;
+            color: #FFFFFF;
+            text-shadow: 
+                0 3px 10px rgba(0, 0, 0, 0.5),
+                0 1px 3px rgba(0, 0, 0, 0.3);
+            letter-spacing: -0.02em;
+            animation: fadeInUp 0.8s ease-out;
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .hero-subtitle {
+            font-size: 1.75rem;
+            margin-bottom: 2.5rem;
+            color: #FFFFFF;
+            font-weight: 500;
+            text-shadow: 
+                0 2px 8px rgba(0, 0, 0, 0.5),
+                0 1px 3px rgba(0, 0, 0, 0.3);
+            font-family: 'Poppins', sans-serif;
+            letter-spacing: 0.02em;
+            line-height: 1.4;
+            animation: fadeInUp 0.8s ease-out 0.2s backwards;
+        }
+        
+        .hero-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            animation: fadeInUp 0.8s ease-out 0.4s backwards;
+        }
+        
+        .features {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 4rem 2rem;
+            position: relative;
+        }
+        
+        /* Decorative corner elements */
+        .features::before {
+            content: '🌊';
+            position: absolute;
+            top: 1.5rem;
+            right: 3%;
+            font-size: 4rem;
+            opacity: 0.12;
+            transform: rotate(-15deg);
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        .features::after {
+            content: '🏝️';
+            position: absolute;
+            bottom: 1.5rem;
+            left: 3%;
+            font-size: 4rem;
+            opacity: 0.12;
+            transform: rotate(15deg);
+            animation: float 8s ease-in-out infinite reverse;
+        }
+        
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0) rotate(-15deg);
+            }
+            50% {
+                transform: translateY(-20px) rotate(-10deg);
+            }
+        }
+        
+        .section-title {
+            text-align: center;
+            font-size: 3.25rem;
+            font-weight: 800;
+            margin-bottom: 3.5rem;
+            color: #0077B6;
+            font-family: 'Playfair Display', serif;
+            position: relative;
+            padding-bottom: 1.5rem;
+            letter-spacing: -0.01em;
+            line-height: 1.2;
+            text-transform: none;
+            background: linear-gradient(135deg, #0077B6 0%, #00B4D8 50%, #0077B6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: fadeInScale 0.8s ease-out;
+        }
+        
+        @keyframes fadeInScale {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+        
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 2px;
+            background: linear-gradient(90deg, 
+                transparent 0%, 
+                rgba(212, 175, 55, 0.3) 30%,
+                rgba(255, 215, 0, 0.5) 50%,
+                rgba(212, 175, 55, 0.3) 70%,
+                transparent 100%
+            );
+            border-radius: 2px;
+        }
+        
+        .section-title::before {
+            content: '✦';
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: rgba(255, 193, 7, 0.5);
+            font-size: 0.875rem;
+            opacity: 0.5;
+        }
+        
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+        
+        .action-card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.98) 100%);
+            padding: 2.5rem;
+            border-radius: 1.25rem;
+            box-shadow: 
+                0 4px 15px rgba(0, 119, 182, 0.08),
+                0 1px 3px rgba(0, 0, 0, 0.05);
+            text-align: center;
+            border: 1px solid rgba(0, 180, 216, 0.15);
+            border-left: 5px solid #00B4D8;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+        }
+        
+        /* Discover Sites Card - Beach/Destination Image */
+        .action-card:nth-child(1) {
+            background: 
+                /* Gradient overlay for readability */
+                linear-gradient(135deg, rgba(0, 119, 182, 0.75) 0%, rgba(0, 180, 216, 0.70) 100%),
+                /* Tourism destination/beach image - Philippines beach/heritage site */
+                url('https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=800&q=80') center/cover no-repeat,
+                /* Fallback with natural scene */
+                radial-gradient(ellipse 100px 40px at 50% 100%, rgba(0, 180, 216, 0.15) 0%, transparent 50%),
+                linear-gradient(to bottom, rgba(179, 229, 252, 0.2) 0%, rgba(224, 247, 250, 0.15) 40%, rgba(244, 225, 193, 0.1) 100%),
+                linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(240, 249, 255, 0.98) 100%);
+            border-left-color: #0077B6;
+        }
+        
+        .action-card:nth-child(1) .action-title,
+        .action-card:nth-child(1) .action-description {
+            color: white;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+        }
+        
+        .action-card:nth-child(1):hover {
+            background: 
+                linear-gradient(135deg, rgba(255, 107, 107, 0.75) 0%, rgba(255, 179, 71, 0.70) 100%),
+                url('https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=800&q=80') center/cover no-repeat;
+        }
+        
+        /* Events Card - Festival/Cultural Event Image */
+        .action-card:nth-child(2) {
+            background: 
+                /* Gradient overlay for readability */
+                linear-gradient(135deg, rgba(255, 107, 107, 0.75) 0%, rgba(255, 179, 71, 0.70) 100%),
+                /* Festival/cultural celebration image */
+                url('https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?w=800&q=80') center/cover no-repeat,
+                /* Fallback with sunset scene */
+                radial-gradient(ellipse 150px 60px at 20% 30%, rgba(255, 107, 107, 0.12) 0%, transparent 60%),
+                linear-gradient(to bottom, rgba(255, 179, 71, 0.15) 0%, rgba(255, 193, 115, 0.12) 50%, rgba(255, 107, 107, 0.08) 100%),
+                linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 250, 240, 0.98) 100%);
+            border-left-color: #FF6B6B;
+        }
+        
+        .action-card:nth-child(2) .action-title,
+        .action-card:nth-child(2) .action-description {
+            color: white;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+        }
+        
+        .action-card:nth-child(2):hover {
+            background: 
+                linear-gradient(135deg, rgba(255, 179, 71, 0.80) 0%, rgba(255, 107, 107, 0.75) 100%),
+                url('https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?w=800&q=80') center/cover no-repeat;
+        }
+        
+        /* Meet Artisans Card - Traditional Craft/Artisan Work Image */
+        .action-card:nth-child(3) {
+            background: 
+                /* Gradient overlay for readability */
+                linear-gradient(135deg, rgba(124, 58, 237, 0.75) 0%, rgba(168, 85, 247, 0.70) 100%),
+                /* Artisan weaving/crafting traditional textiles */
+                url('https://images.unsplash.com/photo-1610701596007-11502861dcfa?w=800&q=80') center/cover no-repeat,
+                /* Fallback with mountain scene */
+                linear-gradient(135deg, transparent 0%, transparent 45%, rgba(124, 58, 237, 0.08) 45%, rgba(124, 58, 237, 0.08) 48%, transparent 48%),
+                linear-gradient(to bottom, rgba(168, 85, 247, 0.12) 0%, rgba(192, 132, 252, 0.08) 60%, rgba(250, 245, 255, 0.15) 100%),
+                linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(250, 245, 255, 0.98) 100%);
+            border-left-color: #7c3aed;
+        }
+        
+        .action-card:nth-child(3) .action-title,
+        .action-card:nth-child(3) .action-description {
+            color: white;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+        }
+        
+        .action-card:nth-child(3):hover {
+            background: 
+                linear-gradient(135deg, rgba(168, 85, 247, 0.80) 0%, rgba(139, 92, 246, 0.75) 100%),
+                url('https://images.unsplash.com/photo-1610701596007-11502861dcfa?w=800&q=80') center/cover no-repeat;
+        }
+        
+        /* Workshops Card - Hands-on Learning/Workshop Activity Image */
+        .action-card:nth-child(4) {
+            background: 
+                /* Gradient overlay for readability */
+                linear-gradient(135deg, rgba(45, 106, 79, 0.75) 0%, rgba(34, 197, 94, 0.70) 100%),
+                /* Traditional craft workshop/hands-on learning */
+                url('https://images.unsplash.com/photo-1528698827591-e19ccd7bc23d?w=800&q=80') center/cover no-repeat,
+                /* Fallback with forest scene */
+                radial-gradient(ellipse 40px 80px at 15% 100%, rgba(45, 106, 79, 0.12) 0%, transparent 50%),
+                linear-gradient(to bottom, rgba(200, 230, 201, 0.2) 0%, rgba(240, 253, 244, 0.15) 100%),
+                linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(240, 253, 244, 0.98) 100%);
+            border-left-color: #2D6A4F;
+        }
+        
+        .action-card:nth-child(4) .action-title,
+        .action-card:nth-child(4) .action-description {
+            color: white;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+        }
+        
+        .action-card:nth-child(4):hover {
+            background: 
+                linear-gradient(135deg, rgba(34, 197, 94, 0.80) 0%, rgba(45, 106, 79, 0.75) 100%),
+                url('https://images.unsplash.com/photo-1528698827591-e19ccd7bc23d?w=800&q=80') center/cover no-repeat;
+        }
+        
+        .action-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle, rgba(0, 180, 216, 0.12) 0%, transparent 70%);
+            border-radius: 50%;
+            transition: all 0.4s ease;
+        }
+        
+        .action-card::after {
+            content: '✨';
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            font-size: 1.5rem;
+            opacity: 0;
+            transform: scale(0) rotate(-45deg);
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        
+        .action-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 
+                0 20px 40px rgba(0, 119, 182, 0.15),
+                0 8px 16px rgba(0, 180, 216, 0.1),
+                0 0 0 1px rgba(0, 180, 216, 0.2);
+            border-left-color: #FF6B6B;
+            border-color: rgba(255, 107, 107, 0.3);
+            background: linear-gradient(135deg, rgba(255, 255, 255, 1) 0%, rgba(240, 249, 255, 1) 100%);
+        }
+        
+        .action-card:hover::before {
+            top: -30%;
+            right: -30%;
+            width: 250px;
+            height: 250px;
+            background: radial-gradient(circle, rgba(255, 107, 107, 0.15) 0%, rgba(0, 180, 216, 0.08) 50%, transparent 70%);
+        }
+        
+        .action-card:hover::after {
+            opacity: 1;
+            transform: scale(1) rotate(0deg);
+        }
+        
+        .action-icon {
+            width: 90px;
+            height: 90px;
+            margin: 0 auto 1.5rem;
+            background: linear-gradient(135deg, #0077B6, #00B4D8);
+            border-radius: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            color: white;
+            position: relative;
+            z-index: 1;
+            box-shadow: 
+                0 6px 16px rgba(0, 119, 182, 0.35),
+                0 2px 8px rgba(0, 0, 0, 0.1),
+                inset 0 2px 0 rgba(255, 255, 255, 0.25);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .action-icon::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 1.5rem;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.3) 0%, transparent 50%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .action-card:hover .action-icon {
+            background: linear-gradient(135deg, #FF6B6B, #FFB347);
+            transform: scale(1.15) rotate(5deg);
+            box-shadow: 
+                0 10px 25px rgba(255, 107, 107, 0.45),
+                0 4px 12px rgba(0, 0, 0, 0.15),
+                inset 0 2px 0 rgba(255, 255, 255, 0.35);
+        }
+        
+        .action-card:hover .action-icon::before {
+            opacity: 1;
+        }
+        
+        .action-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #0077B6;
+            margin-bottom: 0.75rem;
+            font-family: 'Playfair Display', serif;
+        }
+        
+        .action-description {
+            color: #57534e;
+            font-weight: 400;
+            font-size: 1rem;
+            line-height: 1.6;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        .footer {
+            background: linear-gradient(135deg, #0077B6 0%, #2D6A4F 100%);
+            color: white;
+            text-align: center;
+            padding: 3rem 2rem;
+            margin-top: 4rem;
+            border-top: 4px solid #D4AF37;
+        }
+        
+        .footer h3 {
+            font-size: 1.5rem;
+            margin-bottom: 0.75rem;
+            color: white;
+            font-family: 'Playfair Display', serif;
+        }
+        
+        .footer p {
+            color: #F4E1C1;
+            margin-top: 0.5rem;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        @media (max-width: 768px) {
+            .hero {
+                padding: 3rem 1rem;
+            }
+            
+            .hero-title {
+                font-size: 2.25rem;
+            }
+            
+            .hero-subtitle {
+                font-size: 1.125rem;
+            }
+            
+            .quick-actions {
+                grid-template-columns: 1fr;
+            }
+            
+            .features {
+                padding: 3rem 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="/" class="logo">
+                <img src="/uploads/logo.jpg" alt="HeritageLink"> HeritageLink
+            </a>
+            <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">
+                <i class="fas fa-bars"></i>
+            </button>
+            <div class="nav-overlay" id="navOverlay"></div>
+            <div class="nav-links" id="navLinks">
+                <button class="nav-close" id="navClose" aria-label="Close menu">
+                    <i class="fas fa-times"></i>
+                </button>
+                <a href="/" class="nav-link"><i class="fas fa-home"></i> <span>Home</span></a>
+                <a href="/destinations" class="nav-link"><i class="fas fa-map-marked-alt"></i> <span>Explore Map & Sites</span></a>
+                <a href="/events" class="nav-link"><i class="fas fa-calendar-alt"></i> <span>Events</span></a>
+                <a href="/heritage-gallery" class="nav-link"><i class="fas fa-landmark"></i> <span>Heritage Gallery</span></a>
+                
+                <a href="/showcase" class="nav-link"><i class="fas fa-palette"></i> <span>Artisans</span></a>
+
+                <a href="/feedback" class="nav-link"><i class="fas fa-comment-dots"></i> <span>Feedback</span></a>
+                <% if (user) { %>
+                    <a href="/dashboard" class="btn btn-primary">Dashboard</a>
+                <% } else { %>
+                    <a href="/login" class="btn btn-secondary">Login</a>
+                <% } %>
+            </div>
+        </div>
+    </nav>
+    <script>
+    (function(){
+        const toggle = document.getElementById('navToggle');
+        const links = document.getElementById('navLinks');
+        const overlay = document.getElementById('navOverlay');
+        const close = document.getElementById('navClose');
+        
+        function openMenu() {
+            links.classList.add('active');
+            overlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+        
+        function closeMenu() {
+            links.classList.remove('active');
+            overlay.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+        
+        if(toggle) toggle.addEventListener('click', openMenu);
+        if(close) close.addEventListener('click', closeMenu);
+        if(overlay) overlay.addEventListener('click', closeMenu);
+    })();
+    </script>
+
+    <section class="hero">
+        <div class="hero-content">
+            <h1 class="hero-title">Welcome to HeritageLink</h1>
+            <p class="hero-subtitle">Discover Cultural Tourism in Gloria, Oriental Mindoro</p>
+            <div class="hero-buttons">
+                <% if (!user) { %>
+                    <a href="/register" class="btn btn-primary">Get Started</a>
+                    <a href="/login" class="btn btn-secondary">Login</a>
+                <% } else { %>
+                    <a href="/dashboard" class="btn btn-primary">Go to Dashboard</a>
+                <% } %>
+            </div>
+        </div>
+    </section>
+
+    <div class="features">
+        <h2 class="section-title">Plan Your Cultural Journey</h2>
+        <div class="quick-actions">
+            <a href="/destinations" class="action-card">
+                <div class="action-icon">
+                    <i class="fas fa-map-marked-alt"></i>
+                </div>
+                <div class="action-title">Discover Sites</div>
+                <div class="action-description">Explore heritage sites, natural wonders, and cultural landmarks on interactive maps</div>
+            </a>
+            <a href="/events" class="action-card">
+                <div class="action-icon">
+                    <i class="fas fa-calendar-alt"></i>
+                </div>
+                <div class="action-title">Events</div>
+                <div class="action-description">Join cultural festivals, workshops, and community celebrations</div>
+            </a>
+            <a href="/artisans" class="action-card">
+                <div class="action-icon">
+                    <i class="fas fa-palette"></i>
+                </div>
+                <div class="action-title">Meet Artisans</div>
+                <div class="action-description">Connect with local craftspeople and discover traditional textiles and art</div>
+            </a>
+            <a href="/workshops" class="action-card">
+                <div class="action-icon">
+                    <i class="fas fa-chalkboard-teacher"></i>
+                </div>
+                <div class="action-title">Workshops</div>
+                <div class="action-description">Learn traditional crafts from local artisans in hands-on workshop sessions</div>
+            </a>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <h3><img src="/uploads/logo.jpg" alt="HeritageLink" style="width: 30px; height: 30px; object-fit: contain; vertical-align: middle;"> HeritageLink</h3>
+            <p>Preserving and Promoting Cultural Heritage in Gloria, Oriental Mindoro</p>
+            <p style="margin-top: 1rem; opacity: 0.8;">&copy; 2024 HeritageLink. All rights reserved.</p>
+        </div>
+    </footer>
+</body>
+</html>

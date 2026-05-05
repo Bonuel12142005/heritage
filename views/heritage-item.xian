@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= item.title %> - Heritage Gallery | HeritageLink</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --primary: #2d8659; --primary-dark: #1a5f3f; --primary-light: #3fa872;
+            --accent: #D4AF37;
+            --bg-main: #f8faf9; --bg-card: #ffffff;
+            --text-primary: #064e3b; --text-secondary: #6b7280; --text-muted: #9ca3af;
+            --border: #d1fae5;
+        }
+        body { font-family: 'Inter', sans-serif; background: var(--bg-main); color: var(--text-primary); line-height: 1.6; }
+        
+        .navbar { background: var(--primary-dark); padding: 1rem 2rem; position: sticky; top: 0; z-index: 100; }
+        .nav-container { max-width: 1400px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
+        .nav-logo { color: white; font-size: 1.5rem; font-weight: 700; text-decoration: none; display: flex; align-items: center; gap: 0.5rem; }
+        .nav-logo img { height: 40px; }
+        .nav-links { display: flex; gap: 2rem; align-items: center; }
+        .nav-links a { color: #d1fae5; text-decoration: none; font-weight: 500; transition: color 0.2s; }
+        .nav-links a:hover { color: white; }
+
+        .container { max-width: 1000px; margin: 0 auto; padding: 2rem; }
+        .breadcrumb { margin-bottom: 1.5rem; }
+        .breadcrumb a { color: var(--primary); text-decoration: none; }
+        .breadcrumb span { color: var(--text-muted); margin: 0 0.5rem; }
+
+        .media-container { background: #000; border-radius: 1rem; overflow: hidden; margin-bottom: 2rem; }
+        .media-container img { width: 100%; max-height: 600px; object-fit: contain; }
+        .media-container video, .media-container audio { width: 100%; }
+        .media-container .audio-wrapper { padding: 3rem; text-align: center; background: linear-gradient(135deg, var(--primary-dark), var(--primary)); }
+        .media-container .audio-wrapper i { font-size: 5rem; color: white; margin-bottom: 1.5rem; }
+        .media-container .document-wrapper { padding: 3rem; text-align: center; background: linear-gradient(135deg, var(--primary-dark), var(--primary)); }
+        .media-container .document-wrapper i { font-size: 5rem; color: white; margin-bottom: 1rem; }
+        .media-container .document-wrapper a { color: white; font-size: 1.1rem; }
+
+        .content-card { background: var(--bg-card); border-radius: 1rem; padding: 2rem; box-shadow: 0 4px 15px rgba(0,0,0,0.08); }
+        .item-header { margin-bottom: 1.5rem; }
+        .item-badges { display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap; }
+        .badge { padding: 0.35rem 0.75rem; border-radius: 0.5rem; font-size: 0.8rem; font-weight: 600; }
+        .badge-media { background: var(--primary); color: white; }
+        .badge-category { background: var(--accent); color: white; text-transform: capitalize; }
+        .item-title { font-size: 2rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.5rem; }
+        .item-views { color: var(--text-muted); font-size: 0.9rem; }
+
+        .meta-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; padding: 1.5rem; background: var(--bg-main); border-radius: 0.75rem; margin: 1.5rem 0; }
+        .meta-item { display: flex; align-items: flex-start; gap: 0.75rem; }
+        .meta-item i { color: var(--primary); font-size: 1.1rem; margin-top: 0.2rem; }
+        .meta-item .label { font-size: 0.8rem; color: var(--text-muted); }
+        .meta-item .value { font-weight: 600; color: var(--text-primary); }
+
+        .description { margin: 1.5rem 0; }
+        .description h3 { font-size: 1.1rem; margin-bottom: 0.75rem; color: var(--text-primary); }
+        .description p { color: var(--text-secondary); line-height: 1.8; }
+
+        .transcript { background: var(--bg-main); padding: 1.5rem; border-radius: 0.75rem; margin-top: 1.5rem; border-left: 4px solid var(--primary); }
+        .transcript h3 { font-size: 1.1rem; margin-bottom: 0.75rem; color: var(--text-primary); display: flex; align-items: center; gap: 0.5rem; }
+        .transcript p { color: var(--text-secondary); font-style: italic; line-height: 1.8; }
+
+        .tags { margin-top: 1.5rem; }
+        .tags h3 { font-size: 1rem; margin-bottom: 0.75rem; color: var(--text-primary); }
+        .tags-list { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+        .tags-list span { background: var(--border); color: var(--primary-dark); padding: 0.35rem 0.75rem; border-radius: 2rem; font-size: 0.85rem; }
+
+        .back-link { display: inline-flex; align-items: center; gap: 0.5rem; color: var(--primary); text-decoration: none; font-weight: 600; margin-top: 2rem; }
+        .back-link:hover { text-decoration: underline; }
+
+        .footer { background: var(--primary-dark); color: white; padding: 2rem; margin-top: 4rem; text-align: center; }
+
+        @media (max-width: 768px) {
+            .nav-links { display: none; }
+            .item-title { font-size: 1.5rem; }
+            .meta-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="/" class="nav-logo">
+                <img src="/uploads/logo.jpg" alt="HeritageLink">
+                HeritageLink
+            </a>
+            <div class="nav-links">
+                <a href="/">Home</a>
+                <a href="/destinations">Destinations</a>
+                <a href="/events">Events</a>
+                <a href="/heritage-gallery">Heritage Gallery</a>
+                <a href="/artisans">Artisans</a>
+                <% if (user) { %>
+                    <a href="/dashboard">Dashboard</a>
+                <% } else { %>
+                    <a href="/login">Login</a>
+                <% } %>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="breadcrumb">
+            <a href="/">Home</a>
+            <span>/</span>
+            <a href="/heritage-gallery">Heritage Gallery</a>
+            <span>/</span>
+            <span><%= item.title %></span>
+        </div>
+
+        <div class="media-container">
+            <% if (item.media_type === 'photo') { %>
+                <img src="<%= item.media_url %>" alt="<%= item.title %>">
+            <% } else if (item.media_type === 'video') { %>
+                <% if (item.media_url.includes('youtube') || item.media_url.includes('vimeo')) { %>
+                    <iframe src="<%= item.media_url %>" style="width: 100%; height: 500px; border: none;" allowfullscreen></iframe>
+                <% } else { %>
+                    <video src="<%= item.media_url %>" controls poster="<%= item.thumbnail_url %>"></video>
+                <% } %>
+            <% } else if (item.media_type === 'audio') { %>
+                <div class="audio-wrapper">
+                    <i class="fas fa-microphone"></i>
+                    <audio src="<%= item.media_url %>" controls style="width: 100%; max-width: 500px;"></audio>
+                </div>
+            <% } else { %>
+                <div class="document-wrapper">
+                    <i class="fas fa-file-pdf"></i>
+                    <p><a href="<%= item.media_url %>" target="_blank"><i class="fas fa-external-link-alt"></i> Open Document</a></p>
+                </div>
+            <% } %>
+        </div>
+
+        <div class="content-card">
+            <div class="item-header">
+                <div class="item-badges">
+                    <span class="badge badge-media">
+                        <% if (item.media_type === 'photo') { %><i class="fas fa-camera"></i> Photo
+                        <% } else if (item.media_type === 'video') { %><i class="fas fa-video"></i> Video
+                        <% } else if (item.media_type === 'audio') { %><i class="fas fa-microphone"></i> Audio
+                        <% } else { %><i class="fas fa-file-alt"></i> Document<% } %>
+                    </span>
+                    <% if (item.category) { %>
+                        <span class="badge badge-category"><%= item.category.replace(/_/g, ' ') %></span>
+                    <% } %>
+                </div>
+                <h1 class="item-title"><%= item.title %></h1>
+                <p class="item-views"><i class="fas fa-eye"></i> <%= item.view_count || 0 %> views</p>
+            </div>
+
+            <div class="meta-grid">
+                <% if (item.historical_date) { %>
+                    <div class="meta-item">
+                        <i class="fas fa-clock"></i>
+                        <div>
+                            <div class="label">Date/Era</div>
+                            <div class="value"><%= item.historical_date %></div>
+                        </div>
+                    </div>
+                <% } %>
+                <% if (item.location) { %>
+                    <div class="meta-item">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <div>
+                            <div class="label">Location</div>
+                            <div class="value"><%= item.location %></div>
+                        </div>
+                    </div>
+                <% } %>
+                <% if (item.contributor_name) { %>
+                    <div class="meta-item">
+                        <i class="fas fa-user"></i>
+                        <div>
+                            <div class="label">Contributor</div>
+                            <div class="value"><%= item.contributor_name %></div>
+                        </div>
+                    </div>
+                <% } %>
+                <% if (item.source) { %>
+                    <div class="meta-item">
+                        <i class="fas fa-archive"></i>
+                        <div>
+                            <div class="label">Source</div>
+                            <div class="value"><%= item.source %></div>
+                        </div>
+                    </div>
+                <% } %>
+                <% if (item.duration) { %>
+                    <div class="meta-item">
+                        <i class="fas fa-stopwatch"></i>
+                        <div>
+                            <div class="label">Duration</div>
+                            <div class="value"><%= item.duration %></div>
+                        </div>
+                    </div>
+                <% } %>
+            </div>
+
+            <% if (item.description) { %>
+                <div class="description">
+                    <h3><i class="fas fa-info-circle"></i> About This Item</h3>
+                    <p><%= item.description %></p>
+                </div>
+            <% } %>
+
+            <% if (item.transcript) { %>
+                <div class="transcript">
+                    <h3><i class="fas fa-file-alt"></i> Transcript</h3>
+                    <p><%= item.transcript %></p>
+                </div>
+            <% } %>
+
+            <% if (item.tags) { %>
+                <div class="tags">
+                    <h3><i class="fas fa-tags"></i> Tags</h3>
+                    <div class="tags-list">
+                        <% item.tags.split(',').forEach(tag => { %>
+                            <span>#<%= tag.trim() %></span>
+                        <% }); %>
+                    </div>
+                </div>
+            <% } %>
+
+            <a href="/heritage-gallery" class="back-link"><i class="fas fa-arrow-left"></i> Back to Heritage Gallery</a>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <p>&copy; 2024 HeritageLink - Preserving the Cultural Heritage of Gloria, Oriental Mindoro</p>
+    </footer>
+</body>
+</html>

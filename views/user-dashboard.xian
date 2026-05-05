@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Dashboard - HeritageLink</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --primary: #0077B6; --primary-dark: #005A8D; --primary-light: #00B4D8;
+            --accent: #D4AF37; --accent-dark: #B8941E;
+            --bg-main: #f8faf9; --bg-card: #ffffff;
+            --text-primary: #064e3b; --text-secondary: #6b7280; --text-muted: #9ca3af;
+            --border: #E0F7FA; --sidebar-bg: #0077B6; --sidebar-hover: #00B4D8;
+            --sidebar-width: 260px;
+            --palm-green: #2D6A4F; --sand-beige: #F4E1C1; --turquoise: #00B4D8;
+        }
+        
+        html, body { height: 100%; overflow-x: clip; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg-main); color: var(--text-primary); display: flex; min-height: 100vh; }
+        
+        /* Sidebar */
+        .sidebar { position: fixed; left: 0; top: 0; height: 100vh; width: var(--sidebar-width); background: var(--sidebar-bg); padding: 1.5rem 0; z-index: 1000; box-shadow: 4px 0 15px rgba(0,0,0,0.15); transition: transform 0.3s ease; overflow-y: auto; }
+        .sidebar-logo { padding: 0 1.25rem 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 1rem; }
+        .sidebar-logo h2 { color: white; font-size: 1.2rem; font-weight: 700; display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+        .sidebar-logo img { width: 36px; height: 36px; object-fit: contain; border-radius: 6px; }
+        .sidebar-logo .badge { background: linear-gradient(135deg, #D4AF37, #FFD700); color: white; padding: 0.2rem 0.6rem; border-radius: 1rem; font-size: 0.7rem; font-weight: 600; }
+        .sidebar-menu { list-style: none; }
+        .menu-item { margin: 0.15rem 0.75rem; }
+        .menu-link { display: flex; align-items: center; gap: 0.75rem; padding: 0.7rem 1rem; color: #F4E1C1; text-decoration: none; border-radius: 0.6rem; transition: all 0.2s; font-weight: 500; font-size: 0.875rem; }
+        .menu-link:hover, .menu-link.active { background: var(--sidebar-hover); color: white; }
+        .menu-link i { width: 18px; text-align: center; font-size: 0.95rem; }
+        .menu-section { padding: 1rem 1.25rem 0.4rem; color: #F4E1C1; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+        
+        /* Main Content */
+        .main-content { margin-left: var(--sidebar-width); flex: 1; min-height: 100vh; display: flex; flex-direction: column; width: calc(100% - var(--sidebar-width)); }
+        
+        /* Mobile Menu Toggle */
+        .mobile-menu-toggle { display: none; position: fixed; top: 1rem; left: 1rem; z-index: 1001; background: var(--sidebar-bg); color: white; border: none; padding: 0.75rem; border-radius: 0.5rem; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+        .mobile-menu-toggle i { font-size: 1.25rem; }
+        .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 999; }
+        .sidebar-overlay.active { display: block; }
+        
+        /* Topbar */
+        .topbar { background: var(--bg-card); padding: 1rem 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #D4AF37; flex-wrap: wrap; gap: 1rem; }
+        .topbar-left h1 { font-size: 1.35rem; font-weight: 700; background: linear-gradient(135deg, var(--primary), var(--primary-light)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .topbar-left p { color: var(--text-secondary); margin-top: 0.2rem; font-size: 0.85rem; }
+        .topbar-right { display: flex; align-items: center; gap: 1rem; }
+        .search-box { position: relative; }
+        .search-box input { padding: 0.6rem 1rem 0.6rem 2.5rem; border: 2px solid var(--border); border-radius: 0.6rem; width: 220px; font-size: 0.85rem; background: var(--bg-main); }
+        .search-box input:focus { outline: none; border-color: var(--primary); }
+        .search-box i { position: absolute; left: 0.85rem; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 0.85rem; }
+        .user-profile { display: flex; align-items: center; gap: 0.6rem; padding: 0.4rem 0.75rem; background: var(--bg-main); border-radius: 0.6rem; border: 2px solid var(--border); }
+        .user-avatar { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--primary-light)); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 0.9rem; overflow: hidden; }
+        .user-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .user-info { display: flex; flex-direction: column; }
+        .user-name { font-weight: 600; font-size: 0.85rem; color: var(--text-primary); }
+        .user-role { font-size: 0.7rem; color: var(--text-secondary); }
+        
+        /* Dashboard Content */
+        .dashboard-content { padding: 1.25rem; flex: 1; overflow-y: auto; }
+        
+        /* Stats Grid */
+        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 1.5rem; }
+        .stat-card { background: var(--bg-card); padding: 1.25rem; border-radius: 0.875rem; box-shadow: 0 2px 8px rgba(0,0,0,0.08); border-left: 4px solid #00B4D8; transition: all 0.3s; }
+        .stat-card:hover { transform: translateY(-3px); box-shadow: 0 8px 16px rgba(0,0,0,0.1); }
+        .stat-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem; }
+        .stat-icon { width: 42px; height: 42px; border-radius: 0.6rem; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; background: linear-gradient(135deg, var(--primary), var(--primary-light)); color: white; }
+        .stat-value { font-size: 1.75rem; font-weight: 800; color: var(--text-primary); line-height: 1; margin-bottom: 0.35rem; }
+        .stat-label { color: var(--text-secondary); font-size: 0.8rem; font-weight: 500; }
+        .stat-trend { display: inline-flex; align-items: center; gap: 0.2rem; padding: 0.2rem 0.5rem; border-radius: 0.4rem; font-size: 0.7rem; font-weight: 600; margin-top: 0.5rem; background: rgba(16, 185, 129, 0.1); color: #10b981; }
+        
+        /* Map Section */
+        .map-section { background: var(--bg-card); border-radius: 0.875rem; padding: 1.25rem; box-shadow: 0 2px 8px rgba(0,0,0,0.08); border: 1px solid var(--border); margin-bottom: 1.5rem; }
+        .map-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem; }
+        .map-title { font-size: 1.25rem; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 0.5rem; }
+        .map-subtitle { color: var(--text-secondary); font-size: 0.8rem; margin-top: 0.2rem; }
+        #destinationsMap { height: 350px; border-radius: 0.6rem; border: 1px solid var(--border); }
+        
+        /* Content Grid */
+        .content-grid { display: grid; grid-template-columns: 1fr 320px; gap: 1.5rem; }
+        
+        /* Action Cards */
+        .action-section { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1rem; }
+        .action-card { background: var(--bg-card); padding: 1.25rem; border-radius: 0.875rem; box-shadow: 0 2px 8px rgba(0,0,0,0.08); transition: all 0.3s; border-top: 3px solid #0077B6; }
+        .action-card:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
+        .action-icon { width: 48px; height: 48px; border-radius: 0.75rem; background: linear-gradient(135deg, var(--primary), var(--primary-light)); display: flex; align-items: center; justify-content: center; font-size: 1.35rem; color: white; margin-bottom: 1rem; }
+        .action-title { font-size: 1.05rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.5rem; }
+        .action-description { color: var(--text-secondary); font-size: 0.8rem; line-height: 1.5; margin-bottom: 1rem; }
+        
+        /* Buttons */
+        .btn { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.6rem 1.1rem; border-radius: 0.6rem; text-decoration: none; font-weight: 600; font-size: 0.8rem; transition: all 0.2s; border: none; cursor: pointer; }
+        .btn-primary { background: linear-gradient(135deg, #D4AF37, #FFD700); color: white; box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3); }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(212, 175, 55, 0.4); }
+        
+        /* Sidebar Panel */
+        .sidebar-panel { background: var(--bg-card); border-radius: 0.875rem; box-shadow: 0 2px 8px rgba(0,0,0,0.08); padding: 1.25rem; border: 1px solid var(--border); margin-bottom: 1rem; }
+        .panel-title { font-size: 1rem; font-weight: 700; color: var(--text-primary); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; }
+        .panel-title i { color: var(--primary); }
+        .stat-item { display: flex; justify-content: space-between; align-items: center; padding: 0.6rem 0; border-bottom: 1px solid var(--border); font-size: 0.85rem; }
+        .stat-item:last-child { border-bottom: none; }
+        .stat-item-label { color: var(--text-secondary); }
+        .stat-item-value { font-weight: 700; color: var(--primary); }
+        
+        /* Activity Feed */
+        .activity-item { display: flex; gap: 0.75rem; padding: 0.75rem 0; border-bottom: 1px solid var(--border); }
+        .activity-item:last-child { border-bottom: none; }
+        .activity-icon { width: 36px; height: 36px; border-radius: 0.6rem; background: var(--bg-main); display: flex; align-items: center; justify-content: center; color: var(--primary); flex-shrink: 0; font-size: 0.9rem; }
+        .activity-content { flex: 1; min-width: 0; }
+        .activity-text { font-size: 0.8rem; color: var(--text-primary); font-weight: 500; margin-bottom: 0.15rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .activity-time { font-size: 0.7rem; color: var(--text-muted); }
+        
+        /* Scrollbar */
+        .sidebar::-webkit-scrollbar, .dashboard-content::-webkit-scrollbar { width: 6px; }
+        .sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.3); border-radius: 3px; }
+        .dashboard-content::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+        
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .content-grid { grid-template-columns: 1fr; }
+        }
+        
+        @media (max-width: 768px) {
+            .mobile-menu-toggle { display: block; }
+            .sidebar { transform: translateX(-100%); width: 280px; }
+            .sidebar.active { transform: translateX(0); }
+            .main-content { margin-left: 0; width: 100%; }
+            .topbar { padding: 1rem; padding-left: 4rem; flex-direction: column; align-items: flex-start; }
+            .topbar-left h1 { font-size: 1.2rem; }
+            .topbar-right { width: 100%; flex-wrap: wrap; }
+            .search-box { flex: 1; min-width: 150px; }
+            .search-box input { width: 100%; }
+            .dashboard-content { padding: 1rem; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
+            .stat-card { padding: 1rem; }
+            .stat-value { font-size: 1.5rem; }
+            #destinationsMap { height: 280px; }
+            .action-section { grid-template-columns: 1fr; }
+        }
+        
+        @media (max-width: 480px) {
+            .topbar { padding-left: 3.5rem; }
+            .stats-grid { grid-template-columns: 1fr; }
+            .stat-card { padding: 1rem; }
+            .user-profile { padding: 0.3rem 0.5rem; }
+            .user-info { display: none; }
+            #destinationsMap { height: 220px; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Mobile Menu Toggle -->
+    <button class="mobile-menu-toggle" onclick="toggleSidebar()">
+        <i class="fas fa-bars"></i>
+    </button>
+    
+    <!-- Sidebar Overlay -->
+    <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
+    
+    <aside class="sidebar">
+        <div class="sidebar-logo">
+            <h2>
+                <img src="/uploads/logo.jpg" alt="HeritageLink">
+                HeritageLink
+                <span class="badge">Explorer</span>
+            </h2>
+        </div>
+        <ul class="sidebar-menu">
+            <li class="menu-item"><a href="/user/dashboard" class="menu-link active"><i class="fas fa-th-large"></i><span>Dashboard</span></a></li>
+            <li class="menu-item"><a href="/destinations" class="menu-link"><i class="fas fa-map-marked-alt"></i><span>Destinations</span></a></li>
+            <li class="menu-item"><a href="/events" class="menu-link"><i class="fas fa-calendar-alt"></i><span>Events</span></a></li>
+            <li class="menu-item"><a href="/showcase" class="menu-link"><i class="fas fa-palette"></i><span>Artisans</span></a></li>
+            <li class="menu-item"><a href="/workshops" class="menu-link"><i class="fas fa-chalkboard-teacher"></i><span>Workshops</span></a></li>
+            <div class="menu-section">My Activity</div>
+            <li class="menu-item"><a href="/user/reviews" class="menu-link"><i class="fas fa-star"></i><span>My Reviews</span></a></li>
+            <li class="menu-item"><a href="/user/favorites" class="menu-link"><i class="fas fa-heart"></i><span>Favorites</span></a></li>
+            <li class="menu-item"><a href="/user/orders" class="menu-link"><i class="fas fa-shopping-bag"></i><span>My Orders</span></a></li>
+            <li class="menu-item"><a href="/user/workshops" class="menu-link"><i class="fas fa-chalkboard-teacher"></i><span>My Workshops</span></a></li>
+            <li class="menu-item"><a href="/user/gallery" class="menu-link"><i class="fas fa-images"></i><span>My Gallery</span></a></li>
+            <li class="menu-item"><a href="/user/messages" class="menu-link"><i class="fas fa-envelope"></i><span>Messages</span></a></li>
+            <div class="menu-section">Account</div>
+            <li class="menu-item"><a href="/user/profile" class="menu-link"><i class="fas fa-user-circle"></i><span>My Profile</span></a></li>
+            <li class="menu-item"><a href="/" class="menu-link"><i class="fas fa-home"></i><span>Home</span></a></li>
+            <li class="menu-item"><a href="/logout" class="menu-link"><i class="fas fa-sign-out-alt"></i><span>Logout</span></a></li>
+        </ul>
+    </aside>
+
+    <main class="main-content">
+        <div class="topbar">
+            <div class="topbar-left">
+                <h1><i class="fas fa-compass"></i> Welcome, <%= user.name %>!</h1>
+                <p>Explore cultural heritage and discover traditions</p>
+            </div>
+            <div class="topbar-right">
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="Search destinations...">
+                </div>
+                <div class="user-profile">
+                    <% if (user.profile_photo) { %>
+                        <div class="user-avatar"><img src="/<%= user.profile_photo %>" alt="<%= user.name %>"></div>
+                    <% } else { %>
+                        <div class="user-avatar"><%= user.name ? user.name.charAt(0).toUpperCase() : 'U' %></div>
+                    <% } %>
+                    <div class="user-info">
+                        <div class="user-name"><%= user.name %></div>
+                        <div class="user-role">Explorer</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="dashboard-content">
+            <!-- Stats Grid -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-icon"><i class="fas fa-map-marker-alt"></i></div>
+                    </div>
+                    <div class="stat-value"><%= visitedDestinations || 0 %></div>
+                    <div class="stat-label">Destinations Visited</div>
+                    <div class="stat-trend"><i class="fas fa-arrow-up"></i> Exploring</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-icon"><i class="fas fa-calendar"></i></div>
+                    </div>
+                    <div class="stat-value"><%= eventsAttended || 0 %></div>
+                    <div class="stat-label">Events Attended</div>
+                    <div class="stat-trend"><i class="fas fa-arrow-up"></i> Active</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-icon"><i class="fas fa-star"></i></div>
+                    </div>
+                    <div class="stat-value"><%= reviewsWritten || 0 %></div>
+                    <div class="stat-label">Reviews Written</div>
+                    <div class="stat-trend"><i class="fas fa-arrow-up"></i> Helpful</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-icon"><i class="fas fa-palette"></i></div>
+                    </div>
+                    <div class="stat-value"><%= artisansMet || 0 %></div>
+                    <div class="stat-label">Artisans Met</div>
+                    <div class="stat-trend"><i class="fas fa-arrow-up"></i> Connected</div>
+                </div>
+            </div>
+
+            <!-- Map Section -->
+            <div class="map-section">
+                <div class="map-header">
+                    <div>
+                        <h2 class="map-title"><i class="fas fa-map-marked-alt"></i> Explore Destinations</h2>
+                        <p class="map-subtitle">?? Gloria, Oriental Mindoro - Interactive Map</p>
+                    </div>
+                </div>
+                <div id="destinationsMap"></div>
+            </div>
+
+            <!-- Content Grid -->
+            <div class="content-grid">
+                <!-- Action Cards -->
+                <div class="action-section">
+                    <div class="action-card">
+                        <div class="action-icon"><i class="fas fa-map-marked-alt"></i></div>
+                        <h3 class="action-title">Explore Destinations</h3>
+                        <p class="action-description">Discover cultural sites, historical landmarks, and natural wonders.</p>
+                        <a href="/destinations" class="btn btn-primary"><i class="fas fa-arrow-right"></i> Browse</a>
+                    </div>
+                    <div class="action-card">
+                        <div class="action-icon"><i class="fas fa-calendar-alt"></i></div>
+                        <h3 class="action-title">Cultural Events</h3>
+                        <p class="action-description">Find upcoming festivals, workshops, and cultural demonstrations.</p>
+                        <a href="/events" class="btn btn-primary"><i class="fas fa-arrow-right"></i> View Events</a>
+                    </div>
+                    <div class="action-card">
+                        <div class="action-icon"><i class="fas fa-palette"></i></div>
+                        <h3 class="action-title">Local Artisans</h3>
+                        <p class="action-description">Connect with skilled artisans and purchase authentic products.</p>
+                        <a href="/showcase" class="btn btn-primary"><i class="fas fa-arrow-right"></i> Meet Artisans</a>
+                    </div>
+                    <div class="action-card">
+                        <div class="action-icon"><i class="fas fa-star"></i></div>
+                        <h3 class="action-title">My Reviews</h3>
+                        <p class="action-description">Share your experiences and help others discover treasures.</p>
+                        <a href="/user/reviews" class="btn btn-primary"><i class="fas fa-arrow-right"></i> Write Reviews</a>
+                    </div>
+                    <div class="action-card">
+                        <div class="action-icon"><i class="fas fa-heart"></i></div>
+                        <h3 class="action-title">Saved Places</h3>
+                        <p class="action-description">Keep track of your favorite destinations and itineraries.</p>
+                        <a href="/user/favorites" class="btn btn-primary"><i class="fas fa-arrow-right"></i> View Favorites</a>
+                    </div>
+                    <div class="action-card">
+                        <div class="action-icon"><i class="fas fa-chalkboard-teacher"></i></div>
+                        <h3 class="action-title">Artisan Workshops</h3>
+                        <p class="action-description">Learn traditional crafts from local artisans in hands-on sessions.</p>
+                        <a href="/workshops" class="btn btn-primary"><i class="fas fa-arrow-right"></i> Browse Workshops</a>
+                    </div>
+                    <div class="action-card">
+                        <div class="action-icon" style="background: linear-gradient(135deg, #ef4444, #dc2626);"><i class="fas fa-headset"></i></div>
+                        <h3 class="action-title">Contact Support</h3>
+                        <p class="action-description">Need help? Send a message to the administrators.</p>
+                        <button onclick="contactAdmin()" class="btn btn-primary" style="background: linear-gradient(135deg, #ef4444, #dc2626);"><i class="fas fa-envelope"></i> Contact</button>
+                    </div>
+                </div>
+
+                <!-- Sidebar Panels -->
+                <div>
+                    <div class="sidebar-panel">
+                        <h3 class="panel-title"><i class="fas fa-chart-bar"></i> Quick Stats</h3>
+                        <div class="stat-item"><span class="stat-item-label">Destinations to Visit</span><span class="stat-item-value">12</span></div>
+                        <div class="stat-item"><span class="stat-item-label">Upcoming Events</span><span class="stat-item-value">5</span></div>
+                        <div class="stat-item"><span class="stat-item-label">Artisans to Discover</span><span class="stat-item-value">8</span></div>
+                        <div class="stat-item"><span class="stat-item-label">Cultural Journey</span><span class="stat-item-value">65%</span></div>
+                    </div>
+                    <div class="sidebar-panel">
+                        <h3 class="panel-title"><i class="fas fa-shopping-bag"></i> My Recent Orders</h3>
+                        <% if (typeof userOrders !== 'undefined' && userOrders && userOrders.length > 0) { %>
+                            <% userOrders.forEach(order => { %>
+                                <div class="activity-item">
+                                    <div class="activity-icon" style="background:rgba(45, 134, 89, 0.1); color:var(--primary);">
+                                        <i class="fas fa-box"></i>
+                                    </div>
+                                    <div class="activity-content">
+                                        <div class="activity-text"><%= order.product_name %></div>
+                                        <div class="activity-time">
+                                            ₱<%= Number(order.total_price).toLocaleString() %> • <%= order.status === 'processing' ? 'Approved' : order.status.charAt(0).toUpperCase() + order.status.slice(1) %>
+                                        </div>
+                                    </div>
+                                </div>
+                            <% }); %>
+                            <div style="margin-top: 1rem; text-align: center;">
+                                <a href="/user/orders" style="font-size: 0.75rem; color: var(--primary); text-decoration: none; font-weight: 600;">View All Orders <i class="fas fa-arrow-right"></i></a>
+                            </div>
+                        <% } else { %>
+                            <p style="font-size: 0.8rem; color: var(--text-muted); text-align: center; padding: 1rem 0;">No orders yet.</p>
+                            <div style="text-align: center;">
+                                <a href="/showcase/products" class="btn btn-primary" style="padding: 0.4rem 0.8rem; font-size: 0.7rem;">Shop Now</a>
+                            </div>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        function toggleSidebar() {
+            document.querySelector('.sidebar').classList.toggle('active');
+            document.querySelector('.sidebar-overlay').classList.toggle('active');
+        }
+        
+        document.querySelectorAll('.menu-link').forEach(link => {
+            link.addEventListener('click', () => {
+                if (window.innerWidth <= 768) {
+                    document.querySelector('.sidebar').classList.remove('active');
+                    document.querySelector('.sidebar-overlay').classList.remove('active');
+                }
+            });
+        });
+        
+        window.addEventListener('resize', () => {
+            if (window.innerWidth > 768) {
+                document.querySelector('.sidebar').classList.remove('active');
+                document.querySelector('.sidebar-overlay').classList.remove('active');
+            }
+        });
+
+        // Initialize Map
+        const GLORIA_LAT = 13.0167, GLORIA_LNG = 121.4667;
+        const map = L.map('destinationsMap').setView([GLORIA_LAT, GLORIA_LNG], 13);
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+            attribution: '� OpenStreetMap',
+            maxZoom: 19
+        }).addTo(map);
+
+        // Gloria marker
+        L.marker([GLORIA_LAT, GLORIA_LNG], {
+            icon: L.divIcon({
+                html: '<div style="background:#ef4444;color:white;width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.3);">???</div>',
+                className: '', iconSize: [36, 36], iconAnchor: [18, 18]
+            })
+        }).addTo(map).bindPopup('<b>Gloria, Oriental Mindoro</b><br>Town Center');
+
+        // Fetch destinations
+        fetch('/api/destinations').then(r => r.json()).then(data => {
+            if (data.success && data.destinations) {
+                data.destinations.forEach(d => {
+                    if (d.latitude && d.longitude) {
+                        L.marker([d.latitude, d.longitude], {
+                            icon: L.divIcon({
+                                html: '<div style="background:#2d8659;color:white;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;border:2px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.3);">??</div>',
+                                className: '', iconSize: [28, 28], iconAnchor: [14, 14]
+                            })
+                        }).addTo(map).bindPopup(`<b>${d.name}</b><br><a href="/destinations/${d.id}">View Details</a>`);
+                    }
+                });
+            }
+        }).catch(console.error);
+
+        // Contact Admin
+        function contactAdmin() {
+            const overlay = document.createElement('div');
+            overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;z-index:2000;padding:1rem;';
+            overlay.innerHTML = `
+                <div style="background:white;border-radius:1rem;padding:1.5rem;max-width:450px;width:100%;max-height:90vh;overflow-y:auto;">
+                    <h3 style="margin:0 0 1rem;font-size:1.1rem;display:flex;align-items:center;gap:0.5rem;"><i class="fas fa-headset" style="color:#ef4444;"></i> Contact Support</h3>
+                    <div id="contactStatus" style="margin-bottom:1rem;padding:0.75rem;border-radius:0.5rem;display:none;"></div>
+                    <div style="margin-bottom:1rem;"><label style="font-weight:600;display:block;margin-bottom:0.4rem;font-size:0.9rem;">Subject</label><input id="contactSubject" type="text" placeholder="How can we help?" style="width:100%;padding:0.75rem;border:2px solid #d1e7dd;border-radius:0.5rem;box-sizing:border-box;"></div>
+                    <div style="margin-bottom:1.25rem;"><label style="font-weight:600;display:block;margin-bottom:0.4rem;font-size:0.9rem;">Message</label><textarea id="contactText" rows="4" placeholder="Describe your issue..." style="width:100%;padding:0.75rem;border:2px solid #d1e7dd;border-radius:0.5rem;box-sizing:border-box;resize:vertical;font-family:inherit;"></textarea></div>
+                    <div style="display:flex;gap:0.75rem;justify-content:flex-end;">
+                        <button onclick="this.closest('[style*=position]').remove()" style="padding:0.65rem 1.25rem;border:2px solid #e5e7eb;border-radius:0.5rem;background:#f8faf9;color:#6b7280;font-weight:600;cursor:pointer;">Cancel</button>
+                        <button onclick="sendContact()" style="padding:0.65rem 1.25rem;border:none;border-radius:0.5rem;background:linear-gradient(135deg,#ef4444,#dc2626);color:white;font-weight:600;cursor:pointer;"><i class="fas fa-paper-plane"></i> Send</button>
+                    </div>
+                </div>`;
+            document.body.appendChild(overlay);
+            overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+        }
+
+        async function sendContact() {
+            const subject = document.getElementById('contactSubject').value.trim();
+            const message = document.getElementById('contactText').value.trim();
+            const status = document.getElementById('contactStatus');
+            if (!subject || !message) { status.style.display = 'block'; status.style.background = '#fee2e2'; status.style.color = '#991b1b'; status.textContent = 'Please fill in all fields'; return; }
+            try {
+                const res = await fetch('/api/messages/send', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ receiver_id: 1, subject, message }) });
+                const data = await res.json();
+                if (data.success) { status.style.display = 'block'; status.style.background = '#d1fae5'; status.style.color = '#065f46'; status.innerHTML = '<i class="fas fa-check-circle"></i> Message sent!'; setTimeout(() => document.querySelector('[style*="position:fixed"]')?.remove(), 2000); }
+                else throw new Error(data.message);
+            } catch (err) { status.style.display = 'block'; status.style.background = '#fee2e2'; status.style.color = '#991b1b'; status.textContent = err.message || 'Failed to send'; }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%- include('partials/dashboard-head.xian') %>
+    <title>Admin Dashboard - HeritageLink</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        :root{
+            --ocean-blue:#0077B6;--turquoise:#00B4D8;--palm-green:#2D6A4F;
+            --primary:#0077B6;--primary-dark:#005a8c;--primary-light:#00B4D8;
+            --accent:#D4AF37;--accent-light:#FFD700;
+            --bg-main:#f0fdf4;--bg-card:#ffffff;
+            --text-primary:#064e3b;--text-secondary:#6b7280;--text-muted:#9ca3af;
+            --border:#d1fae5;--border-dark:#a7f3d0;
+            --sidebar-bg:linear-gradient(180deg,#005a8c 0%,#004a73 100%);
+            --gradient-nature:linear-gradient(135deg,#0077B6 0%,#00B4D8 50%,#2D6A4F 100%);
+            --gradient-gold:linear-gradient(135deg,#D4AF37 0%,#FFD700 100%);
+            --shadow-sm:0 1px 3px rgba(0,0,0,0.08);
+            --shadow-md:0 4px 12px rgba(0,119,182,0.12);
+            --shadow-lg:0 10px 25px rgba(0,119,182,0.15);
+            --radius-sm:0.5rem;--radius-md:0.75rem;--radius-lg:1rem;--radius-xl:1.25rem;
+        }
+        body{font-family:'Inter',sans-serif;background:var(--bg-main);color:var(--text-primary);overflow-x:clip}
+        
+        /* Sidebar */
+        .sidebar{position:fixed;left:0;top:0;height:100vh;width:260px;background:var(--sidebar-bg);padding:0;z-index:1000;box-shadow:4px 0 20px rgba(0,0,0,0.15);display:flex;flex-direction:column;transition:transform 0.3s ease}
+        .sidebar-header{padding:1.25rem;background:rgba(255,255,255,0.05);border-bottom:1px solid rgba(255,255,255,0.1);flex-shrink:0}
+        .sidebar-logo{display:flex;align-items:center;gap:0.6rem;text-decoration:none}
+        .sidebar-logo img{width:38px;height:38px;border-radius:var(--radius-sm);object-fit:cover;border:2px solid rgba(255,255,255,0.2)}
+        .sidebar-logo h2{color:#fff;font-size:1.1rem;font-weight:700;font-family:'Poppins',sans-serif;display:flex;align-items:center;flex-wrap:wrap;gap:0.4rem}
+        .sidebar-logo .badge{background:var(--gradient-gold);color:#fff;padding:0.15rem 0.5rem;border-radius:var(--radius-sm);font-size:0.6rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em}
+        
+        .sidebar-nav{flex:1;overflow-y:auto;overflow-x:clip;padding:0.75rem 0;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,0.2) transparent}
+        .sidebar-nav::-webkit-scrollbar{width:5px}
+        .sidebar-nav::-webkit-scrollbar-track{background:transparent}
+        .sidebar-nav::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.2);border-radius:3px}
+        .sidebar-nav::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,0.3)}
+        
+        .nav-section{padding:1rem 1.25rem 0.4rem;color:#a7f3d0;font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em}
+        .nav-item{margin:0.2rem 0.6rem}
+        .nav-link{display:flex;align-items:center;gap:0.75rem;padding:0.65rem 0.9rem;color:#d1fae5;text-decoration:none;border-radius:var(--radius-sm);transition:all 0.2s;font-weight:500;font-size:0.85rem}
+        .nav-link:hover{background:rgba(255,255,255,0.1);color:#fff;transform:translateX(3px)}
+        .nav-link.active{background:rgba(255,255,255,0.15);color:#fff;border-left:3px solid var(--accent)}
+        .nav-link i{width:18px;text-align:center;font-size:0.9rem;opacity:0.9}
+        .nav-link.active i{color:var(--accent)}
+        
+        /* Sidebar Footer */
+        .sidebar-footer{padding:1rem 1.25rem;border-top:1px solid rgba(255,255,255,0.1);background:rgba(0,0,0,0.1);flex-shrink:0}
+        .sidebar-footer-text{color:#a7f3d0;font-size:0.7rem;text-align:center}
+        
+        /* Mobile Overlay */
+        .sidebar-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:999;opacity:0;transition:opacity 0.3s}
+        .sidebar-overlay.active{display:block;opacity:1}
+        
+        /* Mobile Close Button */
+        .sidebar-close{display:none;position:absolute;top:1rem;right:1rem;background:rgba(255,255,255,0.1);border:none;color:#fff;width:32px;height:32px;border-radius:var(--radius-sm);cursor:pointer;font-size:1rem;transition:all 0.2s}
+        .sidebar-close:hover{background:rgba(255,255,255,0.2)}
+</style>
+</head>
+<body>
+    <!-- Sidebar Overlay -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    
+    <aside class="sidebar" id="sidebar">
+        <button class="sidebar-close" id="sidebarClose"><i class="fas fa-times"></i></button>
+        <div class="sidebar-header">
+            <a href="/" class="sidebar-logo">
+                <img src="/uploads/logo.jpg" alt="HeritageLink">
+                <h2>HeritageLink <span class="badge">Admin</span></h2>
+            </a>
+        </div>
+        <nav class="sidebar-nav">
+            <div class="nav-section">Main</div>
+            <div class="nav-item"><a href="/admin/dashboard" class="nav-link active"><i class="fas fa-th-large"></i>Dashboard</a></div>
+            
+            <div class="nav-item"><a href="/admin/events" class="nav-link"><i class="fas fa-calendar-alt"></i>Events</a></div>
+            <div class="nav-item"><a href="/admin/heritage-gallery" class="nav-link"><i class="fas fa-landmark"></i>Heritage Gallery</a></div>
+            <div class="nav-item nav-dropdown">
+                <a href="#" class="nav-link nav-dropdown-toggle" onclick="toggleLocationsMenu(event)">
+                    <i class="fas fa-globe-asia"></i>Locations <i class="fas fa-chevron-down nav-caret" id="locations-caret"></i>
+                </a>
+                <div class="nav-submenu" id="locations-submenu">
+                    <div class="nav-item"><a href="/admin/destinations" class="nav-link nav-sub-link"><i class="fas fa-map-marked-alt"></i>Destinations</a></div>
+                    <div class="nav-item"><a href="/admin/map-places" class="nav-link nav-sub-link"><i class="fas fa-map"></i>Map Places</a></div>
+                </div>
+            </div>
+            <div class="nav-item"><a href="/admin/users" class="nav-link"><i class="fas fa-users"></i>Users</a></div>
+            <div class="nav-section">Management</div>
+            <div class="nav-item"><a href="/admin/moderate" class="nav-link"><i class="fas fa-shield-alt"></i>Moderation</a></div>
+            <div class="nav-item"><a href="/admin/feedback" class="nav-link"><i class="fas fa-comment-dots"></i>Feedback</a></div>
+            <div class="nav-item"><a href="/admin/analytics" class="nav-link"><i class="fas fa-chart-line"></i>Analytics</a></div>
+            <div class="nav-item"><a href="/admin/settings" class="nav-link"><i class="fas fa-cog"></i>Settings</a></div>
+            <div class="nav-section">Account</div>
+            <div class="nav-item"><a href="/" class="nav-link"><i class="fas fa-home"></i>View Site</a></div>
+            <div class="nav-item"><a href="/logout" class="nav-link"><i class="fas fa-sign-out-alt"></i>Logout</a></div>
+        </nav>
+        <div class="sidebar-footer">
+            <p class="sidebar-footer-text">© 2024 HeritageLink</p>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <!-- Top Bar -->
+        <header class="topbar">
+            <div class="topbar-left">
+                <button class="menu-toggle" id="menuToggle"><i class="fas fa-bars"></i></button>
+                <div class="topbar-title">
+                    <h1>Dashboard</h1>
+                    <p>Welcome back, <%= user.name %>! Here's your platform overview.</p>
+                </div>
+            </div>
+            <div class="topbar-right">
+                <div class="search-wrapper">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="adminSearch" placeholder="Search anything..." autocomplete="off">
+                        <span class="search-shortcut">Ctrl+K</span>
+                    </div>
+                    <div class="search-results" id="searchResults"></div>
+                </div>
+                <%- include('partials/notification-bell.xian') %>
+                <div class="user-menu-wrapper">
+                    <div class="user-menu" id="userMenuToggle">
+                        <% if (user.profile_photo) { %>
+                            <img src="/<%= user.profile_photo %>" alt="<%= user.name %>" class="user-avatar">
+                        <% } else { %>
+                            <div class="user-avatar"><%= user.name ? user.name.charAt(0).toUpperCase() : 'A' %></div>
+                        <% } %>
+                        <div class="user-info">
+                            <span class="user-name"><%= user.name %></span>
+                            <span class="user-role">Administrator</span>
+                        </div>
+                        <i class="fas fa-chevron-down user-chevron"></i>
+                    </div>
+                    <div class="user-dropdown" id="userDropdown">
+                        <div class="dropdown-header">
+                            <% if (user.profile_photo) { %>
+                                <img src="/<%= user.profile_photo %>" alt="<%= user.name %>" class="dropdown-avatar">
+                            <% } else { %>
+                                <div class="dropdown-avatar"><%= user.name ? user.name.charAt(0).toUpperCase() : 'A' %></div>
+                            <% } %>
+                            <div class="dropdown-user-info">
+                                <span class="dropdown-name"><%= user.name %></span>
+                                <span class="dropdown-email"><%= user.email %></span>
+                            </div>
+                        </div>
+                        <div class="dropdown-divider"></div>
+                        <a href="/admin/profile" class="dropdown-item"><i class="fas fa-user"></i> My Profile</a>
+                        <a href="/admin/settings" class="dropdown-item"><i class="fas fa-cog"></i> Settings</a>
+                        <a href="/" class="dropdown-item"><i class="fas fa-home"></i> View Site</a>
+                        <div class="dropdown-divider"></div>
+                        <a href="/logout" class="dropdown-item dropdown-logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div class="dashboard-content">
+            <!-- Stats Cards -->
+            <div class="stats-grid">
+                <div class="stat-card stat-users">
+                    <div class="stat-icon"><i class="fas fa-users"></i></div>
+                    <div class="stat-info">
+                        <span class="stat-value" id="stat-users"><%= totalUsers %></span>
+                        <span class="stat-label">Total Users</span>
+                    </div>
+                    <div class="stat-trend up"><i class="fas fa-arrow-up"></i> 12%</div>
+                </div>
+                <div class="stat-card stat-destinations">
+                    <div class="stat-icon"><i class="fas fa-map-marker-alt"></i></div>
+                    <div class="stat-info">
+                        <span class="stat-value" id="stat-destinations"><%= totalDestinations %></span>
+                        <span class="stat-label">Destinations</span>
+                    </div>
+                    <div class="stat-trend up"><i class="fas fa-arrow-up"></i> 5%</div>
+                </div>
+                <div class="stat-card stat-events">
+                    <div class="stat-icon"><i class="fas fa-calendar-check"></i></div>
+                    <div class="stat-info">
+                        <span class="stat-value" id="stat-events"><%= totalEvents %></span>
+                        <span class="stat-label">Events</span>
+                    </div>
+                    <div class="stat-trend up"><i class="fas fa-arrow-up"></i> 8%</div>
+                </div>
+                <div class="stat-card stat-artisans">
+                    <div class="stat-icon"><i class="fas fa-palette"></i></div>
+                    <div class="stat-info">
+                        <span class="stat-value" id="stat-artisans"><%= totalArtisans %></span>
+                        <span class="stat-label">Artisans</span>
+                    </div>
+                    <div class="stat-trend up"><i class="fas fa-arrow-up"></i> 15%</div>
+                </div>
+            </div>
+
+            <!-- Main Grid -->
+            <div class="content-grid">
+                <!-- Quick Actions -->
+                <div class="section-card">
+                    <div class="section-header">
+                        <h2><i class="fas fa-bolt"></i> Quick Actions</h2>
+                    </div>
+                    <div class="actions-grid">
+                        <a href="/admin/destinations" class="action-card">
+                            <div class="action-icon"><i class="fas fa-map-marked-alt"></i></div>
+                            <div class="action-content">
+                                <h3>Destinations</h3>
+                                <p>Manage heritage sites & landmarks</p>
+                            </div>
+                            <i class="fas fa-arrow-right action-arrow"></i>
+                        </a>
+                        <a href="/admin/events" class="action-card">
+                            <div class="action-icon"><i class="fas fa-calendar-alt"></i></div>
+                            <div class="action-content">
+                                <h3>Events</h3>
+                                <p>Schedule cultural events</p>
+                            </div>
+                            <i class="fas fa-arrow-right action-arrow"></i>
+                        </a>
+                        <a href="/admin/users" class="action-card">
+                            <div class="action-icon"><i class="fas fa-users-cog"></i></div>
+                            <div class="action-content">
+                                <h3>Users</h3>
+                                <p>Manage user accounts</p>
+                            </div>
+                            <i class="fas fa-arrow-right action-arrow"></i>
+                        </a>
+                        <a href="/admin/moderate" class="action-card">
+                            <div class="action-icon"><i class="fas fa-shield-alt"></i></div>
+                            <div class="action-content">
+                                <h3>Moderation</h3>
+                                <p>Review pending content</p>
+                            </div>
+                            <i class="fas fa-arrow-right action-arrow"></i>
+                        </a>
+                        <a href="/admin/heritage-gallery" class="action-card">
+                            <div class="action-icon"><i class="fas fa-images"></i></div>
+                            <div class="action-content">
+                                <h3>Heritage Gallery</h3>
+                                <p>Manage cultural media</p>
+                            </div>
+                            <i class="fas fa-arrow-right action-arrow"></i>
+                        </a>
+                        <a href="/admin/analytics" class="action-card">
+                            <div class="action-icon"><i class="fas fa-chart-pie"></i></div>
+                            <div class="action-content">
+                                <h3>Analytics</h3>
+                                <p>View platform insights</p>
+                            </div>
+                            <i class="fas fa-arrow-right action-arrow"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Sidebar Panels -->
+                <div class="sidebar-panels">
+                    <!-- Quick Stats -->
+                    <div class="panel-card">
+                        <div class="panel-header">
+                            <h3><i class="fas fa-chart-bar"></i> Quick Stats</h3>
+                        </div>
+                        <div class="panel-body">
+                            <div class="stat-row">
+                                <span class="stat-row-label"><i class="fas fa-clock"></i> Pending Reviews</span>
+                                <span class="stat-row-value" id="stat-pending-reviews"><%= pendingReviews %></span>
+                            </div>
+                            <div class="stat-row">
+                                <span class="stat-row-label"><i class="fas fa-user-plus"></i> New Today</span>
+                                <span class="stat-row-value">8</span>
+                            </div>
+                            <div class="stat-row">
+                                <span class="stat-row-label"><i class="fas fa-star"></i> Avg Rating</span>
+                                <span class="stat-row-value">4.8</span>
+                            </div>
+                            <div class="stat-row">
+                                <span class="stat-row-label"><i class="fas fa-eye"></i> Page Views</span>
+                                <span class="stat-row-value">2.4k</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Activity -->
+                    <div class="panel-card">
+                        <div class="panel-header">
+                            <h3><i class="fas fa-history"></i> Recent Activity</h3>
+                        </div>
+                        <div class="panel-body">
+                            <div class="activity-item">
+                                <div class="activity-icon green"><i class="fas fa-user-plus"></i></div>
+                                <div class="activity-info">
+                                    <p>New user registered</p>
+                                    <span>5 minutes ago</span>
+                                </div>
+                            </div>
+                            <div class="activity-item">
+                                <div class="activity-icon blue"><i class="fas fa-map-marker-alt"></i></div>
+                                <div class="activity-info">
+                                    <p>Destination updated</p>
+                                    <span>1 hour ago</span>
+                                </div>
+                            </div>
+                            <div class="activity-item">
+                                <div class="activity-icon orange"><i class="fas fa-star"></i></div>
+                                <div class="activity-info">
+                                    <p>New review submitted</p>
+                                    <span>2 hours ago</span>
+                                </div>
+                            </div>
+                            <div class="activity-item">
+                                <div class="activity-icon purple"><i class="fas fa-calendar-plus"></i></div>
+                                <div class="activity-info">
+                                    <p>Event created</p>
+                                    <span>3 hours ago</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <style>
+        /* Main Content */
+        .main-content{margin-left:260px;min-height:100vh;background:var(--bg-main)}
+        
+        /* Topbar */
+        .topbar{background:var(--bg-card);padding:1rem 2rem;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100;box-shadow:var(--shadow-sm);border-bottom:3px solid #D4AF37}
+        .topbar-left{display:flex;align-items:center;gap:1rem}
+        .menu-toggle{display:none;background:none;border:none;font-size:1.25rem;color:var(--text-primary);cursor:pointer;padding:0.5rem}
+        .topbar-title h1{font-size:1.5rem;font-weight:700;color:var(--text-primary);font-family:'Poppins',sans-serif;background:var(--gradient-nature);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+        .topbar-title p{font-size:0.85rem;color:var(--text-secondary);margin-top:0.15rem}
+        .topbar-right{display:flex;align-items:center;gap:1rem}
+        .search-wrapper{position:relative}
+        .search-box{position:relative;display:flex;align-items:center}
+        .search-box input{padding:0.6rem 4rem 0.6rem 2.5rem;border:2px solid var(--border);border-radius:var(--radius-md);width:280px;font-size:0.85rem;background:var(--bg-main);transition:all 0.2s}
+        .search-box input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(45,134,89,0.1)}
+        .search-box>i{position:absolute;left:0.875rem;top:50%;transform:translateY(-50%);color:var(--text-muted)}
+        .search-shortcut{position:absolute;right:0.75rem;top:50%;transform:translateY(-50%);font-size:0.65rem;color:var(--text-muted);background:var(--border);padding:0.2rem 0.4rem;border-radius:0.25rem;font-weight:600}
+        
+        /* Search Results Dropdown */
+        .search-results{position:absolute;top:calc(100% + 0.5rem);left:0;right:0;background:var(--bg-card);border-radius:var(--radius-md);box-shadow:var(--shadow-lg);border:1px solid var(--border);max-height:400px;overflow-y:auto;opacity:0;visibility:hidden;transform:translateY(-10px);transition:all 0.2s;z-index:300}
+        .search-results.active{opacity:1;visibility:visible;transform:translateY(0)}
+        .search-results:empty{display:none}
+        .search-category{padding:0.5rem 1rem;font-size:0.7rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;background:var(--bg-main);border-bottom:1px solid var(--border)}
+        .search-item{display:flex;align-items:center;gap:0.75rem;padding:0.75rem 1rem;text-decoration:none;color:var(--text-primary);transition:all 0.15s;border-bottom:1px solid var(--border)}
+        .search-item:last-child{border-bottom:none}
+        .search-item:hover,.search-item.selected{background:var(--bg-main)}
+        .search-item-icon{width:36px;height:36px;border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;font-size:0.9rem;flex-shrink:0}
+        .search-item-icon.green{background:rgba(45,134,89,0.1);color:var(--primary)}
+        .search-item-icon.blue{background:rgba(59,130,246,0.1);color:#3b82f6}
+        .search-item-icon.purple{background:rgba(139,92,246,0.1);color:#8b5cf6}
+        .search-item-icon.orange{background:rgba(255,107,53,0.1);color:var(--accent)}
+        .search-item-info{flex:1;min-width:0}
+        .search-item-title{font-weight:600;font-size:0.85rem;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .search-item-desc{font-size:0.75rem;color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .search-empty{padding:2rem 1rem;text-align:center;color:var(--text-muted)}
+        .search-empty i{font-size:2rem;margin-bottom:0.5rem;display:block;opacity:0.5}
+        .search-loading{padding:1.5rem;text-align:center;color:var(--text-muted)}
+        .search-loading i{animation:spin 1s linear infinite}
+        @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+        .user-menu-wrapper{position:relative}
+        .user-menu{display:flex;align-items:center;gap:0.75rem;padding:0.5rem 1rem;background:var(--bg-main);border-radius:var(--radius-md);cursor:pointer;border:2px solid var(--border);transition:all 0.2s}
+        .user-menu:hover{border-color:var(--primary-light);background:var(--border)}
+        .user-menu.active{border-color:var(--primary);background:var(--border)}
+        .user-avatar{width:38px;height:38px;border-radius:50%;background:var(--gradient-nature);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:0.9rem;object-fit:cover}
+        .user-info{display:flex;flex-direction:column}
+        .user-name{font-weight:600;font-size:0.85rem;color:var(--text-primary)}
+        .user-role{font-size:0.7rem;color:var(--text-secondary)}
+        .user-chevron{font-size:0.7rem;color:var(--text-muted);transition:transform 0.2s}
+        .user-menu.active .user-chevron{transform:rotate(180deg)}
+        
+        /* User Dropdown */
+        .user-dropdown{position:absolute;top:calc(100% + 0.5rem);right:0;width:260px;background:var(--bg-card);border-radius:var(--radius-md);box-shadow:var(--shadow-lg);border:1px solid var(--border);opacity:0;visibility:hidden;transform:translateY(-10px);transition:all 0.2s ease;z-index:200}
+        .user-dropdown.active{opacity:1;visibility:visible;transform:translateY(0)}
+        .dropdown-header{display:flex;align-items:center;gap:0.75rem;padding:1rem}
+        .dropdown-avatar{width:48px;height:48px;border-radius:50%;background:var(--gradient-nature);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:1.1rem;object-fit:cover;flex-shrink:0}
+        .dropdown-user-info{flex:1;min-width:0}
+        .dropdown-name{display:block;font-weight:700;font-size:0.95rem;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .dropdown-email{display:block;font-size:0.75rem;color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .dropdown-divider{height:1px;background:var(--border);margin:0.25rem 0}
+        .dropdown-item{display:flex;align-items:center;gap:0.75rem;padding:0.75rem 1rem;color:var(--text-primary);text-decoration:none;font-size:0.875rem;font-weight:500;transition:all 0.2s}
+        .dropdown-item:hover{background:var(--bg-main);color:var(--primary)}
+        .dropdown-item i{width:18px;color:var(--text-secondary);font-size:0.9rem}
+        .dropdown-item:hover i{color:var(--primary)}
+        .dropdown-logout{color:#ef4444}
+        .dropdown-logout:hover{background:rgba(239,68,68,0.1);color:#ef4444}
+        .dropdown-logout i{color:#ef4444}
+        
+        /* Dashboard Content */
+        .dashboard-content{padding:1.5rem 2rem}
+        
+        /* Stats Grid */
+        .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1.25rem;margin-bottom:1.5rem}
+        .stat-card{background:var(--bg-card);padding:1.5rem;border-radius:var(--radius-lg);box-shadow:var(--shadow-md);display:flex;align-items:center;gap:1rem;position:relative;overflow:hidden;border:1px solid var(--border);transition:all 0.3s}
+        .stat-card::before{content:'';position:absolute;top:0;left:0;width:4px;height:100%;background:var(--gradient-nature)}
+        .stat-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg)}
+        .stat-card .stat-icon{width:56px;height:56px;border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;font-size:1.5rem;color:#fff;flex-shrink:0}
+        .stat-users .stat-icon{background:linear-gradient(135deg,#2d8659,#3fa872)}
+        .stat-destinations .stat-icon{background:linear-gradient(135deg,#3b82f6,#60a5fa)}
+        .stat-events .stat-icon{background:linear-gradient(135deg,#8b5cf6,#a78bfa)}
+        .stat-artisans .stat-icon{background:linear-gradient(135deg,#ff6b35,#f59e0b)}
+        .stat-info{flex:1}
+        .stat-value{font-size:1.75rem;font-weight:800;color:var(--text-primary);display:block;line-height:1.2}
+        .stat-label{font-size:0.8rem;color:var(--text-secondary);font-weight:500}
+        .stat-trend{position:absolute;top:1rem;right:1rem;font-size:0.7rem;font-weight:600;padding:0.25rem 0.5rem;border-radius:var(--radius-sm);display:flex;align-items:center;gap:0.2rem}
+        .stat-trend.up{background:rgba(45,134,89,0.1);color:var(--primary)}
+        
+        /* Content Grid */
+        .content-grid{display:grid;grid-template-columns:1fr 340px;gap:1.5rem}
+        
+        /* Section Card */
+        .section-card{background:var(--bg-card);border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);border:1px solid var(--border);overflow:hidden}
+        .section-header{padding:1.25rem 1.5rem;border-bottom:2px solid var(--border);background:linear-gradient(135deg,rgba(45,134,89,0.03),rgba(63,168,114,0.03))}
+        .section-header h2{font-size:1.1rem;font-weight:700;color:var(--text-primary);display:flex;align-items:center;gap:0.5rem;font-family:'Poppins',sans-serif}
+        .section-header h2 i{color:var(--accent)}
+        
+        /* Actions Grid */
+        .actions-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1rem;padding:1.25rem}
+        .action-card{display:flex;align-items:center;gap:1rem;padding:1rem 1.25rem;background:var(--bg-main);border-radius:var(--radius-md);text-decoration:none;border:2px solid var(--border);transition:all 0.3s;position:relative}
+        .action-card:hover{border-color:var(--primary);background:#fff;transform:translateX(4px);box-shadow:var(--shadow-md)}
+        .action-card:hover .action-icon{background:var(--gradient-gold)}
+        .action-card:hover .action-arrow{opacity:1;transform:translateX(0)}
+        .action-icon{width:48px;height:48px;border-radius:var(--radius-md);background:var(--gradient-nature);display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.25rem;flex-shrink:0;transition:all 0.3s}
+        .action-content h3{font-size:0.95rem;font-weight:700;color:var(--text-primary);margin-bottom:0.15rem}
+        .action-content p{font-size:0.75rem;color:var(--text-secondary)}
+        .action-arrow{position:absolute;right:1rem;color:var(--primary);opacity:0;transform:translateX(-8px);transition:all 0.3s}
+        
+        /* Sidebar Panels */
+        .sidebar-panels{display:flex;flex-direction:column;gap:1.25rem}
+        .panel-card{background:var(--bg-card);border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);border:1px solid var(--border);overflow:hidden}
+        .panel-header{padding:1rem 1.25rem;border-bottom:2px solid var(--border);background:linear-gradient(135deg,rgba(45,134,89,0.03),rgba(63,168,114,0.03))}
+        .panel-header h3{font-size:0.95rem;font-weight:700;color:var(--text-primary);display:flex;align-items:center;gap:0.5rem}
+        .panel-header h3 i{color:var(--accent);font-size:0.9rem}
+        .panel-body{padding:1rem 1.25rem}
+        
+        /* Stat Rows */
+        .stat-row{display:flex;justify-content:space-between;align-items:center;padding:0.75rem 0;border-bottom:1px solid var(--border)}
+        .stat-row:last-child{border-bottom:none}
+        .stat-row-label{font-size:0.85rem;color:var(--text-secondary);display:flex;align-items:center;gap:0.5rem}
+        .stat-row-label i{color:var(--primary);width:16px}
+        .stat-row-value{font-weight:700;color:var(--primary);font-size:0.95rem}
+        
+        /* Activity Items */
+        .activity-item{display:flex;align-items:center;gap:0.875rem;padding:0.75rem 0;border-bottom:1px solid var(--border)}
+        .activity-item:last-child{border-bottom:none}
+        .activity-icon{width:36px;height:36px;border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;font-size:0.85rem;flex-shrink:0}
+        .activity-icon.green{background:rgba(45,134,89,0.1);color:var(--primary)}
+        .activity-icon.blue{background:rgba(59,130,246,0.1);color:#3b82f6}
+        .activity-icon.orange{background:rgba(255,107,53,0.1);color:var(--accent)}
+        .activity-icon.purple{background:rgba(139,92,246,0.1);color:#8b5cf6}
+        .activity-info p{font-size:0.85rem;font-weight:500;color:var(--text-primary);margin:0}
+        .activity-info span{font-size:0.7rem;color:var(--text-muted)}
+        
+        /* Responsive */
+        @media(max-width:1200px){
+            .stats-grid{grid-template-columns:repeat(2,1fr)}
+            .content-grid{grid-template-columns:1fr}
+            .sidebar{width:240px}
+            .main-content{margin-left:240px}
+        }
+        @media(max-width:900px){
+            .sidebar{transform:translateX(-100%);width:280px}
+            .sidebar.open{transform:translateX(0)}
+            .sidebar-overlay.active{display:block}
+            .sidebar-close{display:flex;align-items:center;justify-content:center}
+            .main-content{margin-left:0}
+            .menu-toggle{display:flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:var(--radius-sm);background:var(--bg-main);border:2px solid var(--border)}
+            .menu-toggle:hover{background:var(--border)}
+            .topbar{padding:0.875rem 1rem}
+            .topbar-title h1{font-size:1.25rem}
+            .topbar-title p{display:none}
+            .search-box{display:none}
+            .user-info{display:none}
+            .user-menu{padding:0.4rem}
+            .user-chevron{display:none}
+            .user-dropdown{width:240px;right:-0.5rem}
+        }
+        @media(max-width:640px){
+            .stats-grid{grid-template-columns:1fr}
+            .actions-grid{grid-template-columns:1fr}
+            .dashboard-content{padding:1rem}
+            .stat-card{padding:1.25rem}
+            .stat-value{font-size:1.5rem}
+            .stat-icon{width:48px;height:48px;font-size:1.25rem}
+        }
+    
+        /* Locations dropdown nav */
+        .nav-dropdown-toggle{cursor:pointer;user-select:none;justify-content:space-between}
+        .nav-caret{font-size:0.65rem;margin-left:auto;transition:transform 0.2s}
+        .nav-submenu{overflow:hidden;max-height:0;transition:max-height 0.25s ease;padding-left:0.5rem}
+        .nav-submenu.open{max-height:200px}
+        .nav-sub-link{font-size:0.8rem;padding:0.5rem 0.9rem;color:#a7f3d0 !important}
+        .nav-sub-link:hover,.nav-sub-link.active{background:rgba(255,255,255,0.08);color:#fff !important}
+        .nav-submenu.open ~ .nav-dropdown-toggle .nav-caret,
+        .nav-dropdown-toggle.active .nav-caret{transform:rotate(180deg)}
+    </style>
+
+    <script>
+        // Mobile sidebar toggle
+        const sidebar = document.getElementById('sidebar');
+        const sidebarOverlay = document.getElementById('sidebarOverlay');
+        const menuToggle = document.getElementById('menuToggle');
+        const sidebarClose = document.getElementById('sidebarClose');
+        
+        function openSidebar() {
+            sidebar.classList.add('open');
+            sidebarOverlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+        
+        function closeSidebar() {
+            sidebar.classList.remove('open');
+            sidebarOverlay.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+        
+        menuToggle?.addEventListener('click', openSidebar);
+        sidebarClose?.addEventListener('click', closeSidebar);
+        sidebarOverlay?.addEventListener('click', closeSidebar);
+        
+        // Close sidebar on window resize if open
+        window.addEventListener('resize', () => {
+            if (window.innerWidth > 900) closeSidebar();
+        });
+        
+        // User dropdown toggle
+        const userMenuToggle = document.getElementById('userMenuToggle');
+        const userDropdown = document.getElementById('userDropdown');
+        
+        userMenuToggle?.addEventListener('click', (e) => {
+            e.stopPropagation();
+            userMenuToggle.classList.toggle('active');
+            userDropdown.classList.toggle('active');
+        });
+        
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!userMenuToggle?.contains(e.target) && !userDropdown?.contains(e.target)) {
+                userMenuToggle?.classList.remove('active');
+                userDropdown?.classList.remove('active');
+            }
+        });
+        
+        // Close dropdown on escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                userMenuToggle?.classList.remove('active');
+                userDropdown?.classList.remove('active');
+            }
+        });
+        
+        // Admin Search functionality
+        const adminSearch = document.getElementById('adminSearch');
+        const searchResults = document.getElementById('searchResults');
+        let searchTimeout;
+        let selectedIndex = -1;
+        
+        // Quick navigation items (always available)
+        const quickNav = [
+            { title: 'Dashboard', desc: 'Admin overview', url: '/admin/dashboard', icon: 'fa-th-large', color: 'green' },
+            { title: 'Destinations', desc: 'Manage heritage sites', url: '/admin/destinations', icon: 'fa-map-marked-alt', color: 'blue' },
+            { title: 'Events', desc: 'Manage cultural events', url: '/admin/events', icon: 'fa-calendar-alt', color: 'purple' },
+            { title: 'Users', desc: 'Manage user accounts', url: '/admin/users', icon: 'fa-users', color: 'green' },
+            { title: 'Heritage Gallery', desc: 'Manage cultural media', url: '/admin/heritage-gallery', icon: 'fa-landmark', color: 'orange' },
+            { title: 'Map Places', desc: 'Manage map locations', url: '/admin/map-places', icon: 'fa-map', color: 'blue' },
+            { title: 'Moderation', desc: 'Review pending content', url: '/admin/moderate', icon: 'fa-shield-alt', color: 'purple' },
+            { title: 'Feedback', desc: 'View user feedback', url: '/admin/feedback', icon: 'fa-comment-dots', color: 'orange' },
+            { title: 'Analytics', desc: 'Platform insights', url: '/admin/analytics', icon: 'fa-chart-line', color: 'green' },
+            { title: 'Settings', desc: 'System configuration', url: '/admin/settings', icon: 'fa-cog', color: 'blue' },
+            { title: 'Add Destination', desc: 'Create new destination', url: '/admin/destinations/add', icon: 'fa-plus', color: 'green' },
+            { title: 'Add Event', desc: 'Create new event', url: '/admin/events/add', icon: 'fa-plus', color: 'purple' },
+            { title: 'Add User', desc: 'Create new user', url: '/admin/users/add', icon: 'fa-user-plus', color: 'blue' },
+        ];
+        
+        function renderSearchResults(query) {
+            if (!query.trim()) {
+                searchResults.classList.remove('active');
+                return;
+            }
+            
+            const q = query.toLowerCase();
+            
+            // Filter quick nav
+            const navResults = quickNav.filter(item => 
+                item.title.toLowerCase().includes(q) || 
+                item.desc.toLowerCase().includes(q)
+            );
+            
+            let html = '';
+            
+            if (navResults.length > 0) {
+                html += '<div class="search-category">Quick Navigation</div>';
+                navResults.forEach((item, idx) => {
+                    html += `
+                        <a href="${item.url}" class="search-item" data-index="${idx}">
+                            <div class="search-item-icon ${item.color}"><i class="fas ${item.icon}"></i></div>
+                            <div class="search-item-info">
+                                <div class="search-item-title">${highlightMatch(item.title, query)}</div>
+                                <div class="search-item-desc">${item.desc}</div>
+                            </div>
+                        </a>
+                    `;
+                });
+            }
+            
+            if (!html) {
+                html = `
+                    <div class="search-empty">
+                        <i class="fas fa-search"></i>
+                        <p>No results found for "${escapeHtml(query)}"</p>
+                    </div>
+                `;
+            }
+            
+            searchResults.innerHTML = html;
+            searchResults.classList.add('active');
+            selectedIndex = -1;
+        }
+        
+        function highlightMatch(text, query) {
+            const regex = new RegExp(`(${escapeRegex(query)})`, 'gi');
+            return text.replace(regex, '<strong style="color:var(--primary)">$1</strong>');
+        }
+        
+        function escapeHtml(str) {
+            return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+        }
+        
+        function escapeRegex(str) {
+            return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        }
+        
+        // Search input events
+        adminSearch?.addEventListener('input', (e) => {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                renderSearchResults(e.target.value);
+            }, 150);
+        });
+        
+        adminSearch?.addEventListener('focus', () => {
+            if (adminSearch.value.trim()) {
+                renderSearchResults(adminSearch.value);
+            }
+        });
+        
+        // Keyboard navigation
+        adminSearch?.addEventListener('keydown', (e) => {
+            const items = searchResults.querySelectorAll('.search-item');
+            
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                selectedIndex = Math.min(selectedIndex + 1, items.length - 1);
+                updateSelection(items);
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                selectedIndex = Math.max(selectedIndex - 1, -1);
+                updateSelection(items);
+            } else if (e.key === 'Enter' && selectedIndex >= 0) {
+                e.preventDefault();
+                items[selectedIndex]?.click();
+            } else if (e.key === 'Escape') {
+                searchResults.classList.remove('active');
+                adminSearch.blur();
+            }
+        });
+        
+        function updateSelection(items) {
+            items.forEach((item, idx) => {
+                item.classList.toggle('selected', idx === selectedIndex);
+            });
+            if (selectedIndex >= 0) {
+                items[selectedIndex]?.scrollIntoView({ block: 'nearest' });
+            }
+        }
+        
+        // Close search on click outside
+        document.addEventListener('click', (e) => {
+            if (!adminSearch?.contains(e.target) && !searchResults?.contains(e.target)) {
+                searchResults?.classList.remove('active');
+            }
+        });
+        
+        // Keyboard shortcut Ctrl+K
+        document.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+                e.preventDefault();
+                adminSearch?.focus();
+                adminSearch?.select();
+            }
+        });
+        
+        // Fetch stats
+        async function fetchAdminStats(){
+            try{
+                const res=await fetch('/api/admin/stats');
+                if(!res.ok)return;
+                const data=await res.json();
+                if(!data||!data.success)return;
+                if(document.getElementById('stat-users'))document.getElementById('stat-users').textContent=data.totalUsers;
+                if(document.getElementById('stat-destinations'))document.getElementById('stat-destinations').textContent=data.totalDestinations;
+                if(document.getElementById('stat-events'))document.getElementById('stat-events').textContent=data.totalEvents;
+                if(document.getElementById('stat-artisans'))document.getElementById('stat-artisans').textContent=data.totalArtisans;
+                if(document.getElementById('stat-pending-reviews'))document.getElementById('stat-pending-reviews').textContent=data.pendingReviews;
+            }catch(err){console.error('Failed to fetch admin stats',err);}
+        }
+        fetchAdminStats();
+        setInterval(fetchAdminStats,10000);
+    
+        function toggleLocationsMenu(e) {
+            e.preventDefault();
+            const submenu = document.getElementById('locations-submenu');
+            const caret = document.getElementById('locations-caret');
+            if (submenu) submenu.classList.toggle('open');
+            if (caret) caret.style.transform = submenu && submenu.classList.contains('open') ? 'rotate(180deg)' : '';
+        }
+    </script>
+</body>
+</html>

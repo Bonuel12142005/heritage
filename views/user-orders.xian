@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --primary: #2d8659; --primary-dark: #1a5f3f; --primary-light: #3fa872;
+            --accent: #D4AF37; --accent-dark: #B8941E;
+            --bg-main: #f8faf9; --bg-card: #ffffff;
+            --text-primary: #064e3b; --text-secondary: #6b7280; --text-muted: #9ca3af;
+            --border: #d1e7dd; --sidebar-bg: #1a5f3f; --sidebar-hover: #2d8659;
+            --sidebar-width: 260px;
+        }
+        
+        body { font-family: 'Inter', sans-serif; background: var(--bg-main); color: var(--text-primary); display: flex; min-height: 100vh; }
+        
+        /* Sidebar */
+        .sidebar { position: fixed; left: 0; top: 0; height: 100vh; width: var(--sidebar-width); background: var(--sidebar-bg); padding: 1.5rem 0; z-index: 1000; box-shadow: 4px 0 15px rgba(0,0,0,0.15); transition: transform 0.3s ease; overflow-y: auto; }
+        .sidebar-logo { padding: 0 1.25rem 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 1rem; }
+        .sidebar-logo h2 { color: white; font-size: 1.2rem; font-weight: 700; display: flex; align-items: center; gap: 0.5rem; }
+        .sidebar-logo img { width: 36px; height: 36px; object-fit: contain; border-radius: 6px; }
+        .sidebar-menu { list-style: none; }
+        .menu-item { margin: 0.15rem 0.75rem; }
+        .menu-link { display: flex; align-items: center; gap: 0.75rem; padding: 0.7rem 1rem; color: #d1fae5; text-decoration: none; border-radius: 0.6rem; transition: all 0.2s; font-weight: 500; font-size: 0.875rem; }
+        .menu-link:hover, .menu-link.active { background: var(--sidebar-hover); color: white; }
+        .menu-link i { width: 18px; text-align: center; }
+        
+        /* Main Content */
+        .main-content { margin-left: var(--sidebar-width); flex: 1; min-height: 100vh; display: flex; flex-direction: column; width: calc(100% - var(--sidebar-width)); }
+        
+        /* Topbar */
+        .topbar { background: var(--bg-card); padding: 1rem 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border-bottom: 3px solid var(--accent); display: flex; justify-content: space-between; align-items: center; }
+        .topbar-left h1 { font-size: 1.35rem; font-weight: 700; background: linear-gradient(135deg, var(--primary), var(--primary-light)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        
+        /* Content Area */
+        .content { padding: 1.5rem; flex: 1; }
+        
+        /* Orders List */
+        .orders-container { max-width: 900px; margin: 0 auto; }
+        .order-card { background: var(--bg-card); border-radius: 1rem; border: 1px solid var(--border); margin-bottom: 1.25rem; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .order-header { padding: 1rem 1.25rem; background: var(--bg-main); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem; }
+        .order-info { display: flex; gap: 1.5rem; flex-wrap: wrap; font-size: 0.8rem; color: var(--text-secondary); }
+        .order-info div span { display: block; font-weight: 700; color: var(--text-primary); margin-top: 0.2rem; }
+        
+        .order-status { padding: 0.35rem 0.75rem; border-radius: 2rem; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; }
+        .status-pending { background: #fef3c7; color: #92400e; }
+        .status-processing { background: #dbeafe; color: #1e40af; }
+        .status-completed { background: #d1fae5; color: #065f46; }
+        .status-cancelled { background: #fee2e2; color: #991b1b; }
+        
+        .order-body { padding: 1.25rem; display: flex; gap: 1.25rem; align-items: center; }
+        .product-img { width: 80px; height: 80px; border-radius: 0.6rem; object-fit: cover; background: #eee; }
+        .product-details { flex: 1; }
+        .product-name { font-weight: 700; font-size: 1.05rem; margin-bottom: 0.25rem; color: var(--text-primary); }
+        .order-meta { font-size: 0.85rem; color: var(--text-secondary); }
+        
+        .order-actions { padding: 1rem 1.25rem; border-top: 1px solid var(--border); display: flex; gap: 1rem; background: #fdfdfd; }
+        .btn { padding: 0.5rem 1rem; border-radius: 0.5rem; font-weight: 600; font-size: 0.8rem; text-decoration: none; display: inline-flex; align-items: center; gap: 0.4rem; cursor: pointer; border: 1px solid transparent; transition: all 0.2s; }
+        .btn-outline { border-color: var(--border); color: var(--text-secondary); background: white; }
+        .btn-outline:hover { background: var(--bg-main); border-color: var(--primary); color: var(--primary); }
+        
+        .empty-state { text-align: center; padding: 4rem 2rem; background: var(--bg-card); border-radius: 1rem; border: 2px dashed var(--border); }
+        .empty-state i { font-size: 3.5rem; color: var(--text-muted); margin-bottom: 1.5rem; }
+        .empty-state h2 { margin-bottom: 0.5rem; }
+        .empty-state p { color: var(--text-secondary); margin-bottom: 1.5rem; }
+        
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); }
+            .sidebar.active { transform: translateX(0); }
+            .main-content { margin-left: 0; width: 100%; }
+            .order-header { flex-direction: column; align-items: flex-start; }
+            .order-info { gap: 1rem; }
+        }
+    </style>
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="sidebar-logo">
+            <h2><img src="/uploads/logo.jpg" alt="HL"> HeritageLink</h2>
+        </div>
+        <ul class="sidebar-menu">
+            <li class="menu-item"><a href="/user/dashboard" class="menu-link"><i class="fas fa-th-large"></i><span>Dashboard</span></a></li>
+            <li class="menu-item"><a href="/destinations" class="menu-link"><i class="fas fa-map-marked-alt"></i><span>Destinations</span></a></li>
+            <li class="menu-item"><a href="/showcase" class="menu-link"><i class="fas fa-palette"></i><span>Artisans</span></a></li>
+            <li class="menu-item"><a href="/user/orders" class="menu-link active"><i class="fas fa-shopping-bag"></i><span>My Orders</span></a></li>
+            <li class="menu-item"><a href="/user/profile" class="menu-link"><i class="fas fa-user-circle"></i><span>My Profile</span></a></li>
+            <li class="menu-item"><a href="/" class="menu-link"><i class="fas fa-home"></i><span>Home</span></a></li>
+            <li class="menu-item"><a href="/logout" class="menu-link"><i class="fas fa-sign-out-alt"></i><span>Logout</span></a></li>
+        </ul>
+    </aside>
+
+    <main class="main-content">
+        <div class="topbar">
+            <div class="topbar-left">
+                <h1>My Orders</h1>
+            </div>
+        </div>
+
+        <div class="content">
+            <div class="orders-container">
+                <% if (orders && orders.length > 0) { %>
+                    <% orders.forEach(order => { %>
+                        <div class="order-card">
+                            <div class="order-header">
+                                <div class="order-info">
+                                    <div>ORDER PLACED <span><%= new Date(order.created_at).toLocaleDateString(undefined, {year: 'numeric', month: 'long', day: 'numeric'}) %></span></div>
+                                    <div>ORDER # <span><%= order.id %></span></div>
+                                    <div>TOTAL <span>₱<%= Number(order.total_price).toLocaleString() %></span></div>
+                                </div>
+                                <span class="order-status status-<%= order.status %>">
+                                    <%= order.status === 'processing' ? 'Approved' : order.status.charAt(0).toUpperCase() + order.status.slice(1) %>
+                                </span>
+                            </div>
+                            <div class="order-body">
+                                <img src="/<%= order.product_image || 'uploads/products/placeholder.png' %>" alt="<%= order.product_name %>" class="product-img">
+                                <div class="product-details">
+                                    <div class="product-name"><%= order.product_name %></div>
+                                    <div class="order-meta">Quantity: <%= order.quantity %> | Status: <%= order.status %></div>
+                                </div>
+                            </div>
+                            <div class="order-actions">
+                                <a href="/showcase/products/<%= order.product_id %>" class="btn btn-outline"><i class="fas fa-redo"></i> Buy Again</a>
+                                <button class="btn btn-outline" onclick="contactSupport(<%= order.id %>)"><i class="fas fa-headset"></i> Get Help</button>
+                            </div>
+                        </div>
+                    <% }); %>
+                <% } else { %>
+                    <div class="empty-state">
+                        <i class="fas fa-shopping-bag"></i>
+                        <h2>You haven't ordered anything yet</h2>
+                        <p>Explore our artisan showcase to find unique handcrafted items.</p>
+                        <a href="/showcase" class="btn btn-primary" style="background:linear-gradient(135deg, var(--primary), var(--primary-light))">Start Shopping</a>
+                    </div>
+                <% } %>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        function contactSupport(orderId) {
+            alert('Contact support for Order #' + orderId + '. This would open a chat or support form.');
+        }
+    </script>
+</body>
+</html>

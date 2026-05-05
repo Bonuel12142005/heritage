@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%- include('partials/dashboard-head.xian') %>
+    <title>Destination Management - HeritageLink</titl initial-scale=1.0">
+    <title>Destination Management - HeritageLink</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        :root { --primary-green: #166534; --secondary-green: #16a34a; --accent-gold: #d97706; --light-beige: #fef7ed; --text-dark: #1f2937; --text-light: #6b7280; --white: #ffffff; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background: var(--light-beige); color: var(--text-dark); min-height: 100vh; }
+        .navbar { background: linear-gradient(135deg, var(--primary-green) 0%, #15803d 100%); padding: 1rem 0; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+        .nav-container { max-width: 1400px; margin: 0 auto; padding: 0 2rem; display: flex; justify-content: space-between; align-items: center; }
+        .logo { color: white; text-decoration: none; font-size: 1.5rem; font-weight: bold; display: flex; align-items: center; gap: 0.5rem; }
+        .admin-badge { background: var(--accent-gold); color: white; padding: 0.25rem 0.75rem; border-radius: 1rem; font-size: 0.875rem; font-weight: 600; margin-left: 1rem; }
+        .nav-links { display: flex; gap: 1.5rem; align-items: center; }
+        .nav-link { color: white; text-decoration: none; padding: 0.5rem 1rem; border-radius: 0.5rem; transition: all 0.3s; font-weight: 500; }
+        .nav-link:hover { background: rgba(255,255,255,0.15); }
+        .dashboard-container { max-width: 1400px; margin: 0 auto; padding: 2rem; }
+        .page-header { background: var(--white); padding: 2rem; border-radius: 1rem; box-shadow: 0 4px 20px rgba(0,0,0,0.08); margin-bottom: 2rem; border-left: 4px solid var(--accent-gold); display: flex; justify-content: space-between; align-items: center; }
+        .page-title { color: var(--primary-green); font-size: 2rem; font-weight: 800; margin-bottom: 0.5rem; }
+        .page-subtitle { color: var(--text-light); }
+        .btn { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.5rem; border-radius: 0.75rem; text-decoration: none; font-weight: 600; border: none; cursor: pointer; }
+        .btn-primary { background: linear-gradient(135deg, var(--accent-gold), #f59e0b); color: var(--white); }
+        .btn-primary:hover { transform: translateY(-2px); }
+        .destinations-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 1.5rem; }
+        .destination-card { background: var(--white); border-radius: 1rem; box-shadow: 0 4px 20px rgba(0,0,0,0.08); overflow: hidden; transition: transform 0.3s; }
+        .destination-card:hover { transform: translateY(-5px); }
+        .destination-image { height: 200px; background: linear-gradient(135deg, var(--primary-green), var(--secondary-green)); display: flex; align-items: center; justify-content: center; color: white; font-size: 3rem; }
+        .destination-content { padding: 1.5rem; }
+        .destination-name { font-size: 1.25rem; font-weight: 700; color: var(--primary-green); margin-bottom: 0.5rem; }
+        .destination-location { color: var(--text-light); margin-bottom: 1rem; }
+        .destination-description { color: var(--text-dark); margin-bottom: 1rem; line-height: 1.5; }
+        .destination-meta { display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; }
+        .destination-category { background: var(--accent-gold); color: white; padding: 0.25rem 0.75rem; border-radius: 1rem; font-size: 0.875rem; }
+        .alert { padding: 1rem; border-radius: 0.5rem; margin-bottom: 1rem; }
+        .alert-success { background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
+        .alert-error { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+        .map-container { background: var(--white); border-radius: 1rem; box-shadow: 0 4px 20px rgba(0,0,0,0.08); padding: 1.5rem; margin-bottom: 2rem; }
+        #destinationsMap { height: 500px; width: 100%; border-radius: 0.75rem; z-index: 1; }
+        .map-controls { display: flex; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap; }
+        .map-filter { padding: 0.5rem 1rem; border: 2px solid #e5e7eb; border-radius: 0.5rem; background: white; cursor: pointer; transition: all 0.3s; }
+        .map-filter:hover, .map-filter.active { border-color: var(--accent-gold); background: var(--light-beige); }
+        .view-toggle { display: flex; gap: 0.5rem; }
+        .view-btn { padding: 0.5rem 1rem; border: 2px solid #e5e7eb; border-radius: 0.5rem; background: white; cursor: pointer; font-weight: 600; }
+        .view-btn.active { background: var(--accent-gold); color: white; border-color: var(--accent-gold); }
+        .leaflet-popup-content { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="/admin/dashboard" class="logo">
+                🏛️ HeritageLink 
+                <span class="admin-badge">Admin</span>
+            </a>
+            <div class="nav-links">
+                <a href="/admin/dashboard" class="nav-link">Dashboard</a>
+                <a href="/admin/users" class="nav-link">Users</a>
+                <a href="/admin/destinations" class="nav-link">Destinations</a>
+                <a href="/admin/events" class="nav-link">Events</a>
+                <a href="/admin/moderate" class="nav-link">Moderate</a>
+                <a href="/logout" class="nav-link">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="dashboard-container">
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Destination Management</h1>
+                <p class="page-subtitle">Manage cultural destinations in Gloria, Oriental Mindoro with FREE interactive maps</p>
+            </div>
+            <a href="/admin/destinations/add" class="btn btn-primary">+ Add Destination</a>
+        </div>
+
+        <% if (success) { %>
+            <div class="alert alert-success">✅ <%= success %></div>
+        <% } %>
+        <% if (error) { %>
+            <div class="alert alert-error">❌ <%= error %></div>
+        <% } %>
+
+        <div class="map-container">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <div>
+                    <h2 style="color: var(--primary-green); margin: 0;">📍 Gloria, Oriental Mindoro - Interactive Map</h2>
+                    <p style="color: var(--text-light); font-size: 0.875rem; margin: 0.25rem 0 0 0;">Free OpenStreetMap - No API Key Required</p>
+                </div>
+                <div class="view-toggle">
+                    <button class="view-btn active" onclick="showMap()">🗺️ Map</button>
+                    <button class="view-btn" onclick="showGrid()">📋 Grid</button>
+                </div>
+            </div>
+            <div class="map-controls">
+                <button class="map-filter active" data-category="all" onclick="filterMarkers('all')">All Destinations</button>
+                <button class="map-filter" data-category="Park" onclick="filterMarkers('Park')">🌳 Parks</button>
+                <button class="map-filter" data-category="Museum" onclick="filterMarkers('Museum')">🏛️ Museums</button>
+                <button class="map-filter" data-category="Mountain" onclick="filterMarkers('Mountain')">⛰️ Mountains</button>
+                <button class="map-filter" data-category="Religious" onclick="filterMarkers('Religious')">⛪ Religious</button>
+                <button class="map-filter" data-category="Market" onclick="filterMarkers('Market')">🏪 Markets</button>
+            </div>
+            <div id="destinationsMap"></div>
+        </div>
+
+        <div class="destinations-grid" id="destinationsGrid">
+            <% if (destinations && destinations.length > 0) { %>
+                <% destinations.forEach(destination => { %>
+                    <div class="destination-card">
+                        <div class="destination-image" style="<%= destination.image_url ? 'background-image: url(' + destination.image_url + '); background-size: cover; background-position: center;' : '' %>">
+                            <% if (!destination.image_url) { %>🏞️<% } %>
+                        </div>
+                        <div class="destination-content">
+                            <h3 class="destination-name"><%= destination.name %></h3>
+                            <div class="destination-location">📍 <%= destination.location %></div>
+                            <div class="destination-description"><%= destination.description ? destination.description.substring(0, 100) + '...' : 'No description available' %></div>
+                            <div class="destination-meta">
+                                <span class="destination-category"><%= destination.category || 'Cultural' %></span>
+                                <div>
+                                    <% if (destination.entrance_fee > 0) { %>
+                                        <strong>₱<%= destination.entrance_fee %></strong>
+                                    <% } else { %>
+                                        <strong>Free</strong>
+                                    <% } %>
+                                </div>
+                            </div>
+                            <div style="display:flex; gap:0.5rem; margin-top:1rem;">
+                                <a href="/admin/destinations/edit/<%= destination.id %>" class="btn" style="background:#eef2ff;color:#1e3a8a;border-radius:0.5rem;padding:0.5rem 0.75rem;">Edit</a>
+                                <form action="/admin/destinations/<%= destination.id %>/delete" method="POST" style="display:inline;">
+                                    <button type="submit" class="btn" style="background:#fee2e2;color:#991b1b;border-radius:0.5rem;padding:0.5rem 0.75rem;border:none;">Delete</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                <% }); %>
+            <% } else { %>
+                <div style="grid-column: 1 / -1; text-align: center; padding: 3rem;">
+                    <h3>No destinations found</h3>
+                    <p>Get started by adding your first cultural destination.</p>
+                    <a href="/admin/destinations/add" class="btn btn-primary">Add First Destination</a>
+                </div>
+            <% } %>
+        </div>
+    </div>
+
+    <script>
+        const destinations = <%- JSON.stringify(destinations || []) %>;
+        let map, markers = [];
+        let currentFilter = 'all';
+
+        // Gloria, Oriental Mindoro coordinates
+        const GLORIA_LAT = 13.0167;
+        const GLORIA_LNG = 121.4667;
+
+        // Initialize map centered on Gloria, Oriental Mindoro
+        map = L.map('destinationsMap').setView([GLORIA_LAT, GLORIA_LNG], 13);
+
+        // Add OpenStreetMap tiles (Free!)
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+            attribution: '© OpenStreetMap contributors | Gloria, Oriental Mindoro',
+            maxZoom: 19,
+            minZoom: 11
+        }).addTo(map);
+
+        // Set max bounds to Gloria area (restrict panning)
+        const gloriaArea = L.latLngBounds(
+            L.latLng(12.85, 121.30),  // Southwest corner
+            L.latLng(13.18, 121.63)   // Northeast corner
+        );
+        map.setMaxBounds(gloriaArea);
+        map.on('drag', function() {
+            map.panInsideBounds(gloriaArea, { animate: false });
+        });
+
+        // Custom icons for categories
+        const categoryIcons = {
+            'Park': '🌳',
+            'Museum': '🏛️',
+            'Mountain': '⛰️',
+            'Religious': '⛪',
+            'Market': '🏪'
+        };
+
+        // Add markers for each destination
+        destinations.forEach(destination => {
+            if (destination.latitude && destination.longitude) {
+                const icon = L.divIcon({
+                    html: `<div style="font-size: 24px;">${categoryIcons[destination.category] || '📍'}</div>`,
+                    className: 'custom-marker',
+                    iconSize: [30, 30],
+                    iconAnchor: [15, 30]
+                });
+
+                const marker = L.marker([destination.latitude, destination.longitude], { icon: icon })
+                    .bindPopup(`
+                        <div style="max-width: 250px;">
+                            <h3 style="color: #166534; margin: 0 0 10px 0;">${destination.name}</h3>
+                            <p style="margin: 5px 0;"><strong>Category:</strong> ${destination.category || 'N/A'}</p>
+                            <p style="margin: 5px 0;"><strong>Location:</strong> ${destination.location || 'N/A'}</p>
+                            <p style="margin: 5px 0;"><strong>Fee:</strong> ${destination.entrance_fee > 0 ? '₱' + destination.entrance_fee : 'Free'}</p>
+                            <p style="margin: 10px 0 5px 0;">${destination.description ? destination.description.substring(0, 80) + '...' : ''}</p>
+                            <div style="margin-top: 10px;">
+                                <a href="/admin/destinations/edit/${destination.id}" style="color: #1e3a8a; text-decoration: none; margin-right: 10px;">✏️ Edit</a>
+                                <a href="https://www.google.com/maps/dir/?api=1&destination=${destination.latitude},${destination.longitude}" target="_blank" style="color: #166534; text-decoration: none;">🧭 Directions</a>
+                            </div>
+                        </div>
+                    `)
+                    .addTo(map);
+
+                marker.category = destination.category || 'Other';
+                markers.push(marker);
+            }
+        });
+
+        // Fit bounds to show all markers (within Gloria area)
+        if (markers.length > 0) {
+            const group = L.featureGroup(markers);
+            const bounds = group.getBounds();
+            // Only fit if markers are within Gloria area
+            if (gloriaArea.contains(bounds.getCenter())) {
+                map.fitBounds(bounds.pad(0.1));
+            }
+        }
+
+        function filterMarkers(category) {
+            currentFilter = category;
+            
+            // Update active button
+            document.querySelectorAll('.map-filter').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.dataset.category === category) {
+                    btn.classList.add('active');
+                }
+            });
+
+            // Filter markers
+            const visibleMarkers = [];
+            markers.forEach(marker => {
+                if (category === 'all' || marker.category === category) {
+                    marker.addTo(map);
+                    visibleMarkers.push(marker);
+                } else {
+                    map.removeLayer(marker);
+                }
+            });
+
+            // Fit bounds to visible markers
+            if (visibleMarkers.length > 0) {
+                const group = L.featureGroup(visibleMarkers);
+                map.fitBounds(group.getBounds().pad(0.1));
+            }
+        }
+
+        function showMap() {
+            document.querySelector('.map-container').style.display = 'block';
+            document.getElementById('destinationsGrid').style.display = 'grid';
+            document.querySelectorAll('.view-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            setTimeout(() => map.invalidateSize(), 100);
+        }
+
+        function showGrid() {
+            document.querySelector('.map-container').style.display = 'none';
+            document.getElementById('destinationsGrid').style.display = 'grid';
+            document.querySelectorAll('.view-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+    </script>
+</body>
+</html>
