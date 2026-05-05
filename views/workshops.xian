@@ -208,7 +208,8 @@
             try {
                 const res = await fetch('/api/workshops');
                 const data = await res.json();
-                allWorkshops = data.workshops || [];
+                // API returns {success: true, data: [...]}
+                allWorkshops = data.data || data.workshops || [];
                 renderWorkshops(allWorkshops);
                 attachFilters();
             } catch (err) {
