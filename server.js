@@ -399,7 +399,7 @@ app.get('/api/destinations', async (req, res) => {
         console.log('🔍 DB connection status:', db ? 'Connected' : 'Not connected');
         
         const [destinations] = await db.execute(
-            'SELECT * FROM destinations WHERE status = "active" ORDER BY name'
+            "SELECT * FROM destinations WHERE status = 'active' ORDER BY name"
         );
         
         console.log(`✅ Found ${destinations.length} destinations`);
@@ -423,7 +423,7 @@ app.get('/api/destinations', async (req, res) => {
 app.get('/api/events', async (req, res) => {
     try {
         const [events] = await db.execute(
-            'SELECT * FROM events WHERE status = "active" ORDER BY event_date DESC'
+            "SELECT * FROM events WHERE status = 'active' ORDER BY event_date DESC"
         );
         res.json({
             success: true,
@@ -442,7 +442,7 @@ app.get('/api/events', async (req, res) => {
 app.get('/api/products', async (req, res) => {
     try {
         const [products] = await db.execute(
-            'SELECT * FROM artisan_products WHERE status = "active" ORDER BY created_at DESC'
+            "SELECT * FROM artisan_products WHERE status = 'active' ORDER BY created_at DESC"
         );
         res.json({
             success: true,
@@ -461,7 +461,7 @@ app.get('/api/products', async (req, res) => {
 app.get('/api/heritage', async (req, res) => {
     try {
         const [items] = await db.execute(
-            'SELECT * FROM heritage_items WHERE status = "active" ORDER BY created_at DESC'
+            "SELECT * FROM heritage_items WHERE status = 'active' ORDER BY created_at DESC"
         );
         res.json({
             success: true,
