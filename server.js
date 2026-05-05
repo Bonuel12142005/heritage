@@ -445,6 +445,83 @@ app.get('/api/admin/dashboard', async (req, res) => {
     }
 });
 
+// Public API endpoints
+app.get('/api/destinations', async (req, res) => {
+    try {
+        const [destinations] = await db.execute(
+            'SELECT * FROM destinations WHERE status = "active" ORDER BY name'
+        );
+        res.json({
+            success: true,
+            data: destinations || []
+        });
+    } catch (error) {
+        console.error('API destinations error:', error);
+        res.json({ 
+            success: false, 
+            message: 'Failed to load destinations',
+            data: []
+        });
+    }
+});
+
+app.get('/api/events', async (req, res) => {
+    try {
+        const [events] = await db.execute(
+            'SELECT * FROM events WHERE status = "active" ORDER BY event_date DESC'
+        );
+        res.json({
+            success: true,
+            data: events || []
+        });
+    } catch (error) {
+        console.error('API events error:', error);
+        res.json({ 
+            success: false, 
+            message: 'Failed to load events',
+            data: []
+        });
+    }
+});
+
+app.get('/api/products', async (req, res) => {
+    try {
+        const [products] = await db.execute(
+            'SELECT * FROM artisan_products WHERE status = "active" ORDER BY created_at DESC'
+        );
+        res.json({
+            success: true,
+            data: products || []
+        });
+    } catch (error) {
+        console.error('API products error:', error);
+        res.json({ 
+            success: false, 
+            message: 'Failed to load products',
+            data: []
+        });
+    }
+});
+
+app.get('/api/heritage', async (req, res) => {
+    try {
+        const [items] = await db.execute(
+            'SELECT * FROM heritage_items WHERE status = "active" ORDER BY created_at DESC'
+        );
+        res.json({
+            success: true,
+            data: items || []
+        });
+    } catch (error) {
+        console.error('API heritage error:', error);
+        res.json({ 
+            success: false, 
+            message: 'Failed to load heritage items',
+            data: []
+        });
+    }
+});
+
 // Test route for EJS debugging
 app.get('/test-ejs', (req, res) => {
     try {
