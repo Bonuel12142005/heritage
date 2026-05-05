@@ -786,13 +786,38 @@ app.get('/admin/heritage/:id/edit', requireAuth, requireRole('admin'), (req, res
 });
 
 // Admin Map Places Management
-app.get('/admin/map-places', requireAuth, requireRole('admin'), (req, res) => {
-    const templatePath = path.join(__dirname, 'views/admin-map-places.xian');
-    const html = renderTemplate(templatePath, {
-        title: 'Manage Map Places - Admin',
-        user: req.session.user
-    });
-    res.send(html);
+app.get('/admin/map-places', requireAuth, requireRole('admin'), async (req, res) => {
+    try {
+        // Fetch all map places
+        let places = [];
+        try {
+            const [placesResult] = await db.execute(
+                'SELECT * FROM map_places ORDER BY created_at DESC'
+            );
+            places = placesResult;
+        } catch (error) {
+            console.log('Map places table not found or error:', error.message);
+            places = [];
+        }
+        
+        const templatePath = path.join(__dirname, 'views/admin-map-places.xian');
+        const html = renderTemplate(templatePath, {
+            title: 'Manage Map Places - Admin',
+            user: req.session.user,
+            places: places
+        });
+        res.send(html);
+    } catch (error) {
+        console.error('Admin map places error:', error);
+        const templatePath = path.join(__dirname, 'views/admin-map-places.xian');
+        const html = renderTemplate(templatePath, {
+            title: 'Manage Map Places - Admin',
+            user: req.session.user,
+            places: []
+        });
+        res.send(html);
+    }
+});
 });
 
 app.get('/admin/map-place/new', requireAuth, requireRole('admin'), (req, res) => {
@@ -817,22 +842,70 @@ app.get('/admin/map-place/:id/edit', requireAuth, requireRole('admin'), (req, re
 });
 
 // Admin Messages & Feedback
-app.get('/admin/messages', requireAuth, requireRole('admin'), (req, res) => {
-    const templatePath = path.join(__dirname, 'views/admin-messages.xian');
-    const html = renderTemplate(templatePath, {
-        title: 'Messages - Admin',
-        user: req.session.user
-    });
-    res.send(html);
+app.get('/admin/messages', requireAuth, requireRole('admin'), async (req, res) => {
+    try {
+        // Fetch all messages
+        let messages = [];
+        try {
+            const [messagesResult] = await db.execute(
+                'SELECT * FROM messages ORDER BY created_at DESC'
+            );
+            messages = messagesResult;
+        } catch (error) {
+            console.log('Messages table not found or error:', error.message);
+            messages = [];
+        }
+        
+        const templatePath = path.join(__dirname, 'views/admin-messages.xian');
+        const html = renderTemplate(templatePath, {
+            title: 'Messages - Admin',
+            user: req.session.user,
+            messages: messages
+        });
+        res.send(html);
+    } catch (error) {
+        console.error('Admin messages error:', error);
+        const templatePath = path.join(__dirname, 'views/admin-messages.xian');
+        const html = renderTemplate(templatePath, {
+            title: 'Messages - Admin',
+            user: req.session.user,
+            messages: []
+        });
+        res.send(html);
+    }
 });
 
-app.get('/admin/feedback', requireAuth, requireRole('admin'), (req, res) => {
-    const templatePath = path.join(__dirname, 'views/admin-feedback.xian');
-    const html = renderTemplate(templatePath, {
-        title: 'User Feedback - Admin',
-        user: req.session.user
-    });
-    res.send(html);
+app.get('/admin/feedback', requireAuth, requireRole('admin'), async (req, res) => {
+    try {
+        // Fetch all feedback
+        let feedback = [];
+        try {
+            const [feedbackResult] = await db.execute(
+                'SELECT * FROM feedback ORDER BY created_at DESC'
+            );
+            feedback = feedbackResult;
+        } catch (error) {
+            console.log('Feedback table not found or error:', error.message);
+            feedback = [];
+        }
+        
+        const templatePath = path.join(__dirname, 'views/admin-feedback.xian');
+        const html = renderTemplate(templatePath, {
+            title: 'User Feedback - Admin',
+            user: req.session.user,
+            feedback: feedback
+        });
+        res.send(html);
+    } catch (error) {
+        console.error('Admin feedback error:', error);
+        const templatePath = path.join(__dirname, 'views/admin-feedback.xian');
+        const html = renderTemplate(templatePath, {
+            title: 'User Feedback - Admin',
+            user: req.session.user,
+            feedback: []
+        });
+        res.send(html);
+    }
 });
 
 // Admin Analytics & Reports
