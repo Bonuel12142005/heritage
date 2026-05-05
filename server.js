@@ -1852,10 +1852,14 @@ app.get('/event/:id', (req, res) => {
 // Heritage Gallery routes
 app.get('/heritage-gallery', async (req, res) => {
     try {
+        console.log('📚 Loading heritage gallery...');
+        
         // Fetch heritage items from database
         const [items] = await db.execute(
-            'SELECT * FROM heritage_items WHERE status = "active" ORDER BY created_at DESC'
+            'SELECT * FROM heritage_items WHERE status = \'active\' ORDER BY created_at DESC'
         );
+        
+        console.log('✅ Heritage items found:', items.length);
         
         // Calculate stats
         const stats = {
@@ -1866,6 +1870,8 @@ app.get('/heritage-gallery', async (req, res) => {
             documents: items.filter(item => item.media_type === 'document').length
         };
         
+        console.log('📊 Heritage stats:', stats);
+        
         const templatePath = path.join(__dirname, 'views/heritage-gallery.xian');
         const html = renderTemplate(templatePath, {
             title: 'Heritage Gallery - HeritageLink',
@@ -1875,7 +1881,8 @@ app.get('/heritage-gallery', async (req, res) => {
         });
         res.send(html);
     } catch (error) {
-        console.error('Heritage gallery error:', error);
+        console.error('❌ Heritage gallery error:', error);
+        console.error('Error stack:', error.stack);
         const templatePath = path.join(__dirname, 'views/heritage-gallery.xian');
         const html = renderTemplate(templatePath, {
             title: 'Heritage Gallery - HeritageLink',
