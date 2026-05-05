@@ -938,11 +938,20 @@ app.get('/admin/feedback', requireAuth, requireRole('admin'), async (req, res) =
             feedback = [];
         }
         
+        // Calculate stats
+        const stats = {
+            total: feedback.length,
+            pending: feedback.filter(f => f.status === 'pending').length,
+            reviewed: feedback.filter(f => f.status === 'reviewed').length,
+            avg_rating: feedback.length > 0 ? (feedback.reduce((sum, f) => sum + (f.rating || 0), 0) / feedback.length) : 0
+        };
+        
         const templatePath = path.join(__dirname, 'views/admin-feedback.xian');
         const html = renderTemplate(templatePath, {
             title: 'User Feedback - Admin',
             user: req.session.user,
-            feedback: feedback
+            feedback: feedback,
+            stats: stats
         });
         res.send(html);
     } catch (error) {
@@ -951,40 +960,152 @@ app.get('/admin/feedback', requireAuth, requireRole('admin'), async (req, res) =
         const html = renderTemplate(templatePath, {
             title: 'User Feedback - Admin',
             user: req.session.user,
-            feedback: []
+            feedback: [],
+            stats: { total: 0, pending: 0, reviewed: 0, avg_rating: 0 }
         });
         res.send(html);
     }
 });
 
 // Admin Analytics & Reports
-app.get('/admin/analytics', requireAuth, requireRole('admin'), (req, res) => {
-    const templatePath = path.join(__dirname, 'views/admin-analytics.xian');
-    const html = renderTemplate(templatePath, {
-        title: 'Analytics - Admin',
-        user: req.session.user
-    });
-    res.send(html);
+app.get('/admin/analytics', requireAuth, requireRole('admin'), async (req, res) => {
+    try {
+        let totalUsers = 0;
+        let totalDestinations = 0;
+        let totalEvents = 0;
+        let totalProducts = 0;
+        
+        try {
+            const [usersResult] = await db.execute('SELECT COUNT(*) as count FROM users');
+            totalUsers = usersResult[0].count;
+        } catch (error) {
+            console.log('Users table error:', error.message);
+        }
+        
+        try {
+            const [destinationsResult] = await db.execute('SELECT COUNT(*) as count FROM destinations');
+            totalDestinations = destinationsResult[0].count;
+        } catch (error) {
+            console.log('Destinations table error:', error.message);
+        }
+        
+        try {
+            const [eventsResult] = await db.execute('SELECT COUNT(*) as count FROM events');
+            totalEvents = eventsResult[0].count;
+        } catch (error) {
+            console.log('Events table error:', error.message);
+        }
+        
+        try {
+            const [productsResult] = await db.execute('SELECT COUNT(*) as count FROM artisan_products');
+            totalProducts = productsResult[0].count;
+        } catch (error) {
+            console.log('Products table error:', error.message);
+        }
+        
+        const metrics = {
+            totalUsers: totalUsers,
+            totalDestinations: totalDestinations,
+            totalEvents: totalEvents,
+            totalProducts: totalProducts,
+            totalRevenue: 0,
+            activeUsers: 0
+        };
+        
+        const templatePath = path.join(__dirname, 'views/admin-analytics.xian');
+        const html = renderTemplate(templatePath, {
+            title: 'Analytics - Admin',
+            user: req.session.user,
+            metrics: metrics
+        });
+        res.send(html);
+    } catch (error) {
+        console.error('Admin analytics error:', error);
+        res.send(renderTemplate(path.join(__dirname, 'views/admin-analytics.xian'), {
+            title: 'Analytics - Admin',
+            user: req.session.user,
+            metrics: { totalUsers: 0, totalDestinations: 0, totalEvents: 0, totalProducts: 0, totalRevenue: 0, activeUsers: 0 }
+        }));
+    }
 });
 
 // Admin Moderation
-app.get('/admin/moderate', requireAuth, requireRole('admin'), (req, res) => {
-    const templatePath = path.join(__dirname, 'views/admin-moderate.xian');
-    const html = renderTemplate(templatePath, {
-        title: 'Content Moderation - Admin',
-        user: req.session.user
-    });
-    res.send(html);
+app.get('/admin/moderate', requireAuth, requireRole('admin'), async (req, res) => {
+    try {
+        let pendingReviews = [];
+        let pendingProducts = [];
+        
+        try {
+            const [reviewsResult] = await db.execute(
+                'SELECT * FROM reviews WHERE status = "pending" ORDER BY created_at DESC'
+            );
+            pendingReviews = reviewsResult;
+        } catch (error) {
+            console.log('Reviews table error:', error.message);
+        }
+        
+        try {
+            const [productsResult] = await db.execute(
+                'SELECT * FROM artisan_products WHERE status = "pending" ORDER BY created_at DESC'
+            );
+            pendingProducts = productsResult;
+        } catch (error) {
+            console.log('Products table error:', error.message);
+        }
+        
+        const templatePath = path.join(__dirname, 'views/admin-moderate.xian');
+        const html = renderTemplate(templatePath, {
+            title: 'Content Moderation - Admin',
+            user: req.session.user,
+            pendingReviews: pendingReviews,
+            pendingProducts: pendingProducts
+        });
+        res.send(html);
+    } catch (error) {
+        console.error('Admin moderate error:', error);
+        res.send(renderTemplate(path.join(__dirname, 'views/admin-moderate.xian'), {
+            title: 'Content Moderation - Admin',
+            user: req.session.user,
+            pendingReviews: [],
+            pendingProducts: []
+        }));
+    }
 });
 
 // Admin Settings
-app.get('/admin/settings', requireAuth, requireRole('admin'), (req, res) => {
-    const templatePath = path.join(__dirname, 'views/admin-settings.xian');
-    const html = renderTemplate(templatePath, {
-        title: 'System Settings - Admin',
-        user: req.session.user
-    });
-    res.send(html);
+app.get('/admin/settings', requireAuth, requireRole('admin'), async (req, res) => {
+    try {
+        let settings = {
+            site_title: 'HeritageLink',
+            contact_email: 'admin@heritagelink.com',
+            site_description: 'Discover Gloria, Oriental Mindoro',
+            maintenance_mode: false
+        };
+        
+        try {
+            const [settingsResult] = await db.execute('SELECT * FROM settings LIMIT 1');
+            if (settingsResult.length > 0) {
+                settings = settingsResult[0];
+            }
+        } catch (error) {
+            console.log('Settings table error:', error.message);
+        }
+        
+        const templatePath = path.join(__dirname, 'views/admin-settings.xian');
+        const html = renderTemplate(templatePath, {
+            title: 'System Settings - Admin',
+            user: req.session.user,
+            settings: settings
+        });
+        res.send(html);
+    } catch (error) {
+        console.error('Admin settings error:', error);
+        res.send(renderTemplate(path.join(__dirname, 'views/admin-settings.xian'), {
+            title: 'System Settings - Admin',
+            user: req.session.user,
+            settings: { site_title: 'HeritageLink', contact_email: 'admin@heritagelink.com', site_description: 'Discover Gloria, Oriental Mindoro', maintenance_mode: false }
+        }));
+    }
 });
 
 app.get('/artisan', requireAuth, requireRole('artisan'), async (req, res) => {
