@@ -25,6 +25,10 @@ let db;
 async function initializeDatabase() {
     try {
         console.log('🔄 Connecting to MySQL database...');
+        console.log('📍 DB_HOST:', process.env.DB_HOST || 'localhost');
+        console.log('📍 DB_PORT:', process.env.DB_PORT || 3306);
+        console.log('📍 DB_USER:', process.env.DB_USER || 'root');
+        console.log('📍 DB_NAME:', process.env.DB_NAME || 'heritagelink');
         
         // Check if we're connecting to Aiven (production)
         const isAiven = process.env.DB_HOST && process.env.DB_HOST.includes('aivencloud.com');
@@ -462,19 +466,27 @@ app.get('/api/admin/dashboard', async (req, res) => {
 // Public API endpoints
 app.get('/api/destinations', async (req, res) => {
     try {
+        console.log('📍 API /api/destinations called');
+        console.log('🔍 DB connection status:', db ? 'Connected' : 'Not connected');
+        
         const [destinations] = await db.execute(
             'SELECT * FROM destinations WHERE status = "active" ORDER BY name'
         );
+        
+        console.log(`✅ Found ${destinations.length} destinations`);
+        
         res.json({
             success: true,
             data: destinations || []
         });
     } catch (error) {
-        console.error('API destinations error:', error);
+        console.error('❌ API destinations error:', error.message);
+        console.error('Error details:', error);
         res.json({ 
             success: false, 
             message: 'Failed to load destinations',
-            data: []
+            data: [],
+            error: process.env.NODE_ENV === 'development' ? error.message : undefined
         });
     }
 });
