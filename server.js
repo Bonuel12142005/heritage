@@ -458,6 +458,65 @@ app.get('/register', (req, res) => {
     res.send(html);
 });
 
+// Handle registration form submission
+app.post('/register', async (req, res) => {
+    try {
+        const { email, password, name, role } = req.body;
+        
+        // Validate input
+        if (!email || !password || !name) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'Email, password, and name are required' 
+            });
+        }
+        
+        // Check if user already exists
+        const [existingUsers] = await db.execute(
+            'SELECT id FROM users WHERE email = ?',
+            [email]
+        );
+        
+        if (existingUsers.length > 0) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'Email already registered' 
+            });
+        }
+        
+        // Hash password
+        const hashedPassword = await bcrypt.hash(password, 10);
+        
+        // Insert new user
+        const userRole = role || 'user'; // Default to 'user' if no role specified
+        const [result] = await db.execute(
+            'INSERT INTO users (email, password, name, role) VALUES (?, ?, ?, ?)',
+            [email, hashedPassword, name, userRole]
+        );
+        
+        // Create session for the new user
+        req.session.user = {
+            id: result.insertId,
+            email: email,
+            name: name,
+            role: userRole
+        };
+        
+        res.json({ 
+            success: true, 
+            message: 'Registration successful',
+            redirect: userRole === 'admin' ? '/admin' : (userRole === 'artisan' ? '/artisan' : '/dashboard')
+        });
+        
+    } catch (error) {
+        console.error('Registration error:', error);
+        res.status(500).json({ 
+            success: false, 
+            message: 'Registration failed. Please try again.' 
+        });
+    }
+});
+
 // Password Reset Routes
 app.get('/forgot-password', (req, res) => {
     const templatePath = path.join(__dirname, 'views/forgotpassword.xian');
