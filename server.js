@@ -926,6 +926,9 @@ app.get('/admin/messages', requireAuth, requireRole('admin'), async (req, res) =
 
 app.get('/admin/feedback', requireAuth, requireRole('admin'), async (req, res) => {
     try {
+        // Get filter from query params
+        const currentStatus = req.query.status || 'all';
+        
         // Fetch all feedback
         let feedback = [];
         try {
@@ -951,7 +954,8 @@ app.get('/admin/feedback', requireAuth, requireRole('admin'), async (req, res) =
             title: 'User Feedback - Admin',
             user: req.session.user,
             feedback: feedback,
-            stats: stats
+            stats: stats,
+            currentStatus: currentStatus
         });
         res.send(html);
     } catch (error) {
@@ -961,7 +965,8 @@ app.get('/admin/feedback', requireAuth, requireRole('admin'), async (req, res) =
             title: 'User Feedback - Admin',
             user: req.session.user,
             feedback: [],
-            stats: { total: 0, pending: 0, reviewed: 0, avg_rating: 0 }
+            stats: { total: 0, pending: 0, reviewed: 0, avg_rating: 0 },
+            currentStatus: 'all'
         });
         res.send(html);
     }
@@ -974,6 +979,7 @@ app.get('/admin/analytics', requireAuth, requireRole('admin'), async (req, res) 
         let totalDestinations = 0;
         let totalEvents = 0;
         let totalProducts = 0;
+        let monthlyUsers = [];
         
         try {
             const [usersResult] = await db.execute('SELECT COUNT(*) as count FROM users');
@@ -1003,6 +1009,23 @@ app.get('/admin/analytics', requireAuth, requireRole('admin'), async (req, res) 
             console.log('Products table error:', error.message);
         }
         
+        // Get monthly user growth data
+        try {
+            const [monthlyResult] = await db.execute(`
+                SELECT 
+                    DATE_FORMAT(created_at, '%Y-%m') as month,
+                    COUNT(*) as count
+                FROM users
+                WHERE created_at >= DATE_SUB(NOW(), INTERVAL 12 MONTH)
+                GROUP BY DATE_FORMAT(created_at, '%Y-%m')
+                ORDER BY month ASC
+            `);
+            monthlyUsers = monthlyResult;
+        } catch (error) {
+            console.log('Monthly users query error:', error.message);
+            monthlyUsers = [];
+        }
+        
         const metrics = {
             totalUsers: totalUsers,
             totalDestinations: totalDestinations,
@@ -1016,7 +1039,8 @@ app.get('/admin/analytics', requireAuth, requireRole('admin'), async (req, res) 
         const html = renderTemplate(templatePath, {
             title: 'Analytics - Admin',
             user: req.session.user,
-            metrics: metrics
+            metrics: metrics,
+            monthlyUsers: monthlyUsers
         });
         res.send(html);
     } catch (error) {
@@ -1024,7 +1048,8 @@ app.get('/admin/analytics', requireAuth, requireRole('admin'), async (req, res) 
         res.send(renderTemplate(path.join(__dirname, 'views/admin-analytics.xian'), {
             title: 'Analytics - Admin',
             user: req.session.user,
-            metrics: { totalUsers: 0, totalDestinations: 0, totalEvents: 0, totalProducts: 0, totalRevenue: 0, activeUsers: 0 }
+            metrics: { totalUsers: 0, totalDestinations: 0, totalEvents: 0, totalProducts: 0, totalRevenue: 0, activeUsers: 0 },
+            monthlyUsers: []
         }));
     }
 });
