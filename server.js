@@ -1,4 +1,5 @@
 // HeritageLink Unified Server - Frontend + Backend + MySQL Database
+// Updated: 2026-05-05 - Fixed all template variables
 import express from 'express';
 import cors from 'cors';
 import session from 'express-session';
