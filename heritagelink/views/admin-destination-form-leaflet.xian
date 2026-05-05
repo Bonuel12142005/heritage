@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= destination ? 'Edit' : 'Add' %> Destination - HeritageLink</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        :root { --primary-green: #166534; --secondary-green: #16a34a; --accent-gold: #d97706; --light-beige: #fef7ed; --text-dark: #1f2937; --text-light: #6b7280; --white: #ffffff; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background: var(--light-beige); color: var(--text-dark); min-height: 100vh; }
+        .navbar { background: linear-gradient(135deg, var(--primary-green) 0%, #15803d 100%); padding: 1rem 0; }
+        .nav-container { max-width: 1400px; margin: 0 auto; padding: 0 2rem; display: flex; justify-content: space-between; align-items: center; }
+        .logo { color: white; text-decoration: none; font-size: 1.5rem; font-weight: bold; }
+        .admin-badge { background: var(--accent-gold); color: white; padding: 0.25rem 0.75rem; border-radius: 1rem; font-size: 0.875rem; font-weight: 600; margin-left: 1rem; }
+        .nav-links { display: flex; gap: 1.5rem; align-items: center; }
+        .nav-link { color: white; text-decoration: none; padding: 0.5rem 1rem; border-radius: 0.5rem; }
+        .dashboard-container { max-width: 800px; margin: 0 auto; padding: 2rem; }
+        .page-header { background: var(--white); padding: 2rem; border-radius: 1rem; box-shadow: 0 4px 20px rgba(0,0,0,0.08); margin-bottom: 2rem; border-left: 4px solid var(--accent-gold); }
+        .page-title { color: var(--primary-green); font-size: 2rem; font-weight: 800; margin-bottom: 0.5rem; }
+        .alert { padding: 1rem; border-radius: 0.5rem; margin-bottom: 1rem; }
+        .alert-success { background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
+        .alert-error { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+        .form-container { background: var(--white); padding: 2rem; border-radius: 1rem; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+        .form-group { margin-bottom: 1.5rem; }
+        .form-label { display: block; color: var(--text-dark); font-weight: 600; margin-bottom: 0.5rem; }
+        .form-input { width: 100%; padding: 0.75rem; border: 2px solid #e5e7eb; border-radius: 0.5rem; font-size: 1rem; box-sizing: border-box; }
+        .form-input:focus { outline: none; border-color: var(--accent-gold); }
+        .btn { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.5rem; border-radius: 0.75rem; text-decoration: none; font-weight: 600; border: none; cursor: pointer; }
+        .btn-primary { background: linear-gradient(135deg, var(--accent-gold), #f59e0b); color: var(--white); }
+        .btn-secondary { background: var(--text-light); color: var(--white); }
+        #map { height: 400px; width: 100%; border-radius: 0.5rem; margin-top: 0.5rem; z-index: 1; }
+        .map-info { background: #eff6ff; padding: 0.75rem; border-radius: 0.5rem; margin-top: 0.5rem; font-size: 0.875rem; color: #1e40af; }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="/admin/dashboard" class="logo">
+                🏛️ HeritageLink 
+                <span class="admin-badge">Admin</span>
+            </a>
+            <div class="nav-links">
+                <a href="/admin/dashboard" class="nav-link">Dashboard</a>
+                <a href="/admin/users" class="nav-link">Users</a>
+                <a href="/admin/destinations" class="nav-link">Destinations</a>
+                <a href="/admin/events" class="nav-link">Events</a>
+                <a href="/admin/moderate" class="nav-link">Moderate</a>
+                <a href="/logout" class="nav-link">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="dashboard-container">
+        <div class="page-header">
+            <h1 class="page-title"><%= destination ? 'Edit Destination' : 'Add New Destination' %></h1>
+            <p><%= destination ? 'Update destination information' : 'Create a new cultural destination' %></p>
+        </div>
+
+        <% if (success) { %>
+            <div class="alert alert-success">✅ <%= success %></div>
+        <% } %>
+        <% if (error) { %>
+            <div class="alert alert-error">❌ <%= error %></div>
+        <% } %>
+
+        <div class="form-container">
+            <form action="/admin/destinations/save" method="POST" enctype="multipart/form-data">
+                <% if (destination) { %>
+                    <input type="hidden" name="id" value="<%= destination.id %>">
+                <% } %>
+                
+                <div class="form-group">
+                    <label class="form-label">Destination Name</label>
+                    <input type="text" name="name" class="form-input" value="<%= destination ? destination.name : '' %>" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Description</label>
+                    <textarea name="description" class="form-input" rows="4" required><%= destination ? destination.description : '' %></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Location / Address (Gloria, Oriental Mindoro)</label>
+                    <input type="text" id="location" name="location" class="form-input" value="<%= destination ? destination.location : '' %>" placeholder="Click on map or type address..." required>
+                    <div class="map-info">
+                        📍 <strong>Click anywhere on the map</strong> - Address will auto-fill above!<br>
+                        🖱️ Drag the marker to adjust position<br>
+                        ✏️ Or type the address manually
+                    </div>
+                    <div id="map"></div>
+                    <input type="hidden" id="latitude" name="latitude" value="<%= destination && destination.latitude ? destination.latitude : '' %>">
+                    <input type="hidden" id="longitude" name="longitude" value="<%= destination && destination.longitude ? destination.longitude : '' %>">
+                    <div style="margin-top: 0.5rem; font-size: 0.875rem; color: #6b7280;">
+                        📌 Map centered on Gloria, Oriental Mindoro | 🆓 Free OpenStreetMap
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Category <span style="color: red;">*</span></label>
+                    <select name="category" id="categorySelect" class="form-input" required>
+                        <option value="">-- Select Category --</option>
+                        <option value="Park" <%= destination && destination.category === 'Park' ? 'selected' : (!destination ? 'selected' : '') %>>🌳 Park</option>
+                        <option value="Museum" <%= destination && destination.category === 'Museum' ? 'selected' : '' %>>🏛️ Museum</option>
+                        <option value="Mountain" <%= destination && destination.category === 'Mountain' ? 'selected' : '' %>>⛰️ Mountain</option>
+                        <option value="Religious" <%= destination && destination.category === 'Religious' ? 'selected' : '' %>>⛪ Religious</option>
+                        <option value="Market" <%= destination && destination.category === 'Market' ? 'selected' : '' %>>🏪 Market</option>
+                    </select>
+                    <div id="categoryPreview" style="margin-top: 0.5rem; padding: 0.5rem; background: #f3f4f6; border-radius: 0.5rem; text-align: center; font-size: 0.875rem; color: #6b7280;">
+                        <span id="categoryIcon" style="font-size: 24px;">📍</span>
+                        <span id="categoryText">Select a category to see the marker icon</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Contact Information (Optional)</label>
+                    <input type="text" name="contact_info" class="form-input" value="<%= destination ? destination.contact_info : '' %>" placeholder="Phone number, email, or website...">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Upload Images</label>
+                    <input type="file" name="images" id="imageUpload" class="form-input" accept="image/*" multiple style="padding: 0.5rem;">
+                    <div style="margin-top: 0.5rem; font-size: 0.875rem; color: #6b7280;">
+                        📸 You can upload multiple images (JPG, PNG, GIF). First image will be the main photo.
+                    </div>
+                    <div id="imagePreview" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 1rem; margin-top: 1rem;"></div>
+                </div>
+
+                <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                    <button type="submit" class="btn btn-primary">
+                        <%= destination ? 'Update Destination' : 'Create Destination' %>
+                    </button>
+                    <a href="/admin/destinations" class="btn btn-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Gloria, Oriental Mindoro coordinates
+        const GLORIA_LAT = 13.0167;
+        const GLORIA_LNG = 121.4667;
+        
+        // Initialize with Gloria center or existing destination
+        const defaultLat = <%= destination && destination.latitude ? destination.latitude : '13.0167' %>;
+        const defaultLng = <%= destination && destination.longitude ? destination.longitude : '121.4667' %>;
+
+        // Create map centered on Gloria, Oriental Mindoro
+        const map = L.map('map').setView([defaultLat, defaultLng], 13);
+
+        // Add OpenStreetMap tiles (Free!)
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors | Gloria, Oriental Mindoro',
+            maxZoom: 19,
+            minZoom: 11
+        }).addTo(map);
+
+        // Set max bounds to Gloria area (restrict panning)
+        const gloriaArea = L.latLngBounds(
+            L.latLng(12.85, 121.30),  // Southwest corner
+            L.latLng(13.18, 121.63)   // Northeast corner
+        );
+        map.setMaxBounds(gloriaArea);
+        map.on('drag', function() {
+            map.panInsideBounds(gloriaArea, { animate: false });
+        });
+
+        // Category icons
+        const categoryIcons = {
+            'Park': '🌳',
+            'Museum': '🏛️',
+            'Mountain': '⛰️',
+            'Religious': '⛪',
+            'Market': '🏪'
+        };
+
+        // Get initial category
+        const categorySelect = document.querySelector('select[name="category"]');
+        let currentCategory = categorySelect.value;
+        
+        // If no category selected, default to Park
+        if (!currentCategory) {
+            categorySelect.value = 'Park';
+            currentCategory = 'Park';
+        }
+
+        // Create marker icon based on category
+        function createMarkerIcon(category) {
+            return L.divIcon({
+                html: `<div style="font-size: 32px; text-shadow: 2px 2px 4px rgba(0,0,0,0.3);">${categoryIcons[category] || '📍'}</div>`,
+                className: 'custom-marker',
+                iconSize: [40, 40],
+                iconAnchor: [20, 40]
+            });
+        }
+
+        // Add marker with initial icon
+        let marker = L.marker([defaultLat, defaultLng], {
+            draggable: true,
+            icon: createMarkerIcon(currentCategory)
+        }).addTo(map);
+
+        // Update marker icon and preview when category changes
+        const categoryIcon = document.getElementById('categoryIcon');
+        const categoryText = document.getElementById('categoryText');
+
+        function updateCategoryPreview(category) {
+            if (category && categoryIcons[category]) {
+                categoryIcon.textContent = categoryIcons[category];
+                categoryText.textContent = `Marker will appear as ${categoryIcons[category]} on the map`;
+            } else {
+                categoryIcon.textContent = '📍';
+                categoryText.textContent = 'Select a category to see the marker icon';
+            }
+        }
+
+        categorySelect.addEventListener('change', function(e) {
+            currentCategory = e.target.value;
+            marker.setIcon(createMarkerIcon(currentCategory));
+            updateCategoryPreview(currentCategory);
+        });
+
+        // Initialize preview
+        updateCategoryPreview(currentCategory);
+
+        // Add marker on map click
+        map.on('click', function(e) {
+            marker.setLatLng(e.latlng);
+            updateCoordinates(e.latlng.lat, e.latlng.lng);
+            reverseGeocode(e.latlng.lat, e.latlng.lng);
+        });
+
+        // Update coordinates when marker is dragged
+        marker.on('dragend', function(e) {
+            const position = marker.getLatLng();
+            updateCoordinates(position.lat, position.lng);
+            reverseGeocode(position.lat, position.lng);
+        });
+
+        function updateCoordinates(lat, lng) {
+            document.getElementById('latitude').value = lat.toFixed(8);
+            document.getElementById('longitude').value = lng.toFixed(8);
+        }
+
+        // Reverse geocoding - get address from coordinates
+        function reverseGeocode(lat, lng) {
+            const locationInput = document.getElementById('location');
+            
+            // Show loading state
+            locationInput.value = '🔍 Finding address...';
+            
+            // Use Nominatim (OpenStreetMap) reverse geocoding API
+            fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data && data.display_name) {
+                        // Extract relevant parts of the address
+                        const address = data.address || {};
+                        let locationText = '';
+                        
+                        // Build a nice address string
+                        if (address.road || address.hamlet || address.village) {
+                            locationText = address.road || address.hamlet || address.village;
+                        }
+                        if (address.suburb || address.neighbourhood) {
+                            locationText += (locationText ? ', ' : '') + (address.suburb || address.neighbourhood);
+                        }
+                        if (address.city || address.town || address.municipality) {
+                            locationText += (locationText ? ', ' : '') + (address.city || address.town || address.municipality);
+                        }
+                        
+                        // If we couldn't build a good address, use display_name
+                        if (!locationText) {
+                            locationText = data.display_name;
+                        }
+                        
+                        // Always include Gloria, Oriental Mindoro if not present
+                        if (!locationText.includes('Gloria') && !locationText.includes('Oriental Mindoro')) {
+                            locationText += ', Gloria, Oriental Mindoro';
+                        }
+                        
+                        locationInput.value = locationText;
+                    } else {
+                        // Fallback to coordinates
+                        locationInput.value = `Location at ${lat.toFixed(6)}, ${lng.toFixed(6)}, Gloria, Oriental Mindoro`;
+                    }
+                })
+                .catch(error => {
+                    console.error('Reverse geocoding error:', error);
+                    // Fallback to coordinates
+                    locationInput.value = `Location at ${lat.toFixed(6)}, ${lng.toFixed(6)}, Gloria, Oriental Mindoro`;
+                });
+        }
+
+        // Initialize coordinates if they exist
+        if (defaultLat && defaultLng) {
+            updateCoordinates(defaultLat, defaultLng);
+        }
+
+        // Image preview functionality
+        document.getElementById('imageUpload').addEventListener('change', function(e) {
+            const files = e.target.files;
+            const previewContainer = document.getElementById('imagePreview');
+            previewContainer.innerHTML = '';
+
+            if (files.length > 0) {
+                Array.from(files).forEach((file, index) => {
+                    if (file.type.startsWith('image/')) {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            const div = document.createElement('div');
+                            div.style.cssText = 'position: relative; border-radius: 0.5rem; overflow: hidden; border: 2px solid #e5e7eb;';
+                            
+                            const img = document.createElement('img');
+                            img.src = e.target.result;
+                            img.style.cssText = 'width: 100%; height: 150px; object-fit: cover;';
+                            
+                            const badge = document.createElement('div');
+                            badge.textContent = index === 0 ? '⭐ Main Photo' : `Photo ${index + 1}`;
+                            badge.style.cssText = 'position: absolute; top: 0.5rem; left: 0.5rem; background: rgba(0,0,0,0.7); color: white; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem;';
+                            
+                            div.appendChild(img);
+                            div.appendChild(badge);
+                            previewContainer.appendChild(div);
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

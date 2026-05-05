@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %> - HeritageLink</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="/css/heritagelink-unified.css">
+  <style>
+    html,body{overflow-x:hidden;max-width:100vw}
+    
+    /* Hero */
+    .page-hero{background:var(--gradient-nature);padding:3rem 1.5rem 2.5rem;text-align:center;position:relative}
+    .page-hero::after{content:'';position:absolute;bottom:0;left:0;right:0;height:4px;background:linear-gradient(90deg,#ff6b35,#f59e0b,#ff6b35)}
+    .page-hero h1{color:#fff;font-size:2.25rem;font-weight:800;margin:0 0 0.75rem;font-family:'Poppins',sans-serif}
+    .page-hero p{color:var(--leaf-green);font-size:1rem;margin:0 auto;max-width:700px;line-height:1.6}
+    
+    .container{max-width:1300px;margin:0 auto;padding:1.5rem}
+    
+    /* Filter Bar */
+    .filter-bar{background:#fff;border-radius:var(--radius-lg);padding:1rem 1.25rem;box-shadow:var(--shadow-md);margin:-1.5rem auto 1.5rem;max-width:700px;position:relative;z-index:10;display:flex;gap:0.75rem;flex-wrap:wrap;align-items:center}
+    .search-box{flex:1;min-width:200px;position:relative}
+    .search-box i{position:absolute;left:1rem;top:50%;transform:translateY(-50%);color:var(--slate-gray)}
+    .search-input{width:100%;padding:0.7rem 1rem 0.7rem 2.5rem;border:2px solid var(--rock-gray);border-radius:var(--radius-md);font-size:0.9rem;transition:var(--transition)}
+    .search-input:focus{outline:none;border-color:var(--sage-green)}
+    .filter-select{padding:0.7rem 1rem;border:2px solid var(--rock-gray);border-radius:var(--radius-md);font-size:0.9rem;background:#fff;min-width:150px;cursor:pointer}
+    .filter-select:focus{outline:none;border-color:var(--sage-green)}
+    
+    /* Results */
+    .results-info{display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;flex-wrap:wrap;gap:0.5rem}
+    .results-count{font-size:0.9rem;color:var(--slate-gray)}
+    .results-count strong{color:var(--forest-green)}
+    
+    /* Artisan Grid */
+    .artisan-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1.5rem}
+    
+    /* Artisan Card */
+    .artisan-card{background:#fff;border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow-sm);border:1px solid var(--rock-gray);transition:var(--transition);text-align:center;padding:1.5rem}
+    .artisan-card:hover{transform:translateY(-6px);box-shadow:var(--shadow-lg);border-color:var(--sage-green)}
+    .artisan-avatar{width:100px;height:100px;border-radius:50%;background:var(--gradient-nature);display:flex;align-items:center;justify-content:center;color:#fff;font-size:2.5rem;margin:0 auto 1rem;border:4px solid var(--leaf-green);overflow:hidden}
+    .artisan-avatar img{width:100%;height:100%;object-fit:cover}
+    .artisan-name{font-size:1.25rem;font-weight:700;color:var(--forest-green);margin-bottom:0.5rem}
+    .artisan-specialty{display:inline-block;background:var(--sand-beige);color:var(--clay-brown);padding:0.4rem 1rem;border-radius:var(--radius-full);font-size:0.8rem;font-weight:700;margin-bottom:0.75rem}
+    .artisan-bio{color:var(--slate-gray);font-size:0.9rem;line-height:1.6;margin-bottom:1rem;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+    .artisan-stats{display:flex;justify-content:center;gap:1rem;margin-bottom:1.25rem}
+    .stat-item{background:var(--pebble-gray);padding:0.5rem 1rem;border-radius:var(--radius-md);font-size:0.8rem;font-weight:600;color:var(--forest-green)}
+    .stat-item i{color:var(--sage-green);margin-right:0.3rem}
+    .artisan-actions{display:flex;gap:0.75rem;justify-content:center}
+    .btn-action{padding:0.6rem 1.25rem;border-radius:var(--radius-md);font-size:0.85rem;font-weight:600;cursor:pointer;border:none;display:inline-flex;align-items:center;gap:0.4rem;transition:var(--transition);text-decoration:none}
+    .btn-action:hover{transform:translateY(-2px)}
+    .btn-message{background:var(--gradient-sunset);color:#fff;box-shadow:0 4px 12px rgba(255,107,53,0.25)}
+    .btn-view{background:var(--pebble-gray);color:var(--forest-green);border:1px solid var(--rock-gray)}
+    .btn-view:hover{background:var(--leaf-green)}
+    
+    /* Empty State */
+    .empty-state{text-align:center;padding:4rem 2rem;background:#fff;border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);grid-column:1/-1}
+    .empty-state i{font-size:4rem;color:var(--rock-gray);margin-bottom:1rem}
+    .empty-state h3{color:var(--forest-green);margin:0 0 0.5rem}
+    .empty-state p{color:var(--slate-gray);margin:0}
+    
+    /* Loading */
+    .loading{text-align:center;padding:3rem;grid-column:1/-1}
+    .loading i{font-size:2rem;color:var(--sage-green)}
+    
+    /* Modal */
+    .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:2000;align-items:center;justify-content:center;padding:1rem}
+    .modal-overlay.active{display:flex}
+    .modal-box{background:#fff;border-radius:var(--radius-lg);padding:1.5rem;max-width:500px;width:100%;box-shadow:var(--shadow-xl)}
+    .modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem}
+    .modal-header h3{font-size:1.15rem;font-weight:700;color:var(--forest-green);margin:0;display:flex;align-items:center;gap:0.5rem}
+    .modal-close{background:none;border:none;font-size:1.25rem;cursor:pointer;color:var(--slate-gray);padding:0.25rem}
+    .modal-close:hover{color:var(--forest-green)}
+    .form-group{margin-bottom:1rem}
+    .form-group label{display:block;font-size:0.85rem;font-weight:600;color:var(--forest-green);margin-bottom:0.4rem}
+    .form-input,.form-textarea{width:100%;padding:0.7rem 0.85rem;border:2px solid var(--rock-gray);border-radius:var(--radius-md);font-size:0.9rem;font-family:inherit;transition:var(--transition)}
+    .form-input:focus,.form-textarea:focus{outline:none;border-color:var(--sage-green)}
+    .form-textarea{min-height:120px;resize:vertical}
+    .modal-actions{display:flex;gap:0.75rem;justify-content:flex-end;margin-top:1.25rem}
+    .btn-cancel{background:var(--pebble-gray);color:var(--slate-gray);padding:0.7rem 1.25rem;border:none;border-radius:var(--radius-md);font-weight:600;cursor:pointer}
+    .btn-send{background:var(--gradient-nature);color:#fff;padding:0.7rem 1.25rem;border:none;border-radius:var(--radius-md);font-weight:600;cursor:pointer;display:flex;align-items:center;gap:0.4rem}
+    .btn-send:hover{transform:translateY(-2px)}
+    .alert{padding:0.75rem;border-radius:var(--radius-md);margin-bottom:1rem;font-size:0.9rem;display:none}
+    .alert-success{background:var(--leaf-green);color:var(--forest-green)}
+    .alert-error{background:#fee2e2;color:#991b1b}
+    
+    /* Responsive */
+    @media(max-width:900px){
+      .page-hero{padding:2rem 1rem}
+      .page-hero h1{font-size:1.75rem}
+      .filter-bar{margin:-1rem 1rem 1.25rem;flex-direction:column}
+      .search-box,.filter-select{width:100%}
+      .container{padding:1rem}
+    }
+    @media(max-width:640px){
+      .page-hero h1{font-size:1.5rem}
+      .page-hero p{font-size:0.9rem}
+      .artisan-grid{grid-template-columns:1fr}
+      .artisan-card{padding:1.25rem}
+      .artisan-avatar{width:85px;height:85px;font-size:2rem}
+      .artisan-actions{flex-direction:column}
+      .btn-action{width:100%;justify-content:center}
+    }
+  </style>
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="nav-container">
+      <a href="/" class="logo">
+        <img src="/uploads/logo.jpg" alt="HeritageLink"> HeritageLink
+      </a>
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">
+        <i class="fas fa-bars"></i>
+      </button>
+      <div class="nav-overlay" id="navOverlay"></div>
+      <div class="nav-links" id="navLinks">
+        <button class="nav-close" id="navClose" aria-label="Close menu">
+          <i class="fas fa-times"></i>
+        </button>
+        <a href="/" class="nav-link"><i class="fas fa-home"></i> <span>Home</span></a>
+        <a href="/destinations" class="nav-link"><i class="fas fa-map-marked-alt"></i> <span>Discover Sites</span></a>
+        <a href="/events" class="nav-link"><i class="fas fa-calendar-alt"></i> <span>Events</span></a>
+        <a href="/heritage-gallery" class="nav-link"><i class="fas fa-landmark"></i> <span>Heritage Gallery</span></a>
+        <a href="/map" class="nav-link"><i class="fas fa-map"></i> <span>Map</span></a>
+        <a href="/artisans" class="nav-link" style="background:rgba(255,255,255,0.15);color:#fff"><i class="fas fa-palette"></i> <span>Artisans</span></a>
+        <a href="/feedback" class="nav-link"><i class="fas fa-comment-dots"></i> <span>Feedback</span></a>
+        <% if (typeof user !== 'undefined' && user) { %>
+          <a href="/dashboard" class="btn btn-primary">Dashboard</a>
+        <% } else { %>
+          <a href="/login" class="btn btn-secondary">Login</a>
+        <% } %>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="page-hero">
+    <h1><i class="fas fa-palette"></i> Local Artisans</h1>
+    <p>Connect with skilled artisans from Gloria, Oriental Mindoro. Discover traditional crafts, purchase authentic handmade products, and support our cultural heritage.</p>
+  </section>
+
+  <div class="container">
+    <!-- Filter Bar -->
+    <div class="filter-bar">
+      <div class="search-box">
+        <i class="fas fa-search"></i>
+        <input type="text" id="searchInput" class="search-input" placeholder="Search artisans...">
+      </div>
+      <select id="specialtyFilter" class="filter-select">
+        <option value="">All Specialties</option>
+        <option value="weaving">Weaving</option>
+        <option value="pottery">Pottery</option>
+        <option value="woodcarving">Woodcarving</option>
+        <option value="basketry">Basketry</option>
+        <option value="embroidery">Embroidery</option>
+        <option value="jewelry">Jewelry</option>
+      </select>
+    </div>
+
+    <!-- Results -->
+    <div class="results-info">
+      <div class="results-count" id="resultsCount">Loading artisans...</div>
+    </div>
+
+    <!-- Artisan Grid -->
+    <div class="artisan-grid" id="artisanGrid">
+      <div class="loading"><i class="fas fa-spinner fa-spin"></i></div>
+    </div>
+  </div>
+
+  <!-- Message Modal -->
+  <div class="modal-overlay" id="messageModal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3><i class="fas fa-envelope"></i> Message <span id="modalArtisanName"></span></h3>
+        <button class="modal-close" onclick="closeModal()"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="alert" id="modalAlert"></div>
+      <div class="form-group">
+        <label>Subject</label>
+        <input type="text" id="msgSubject" class="form-input" placeholder="e.g., Inquiry about your products">
+      </div>
+      <div class="form-group">
+        <label>Message</label>
+        <textarea id="msgText" class="form-textarea" placeholder="Write your message to the artisan..."></textarea>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+        <button class="btn-send" id="sendMsgBtn"><i class="fas fa-paper-plane"></i> Send Message</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Mobile nav
+    (function(){
+      const toggle = document.getElementById('navToggle');
+      const links = document.getElementById('navLinks');
+      const overlay = document.getElementById('navOverlay');
+      const close = document.getElementById('navClose');
+      function openMenu() { links.classList.add('active'); overlay.classList.add('active'); document.body.style.overflow = 'hidden'; }
+      function closeMenu() { links.classList.remove('active'); overlay.classList.remove('active'); document.body.style.overflow = ''; }
+      if(toggle) toggle.addEventListener('click', openMenu);
+      if(close) close.addEventListener('click', closeMenu);
+      if(overlay) overlay.addEventListener('click', closeMenu);
+    })();
+
+    let allArtisans = [];
+    let currentArtisanId = null;
+
+    function escapeHtml(str) {
+      return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    async function loadArtisans() {
+      try {
+        const res = await fetch('/api/artisans/list');
+        const json = await res.json();
+        const grid = document.getElementById('artisanGrid');
+        const countEl = document.getElementById('resultsCount');
+
+        if (!json || !json.artisans || json.artisans.length === 0) {
+          grid.innerHTML = `<div class="empty-state">
+            <i class="fas fa-palette"></i>
+            <h3>No Artisans Yet</h3>
+            <p>Check back soon to discover talented local artisans.</p>
+          </div>`;
+          countEl.innerHTML = '<strong>0</strong> artisans found';
+          return;
+        }
+
+        allArtisans = json.artisans;
+        renderArtisans(allArtisans);
+        attachFilters();
+      } catch (err) {
+        console.error('Failed to load artisans:', err);
+        document.getElementById('artisanGrid').innerHTML = `<div class="empty-state">
+          <i class="fas fa-exclamation-triangle"></i>
+          <h3>Error Loading Artisans</h3>
+          <p>Please try refreshing the page.</p>
+        </div>`;
+      }
+    }
+
+    function renderArtisans(artisans) {
+      const grid = document.getElementById('artisanGrid');
+      const countEl = document.getElementById('resultsCount');
+      
+      countEl.innerHTML = `<strong>${artisans.length}</strong> artisan${artisans.length !== 1 ? 's' : ''} found`;
+
+      if (!artisans || artisans.length === 0) {
+        grid.innerHTML = `<div class="empty-state">
+          <i class="fas fa-search"></i>
+          <h3>No Results</h3>
+          <p>Try adjusting your search or filters.</p>
+        </div>`;
+        return;
+      }
+
+      grid.innerHTML = artisans.map(a => {
+        const name = a.name || 'Artisan';
+        const bio = a.bio || 'Traditional craftsman from Gloria, Oriental Mindoro';
+        const specialty = a.specialization || a.specialty || 'Handcrafts';
+        const productCount = a.product_count || 0;
+        const initial = name.charAt(0).toUpperCase();
+        const photo = a.profile_photo;
+
+        return `
+          <div class="artisan-card" data-id="${a.id}" data-name="${escapeHtml(name)}" data-specialty="${escapeHtml(specialty.toLowerCase())}">
+            <div class="artisan-avatar">
+              ${photo ? `<img src="/${escapeHtml(photo)}" alt="${escapeHtml(name)}" onerror="this.style.display='none';this.parentElement.innerHTML='${initial}'">` : initial}
+            </div>
+            <div class="artisan-name">${escapeHtml(name)}</div>
+            <div class="artisan-specialty"><i class="fas fa-star"></i> ${escapeHtml(specialty)}</div>
+            <p class="artisan-bio">${escapeHtml(bio)}</p>
+            <div class="artisan-stats">
+              <div class="stat-item"><i class="fas fa-box"></i> ${productCount} Products</div>
+            </div>
+            <div class="artisan-actions">
+              <button class="btn-action btn-message" onclick="openMessageModal(${a.id}, '${escapeHtml(name)}')">
+                <i class="fas fa-envelope"></i> Message
+              </button>
+              <a href="/artisans/${a.id}" class="btn-action btn-view">
+                <i class="fas fa-eye"></i> View Profile
+              </a>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function attachFilters() {
+      const search = document.getElementById('searchInput');
+      const specialty = document.getElementById('specialtyFilter');
+
+      function apply() {
+        const q = (search.value || '').toLowerCase().trim();
+        const s = (specialty.value || '').toLowerCase();
+        const filtered = allArtisans.filter(a => {
+          const name = (a.name || '').toLowerCase();
+          const spec = (a.specialization || a.specialty || '').toLowerCase();
+          const bio = (a.bio || '').toLowerCase();
+          const matchSearch = !q || name.includes(q) || bio.includes(q) || spec.includes(q);
+          const matchSpecialty = !s || spec.includes(s);
+          return matchSearch && matchSpecialty;
+        });
+        renderArtisans(filtered);
+      }
+
+      search.addEventListener('input', debounce(apply, 200));
+      specialty.addEventListener('change', apply);
+    }
+
+    function debounce(fn, wait) {
+      let t;
+      return function(...a) { clearTimeout(t); t = setTimeout(() => fn.apply(this, a), wait); };
+    }
+
+    // Message Modal
+    function openMessageModal(artisanId, artisanName) {
+      currentArtisanId = artisanId;
+      document.getElementById('modalArtisanName').textContent = artisanName;
+      document.getElementById('msgSubject').value = '';
+      document.getElementById('msgText').value = '';
+      document.getElementById('modalAlert').style.display = 'none';
+      document.getElementById('messageModal').classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal() {
+      document.getElementById('messageModal').classList.remove('active');
+      document.body.style.overflow = '';
+      currentArtisanId = null;
+    }
+
+    document.getElementById('sendMsgBtn').addEventListener('click', async () => {
+      const subject = document.getElementById('msgSubject').value.trim();
+      const message = document.getElementById('msgText').value.trim();
+      const alert = document.getElementById('modalAlert');
+      const btn = document.getElementById('sendMsgBtn');
+
+      if (!subject || !message) {
+        alert.className = 'alert alert-error';
+        alert.style.display = 'block';
+        alert.innerHTML = '<i class="fas fa-exclamation-circle"></i> Please fill in both subject and message';
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+
+      try {
+        const res = await fetch('/api/messages/send', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ receiver_id: currentArtisanId, subject, message })
+        });
+        const data = await res.json();
+
+        if (res.ok && data.success) {
+          alert.className = 'alert alert-success';
+          alert.style.display = 'block';
+          alert.innerHTML = '<i class="fas fa-check-circle"></i> Message sent successfully!';
+          setTimeout(() => closeModal(), 2000);
+        } else {
+          throw new Error(data.message || 'Failed to send message');
+        }
+      } catch (err) {
+        alert.className = 'alert alert-error';
+        alert.style.display = 'block';
+        alert.innerHTML = '<i class="fas fa-exclamation-circle"></i> ' + err.message;
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-paper-plane"></i> Send Message';
+      }
+    });
+
+    // Close modal on overlay click
+    document.getElementById('messageModal').addEventListener('click', (e) => {
+      if (e.target.id === 'messageModal') closeModal();
+    });
+
+    // Close on escape
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeModal();
+    });
+
+    loadArtisans();
+  </script>
+</body>
+</html>

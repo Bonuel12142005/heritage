@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %> - HeritageLink</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="/css/heritagelink-unified.css">
+  <style>
+    html,body{overflow-x:hidden;max-width:100vw}
+    
+    /* Hero */
+    .showcase-hero{background:var(--gradient-nature);padding:3.5rem 1.5rem 3rem;text-align:center;position:relative}
+    .showcase-hero::after{content:'';position:absolute;bottom:0;left:0;right:0;height:4px;background:linear-gradient(90deg,#ff6b35,#f59e0b,#ff6b35)}
+    .showcase-hero h1{color:#fff;font-size:2.5rem;font-weight:800;margin:0 0 1rem;font-family:'Poppins',sans-serif;display:flex;align-items:center;justify-content:center;gap:0.75rem}
+    .showcase-hero p{color:var(--leaf-green);font-size:1.1rem;margin:0 auto 2rem;max-width:700px;line-height:1.6}
+    .hero-btns{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap}
+    .hero-btn{display:inline-flex;align-items:center;gap:0.5rem;padding:0.85rem 1.75rem;border-radius:var(--radius-md);font-weight:700;text-decoration:none;transition:var(--transition);font-size:0.95rem}
+    .hero-btn-primary{background:var(--gradient-sunset);color:#fff;box-shadow:0 4px 15px rgba(255,107,53,0.3)}
+    .hero-btn-primary:hover{transform:translateY(-3px);box-shadow:0 6px 20px rgba(255,107,53,0.4)}
+    .hero-btn-secondary{background:rgba(255,255,255,0.15);color:#fff;border:2px solid rgba(255,255,255,0.3)}
+    .hero-btn-secondary:hover{background:rgba(255,255,255,0.25)}
+    
+    .container{max-width:1400px;margin:0 auto;padding:2rem 1.5rem}
+    
+    /* Section Header */
+    .section-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem}
+    .section-title{font-size:1.5rem;font-weight:800;color:var(--forest-green);display:flex;align-items:center;gap:0.5rem;margin:0}
+    .section-title i{color:var(--textile-orange)}
+    .view-all{color:var(--sage-green);text-decoration:none;font-weight:600;display:flex;align-items:center;gap:0.35rem;font-size:0.9rem}
+    .view-all:hover{color:var(--forest-green);text-decoration:underline}
+    
+    /* Artisan Grid */
+    .artisan-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1.5rem;margin-bottom:3rem}
+    .artisan-card{background:#fff;border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow-sm);border:1px solid var(--rock-gray);transition:var(--transition)}
+    .artisan-card:hover{transform:translateY(-6px);box-shadow:var(--shadow-lg);border-color:var(--sage-green)}
+    .artisan-header{background:var(--gradient-nature);padding:1.75rem;text-align:center}
+    .artisan-avatar{width:90px;height:90px;border-radius:50%;background:#fff;margin:0 auto;display:flex;align-items:center;justify-content:center;font-size:2.25rem;color:var(--sage-green);border:4px solid rgba(255,255,255,0.4);overflow:hidden}
+    .artisan-avatar img{width:100%;height:100%;object-fit:cover}
+    .artisan-body{padding:1.25rem;text-align:center}
+    .artisan-name{font-size:1.15rem;font-weight:700;color:var(--forest-green);margin-bottom:0.35rem}
+    .artisan-specialty{color:var(--textile-orange);font-weight:700;font-size:0.85rem;margin-bottom:0.75rem}
+    .artisan-bio{color:var(--slate-gray);font-size:0.875rem;line-height:1.6;margin-bottom:1rem;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+    .artisan-stats{display:flex;justify-content:center;gap:1.5rem;margin-bottom:1rem}
+    .artisan-stat{text-align:center}
+    .artisan-stat .val{font-size:1.15rem;font-weight:800;color:var(--sage-green)}
+    .artisan-stat .lbl{font-size:0.7rem;color:var(--slate-gray);text-transform:uppercase}
+    .artisan-actions{display:flex;gap:0.5rem;justify-content:center}
+    .btn-card{padding:0.5rem 1rem;border-radius:var(--radius-md);font-size:0.8rem;font-weight:600;text-decoration:none;transition:var(--transition);display:inline-flex;align-items:center;gap:0.35rem;border:none;cursor:pointer}
+    .btn-card:hover{transform:translateY(-2px)}
+    .btn-orange{background:var(--gradient-sunset);color:#fff}
+    .btn-outline{background:#fff;color:var(--forest-green);border:1px solid var(--rock-gray)}
+    .btn-outline:hover{background:var(--leaf-green)}
+    
+    /* Product Grid */
+    .product-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1.5rem;margin-bottom:3rem}
+    .product-card{background:#fff;border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow-sm);border:1px solid var(--rock-gray);transition:var(--transition)}
+    .product-card:hover{transform:translateY(-6px);box-shadow:var(--shadow-lg);border-color:var(--sage-green)}
+    .product-img{height:180px;background:linear-gradient(135deg,var(--leaf-green),var(--pebble-gray));position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center}
+    .product-img img{width:100%;height:100%;object-fit:cover;transition:transform 0.4s}
+    .product-card:hover .product-img img{transform:scale(1.08)}
+    .product-img .placeholder{font-size:3.5rem;color:var(--sage-green);opacity:0.5}
+    .product-badge{position:absolute;top:0.75rem;left:0.75rem;background:var(--gradient-sunset);color:#fff;padding:0.3rem 0.7rem;border-radius:var(--radius-md);font-size:0.7rem;font-weight:700;text-transform:uppercase}
+    .product-body{padding:1.25rem}
+    .product-cat{font-size:0.7rem;color:var(--textile-orange);font-weight:700;text-transform:uppercase;letter-spacing:0.03em;margin-bottom:0.35rem}
+    .product-name{font-size:1.05rem;font-weight:700;color:var(--forest-green);margin-bottom:0.5rem;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+    .product-artisan{font-size:0.8rem;color:var(--slate-gray);margin-bottom:0.75rem;display:flex;align-items:center;gap:0.35rem}
+    .product-artisan i{color:var(--sage-green)}
+    .product-footer{display:flex;justify-content:space-between;align-items:center}
+    .product-price{font-size:1.2rem;font-weight:800;color:var(--sage-green)}
+    .product-rating{font-size:0.85rem;color:#f59e0b}
+    
+    /* Category Grid */
+    .category-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:1rem}
+    .category-card{background:#fff;border-radius:var(--radius-lg);padding:1.5rem 1rem;text-align:center;border:2px solid var(--rock-gray);transition:var(--transition);cursor:pointer;text-decoration:none}
+    .category-card:hover{border-color:var(--sage-green);background:var(--leaf-green);transform:translateY(-4px)}
+    .category-icon{width:55px;height:55px;background:var(--gradient-nature);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 0.85rem;color:#fff;font-size:1.35rem}
+    .category-card:hover .category-icon{background:var(--gradient-sunset)}
+    .category-name{font-weight:700;color:var(--forest-green);font-size:0.9rem}
+    .category-count{font-size:0.75rem;color:var(--slate-gray);margin-top:0.25rem}
+    
+    /* Empty State */
+    .empty-state{text-align:center;padding:3rem 2rem;background:#fff;border-radius:var(--radius-lg);border:1px solid var(--rock-gray)}
+    .empty-state i{font-size:3rem;color:var(--rock-gray);margin-bottom:0.75rem}
+    .empty-state h3{color:var(--forest-green);margin:0 0 0.35rem;font-size:1.1rem}
+    .empty-state p{color:var(--slate-gray);margin:0;font-size:0.9rem}
+    
+    /* Footer */
+    .showcase-footer{background:var(--gradient-nature);color:#fff;padding:2rem;text-align:center;margin-top:2rem}
+    .showcase-footer p{margin:0;opacity:0.9;font-size:0.9rem}
+    
+    /* Responsive */
+    @media(max-width:900px){
+      .showcase-hero{padding:2.5rem 1rem 2rem}
+      .showcase-hero h1{font-size:2rem}
+      .showcase-hero p{font-size:1rem}
+      .container{padding:1.5rem 1rem}
+      .artisan-grid,.product-grid{grid-template-columns:repeat(auto-fill,minmax(280px,1fr))}
+    }
+    @media(max-width:640px){
+      .showcase-hero h1{font-size:1.65rem;flex-direction:column;gap:0.5rem}
+      .showcase-hero p{font-size:0.9rem}
+      .hero-btns{flex-direction:column;align-items:center}
+      .hero-btn{width:100%;max-width:280px;justify-content:center}
+      .artisan-grid,.product-grid{grid-template-columns:1fr}
+      .category-grid{grid-template-columns:repeat(2,1fr)}
+      .section-header{flex-direction:column;align-items:flex-start}
+    }
+  </style>
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="nav-container">
+      <a href="/" class="logo">
+        <img src="/uploads/logo.jpg" alt="HeritageLink"> HeritageLink
+      </a>
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">
+        <i class="fas fa-bars"></i>
+      </button>
+      <div class="nav-overlay" id="navOverlay"></div>
+      <div class="nav-links" id="navLinks">
+        <button class="nav-close" id="navClose" aria-label="Close menu">
+          <i class="fas fa-times"></i>
+        </button>
+        <a href="/" class="nav-link"><i class="fas fa-home"></i> <span>Home</span></a>
+        <a href="/destinations" class="nav-link"><i class="fas fa-map-marked-alt"></i> <span>Discover Sites</span></a>
+        <a href="/events" class="nav-link"><i class="fas fa-calendar-alt"></i> <span>Events</span></a>
+        <a href="/heritage-gallery" class="nav-link"><i class="fas fa-landmark"></i> <span>Heritage Gallery</span></a>
+        <a href="/map" class="nav-link"><i class="fas fa-map"></i> <span>Map</span></a>
+        <a href="/showcase" class="nav-link" style="background:rgba(255,255,255,0.15);color:#fff"><i class="fas fa-palette"></i> <span>Artisans</span></a>
+        <a href="/feedback" class="nav-link"><i class="fas fa-comment-dots"></i> <span>Feedback</span></a>
+        <% if (typeof user !== 'undefined' && user) { %>
+          <a href="/dashboard" class="btn btn-primary">Dashboard</a>
+        <% } else { %>
+          <a href="/login" class="btn btn-secondary">Login</a>
+        <% } %>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="showcase-hero">
+    <h1><i class="fas fa-hands"></i> Local Artisans & Crafts</h1>
+    <p>Discover the skilled artisans of Gloria, Oriental Mindoro. Support local culture, livelihood, and craftsmanship by exploring their handmade products.</p>
+    <div class="hero-btns">
+      <a href="/showcase/artisans" class="hero-btn hero-btn-primary"><i class="fas fa-users"></i> Meet Our Artisans</a>
+      <a href="/showcase/products" class="hero-btn hero-btn-secondary"><i class="fas fa-shopping-bag"></i> Browse Products</a>
+    </div>
+  </section>
+
+  <div class="container">
+    <!-- Featured Artisans -->
+    <div class="section-header">
+      <h2 class="section-title"><i class="fas fa-star"></i> Featured Artisans</h2>
+      <a href="/showcase/artisans" class="view-all">View All Artisans <i class="fas fa-arrow-right"></i></a>
+    </div>
+    <div class="artisan-grid" id="artisanGrid"></div>
+
+    <!-- Featured Products -->
+    <div class="section-header">
+      <h2 class="section-title"><i class="fas fa-gem"></i> Handcrafted Products</h2>
+      <a href="/showcase/products" class="view-all">View All Products <i class="fas fa-arrow-right"></i></a>
+    </div>
+    <div class="product-grid" id="productGrid"></div>
+
+    <!-- Categories -->
+    <div class="section-header">
+      <h2 class="section-title"><i class="fas fa-th-large"></i> Shop by Category</h2>
+    </div>
+    <div class="category-grid" id="categoryGrid"></div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="showcase-footer">
+    <p>&copy; 2024 HeritageLink - Supporting Local Artisans of Gloria, Oriental Mindoro</p>
+  </footer>
+
+  <script>
+    const ARTISANS = <%- JSON.stringify(featuredArtisans || []) %>;
+    const PRODUCTS = <%- JSON.stringify(featuredProducts || []) %>;
+    const CATEGORIES = <%- JSON.stringify(categories || []) %>;
+  </script>
+
+  <script>
+    // Mobile nav
+    (function(){
+      const toggle = document.getElementById('navToggle');
+      const links = document.getElementById('navLinks');
+      const overlay = document.getElementById('navOverlay');
+      const close = document.getElementById('navClose');
+      function openMenu() { links.classList.add('active'); overlay.classList.add('active'); document.body.style.overflow = 'hidden'; }
+      function closeMenu() { links.classList.remove('active'); overlay.classList.remove('active'); document.body.style.overflow = ''; }
+      if(toggle) toggle.addEventListener('click', openMenu);
+      if(close) close.addEventListener('click', closeMenu);
+      if(overlay) overlay.addEventListener('click', closeMenu);
+    })();
+
+    function escapeHtml(str) {
+      return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    // Render Artisans
+    function renderArtisans() {
+      const grid = document.getElementById('artisanGrid');
+      if (!ARTISANS || ARTISANS.length === 0) {
+        grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><i class="fas fa-users"></i><h3>No Artisans Yet</h3><p>Check back soon to meet our talented artisans.</p></div>`;
+        return;
+      }
+      grid.innerHTML = ARTISANS.slice(0, 6).map(a => {
+        const name = a.name || 'Artisan';
+        const specialty = a.specialization || a.specialty || 'Handcrafts';
+        const bio = a.bio || 'Traditional craftsman from Gloria';
+        const products = a.product_count || 0;
+        const initial = name.charAt(0).toUpperCase();
+        const photo = a.profile_photo;
+        return `
+          <div class="artisan-card">
+            <div class="artisan-header">
+              <div class="artisan-avatar">
+                ${photo ? `<img src="/${escapeHtml(photo)}" alt="${escapeHtml(name)}" onerror="this.style.display='none';this.parentElement.innerHTML='${initial}'">` : initial}
+              </div>
+            </div>
+            <div class="artisan-body">
+              <div class="artisan-name">${escapeHtml(name)}</div>
+              <div class="artisan-specialty">${escapeHtml(specialty)}</div>
+              <p class="artisan-bio">${escapeHtml(bio)}</p>
+              <div class="artisan-stats">
+                <div class="artisan-stat"><div class="val">${products}</div><div class="lbl">Products</div></div>
+              </div>
+              <div class="artisan-actions">
+                <a href="/artisans/${a.id}" class="btn-card btn-orange"><i class="fas fa-eye"></i> View</a>
+                <button class="btn-card btn-outline" onclick="messageArtisan(${a.id},'${escapeHtml(name)}')"><i class="fas fa-envelope"></i> Message</button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Render Products
+    function renderProducts() {
+      const grid = document.getElementById('productGrid');
+      if (!PRODUCTS || PRODUCTS.length === 0) {
+        grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><i class="fas fa-shopping-bag"></i><h3>No Products Yet</h3><p>Check back soon for handcrafted products.</p></div>`;
+        return;
+      }
+      grid.innerHTML = PRODUCTS.slice(0, 8).map(p => {
+        const name = p.name || p.title || 'Product';
+        const price = p.price ? '₱' + Number(p.price).toFixed(2) : 'Contact';
+        const category = p.category || 'Handcraft';
+        const artisan = p.artisan_name || 'Local Artisan';
+        const image = p.image_url || p.image;
+        const rating = p.rating || null;
+        return `
+          <a href="/products/${p.id}" class="product-card" style="text-decoration:none">
+            <div class="product-img">
+              ${image ? `<img src="${escapeHtml(image)}" alt="${escapeHtml(name)}" onerror="this.style.display='none'">` : '<i class="fas fa-box-open placeholder"></i>'}
+              ${p.featured ? '<span class="product-badge">Featured</span>' : ''}
+            </div>
+            <div class="product-body">
+              <div class="product-cat">${escapeHtml(category)}</div>
+              <div class="product-name">${escapeHtml(name)}</div>
+              <div class="product-artisan"><i class="fas fa-user"></i> ${escapeHtml(artisan)}</div>
+              <div class="product-footer">
+                <span class="product-price">${price}</span>
+                ${rating ? `<span class="product-rating"><i class="fas fa-star"></i> ${rating}</span>` : ''}
+              </div>
+            </div>
+          </a>
+        `;
+      }).join('');
+    }
+
+    // Render Categories
+    function renderCategories() {
+      const grid = document.getElementById('categoryGrid');
+      const defaultCats = [
+        { name: 'Weaving', icon: 'fa-scroll', slug: 'weaving' },
+        { name: 'Pottery', icon: 'fa-wine-bottle', slug: 'pottery' },
+        { name: 'Woodcarving', icon: 'fa-tree', slug: 'woodcarving' },
+        { name: 'Basketry', icon: 'fa-shopping-basket', slug: 'basketry' },
+        { name: 'Embroidery', icon: 'fa-tshirt', slug: 'embroidery' },
+        { name: 'Jewelry', icon: 'fa-gem', slug: 'jewelry' }
+      ];
+      const cats = CATEGORIES && CATEGORIES.length > 0 ? CATEGORIES : defaultCats;
+      grid.innerHTML = cats.map(c => `
+        <a href="/showcase/products?category=${c.slug || c.name.toLowerCase()}" class="category-card">
+          <div class="category-icon"><i class="fas ${c.icon || 'fa-tag'}"></i></div>
+          <div class="category-name">${escapeHtml(c.name)}</div>
+          ${c.count ? `<div class="category-count">${c.count} items</div>` : ''}
+        </a>
+      `).join('');
+    }
+
+    // Message artisan function
+    function messageArtisan(id, name) {
+      <% if (typeof user !== 'undefined' && user) { %>
+        // User is logged in, show message modal
+        showMessageModal(id, name);
+      <% } else { %>
+        // User not logged in, redirect to login
+        if (confirm('Please login to message ' + name + '. Would you like to login now?')) {
+          window.location.href = '/login';
+        }
+      <% } %>
+    }
+
+    // Show message modal for logged in users
+    function showMessageModal(artisanId, artisanName) {
+      const overlay = document.createElement('div');
+      overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:1000;padding:1rem;';
+      overlay.innerHTML = `
+        <div style="background:white;border-radius:1rem;padding:2rem;max-width:500px;width:100%;box-shadow:0 20px 40px rgba(0,0,0,0.2);">
+          <h3 style="margin:0 0 1rem;color:#064e3b;"><i class="fas fa-envelope"></i> Message ${escapeHtml(artisanName)}</h3>
+          <div id="msgStatus" style="margin-bottom:1rem;padding:0.75rem;border-radius:0.5rem;display:none;"></div>
+          <div style="margin-bottom:1rem;">
+            <label style="font-weight:600;display:block;margin-bottom:0.5rem;">Subject</label>
+            <input id="msgSubject" type="text" placeholder="e.g., Inquiry about custom order" style="width:100%;padding:0.75rem;border:2px solid #d1fae5;border-radius:0.5rem;box-sizing:border-box;">
+          </div>
+          <div style="margin-bottom:1.5rem;">
+            <label style="font-weight:600;display:block;margin-bottom:0.5rem;">Message</label>
+            <textarea id="msgText" rows="5" placeholder="Write your message..." style="width:100%;padding:0.75rem;border:2px solid #d1fae5;border-radius:0.5rem;box-sizing:border-box;resize:vertical;"></textarea>
+          </div>
+          <div style="display:flex;gap:0.75rem;justify-content:flex-end;">
+            <button onclick="this.closest('div').parentElement.remove()" style="padding:0.75rem 1.5rem;border:none;border-radius:0.5rem;background:#6b7280;color:white;font-weight:600;cursor:pointer;">Cancel</button>
+            <button onclick="sendMessageToArtisan(${artisanId})" style="padding:0.75rem 1.5rem;border:none;border-radius:0.5rem;background:#ff6b35;color:white;font-weight:600;cursor:pointer;"><i class="fas fa-paper-plane"></i> Send</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(overlay);
+      overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.remove(); });
+    }
+
+    // Send message to artisan
+    async function sendMessageToArtisan(artisanId) {
+      const subject = document.getElementById('msgSubject').value.trim();
+      const message = document.getElementById('msgText').value.trim();
+      const status = document.getElementById('msgStatus');
+
+      if (!subject || !message) {
+        status.style.display = 'block';
+        status.style.background = '#fee2e2';
+        status.style.color = '#991b1b';
+        status.textContent = 'Please fill in both subject and message';
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/messages/send', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ receiver_id: artisanId, subject, message })
+        });
+        const data = await res.json();
+
+        if (res.ok && data.success) {
+          status.style.display = 'block';
+          status.style.background = '#d1fae5';
+          status.style.color = '#065f46';
+          status.textContent = '✓ Message sent successfully!';
+          setTimeout(() => {
+            document.querySelector('[style*="position:fixed"]')?.remove();
+            // Redirect to messages page to see the conversation
+            window.location.href = '/user/messages?conversation=' + artisanId;
+          }, 1500);
+        } else {
+          throw new Error(data.message || 'Failed to send');
+        }
+      } catch (err) {
+        status.style.display = 'block';
+        status.style.background = '#fee2e2';
+        status.style.color = '#991b1b';
+        status.textContent = err.message || 'Failed to send message. Please try again.';
+      }
+    }
+
+    // Initialize
+    renderArtisans();
+    renderProducts();
+    renderCategories();
+  </script>
+  <script src="/js/artisan-showcase.js"></script>
+</body>
+</html>

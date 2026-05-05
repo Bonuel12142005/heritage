@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%- include('partials/dashboard-head.xian') %>
+    <title><%= item ? 'Edit' : 'Add' %> Heritage Item - HeritageLink Admin</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --primary: #2d8659; --primary-dark: #1a5f3f; --primary-light: #3fa872;
+            --accent: #ff6b35; --accent-dark: #e55a2b;
+            --bg-main: #f8faf9; --bg-card: #ffffff;
+            --text-primary: #064e3b; --text-secondary: #6b7280; --text-muted: #9ca3af;
+            --border: #d1fae5; --sidebar-bg: #064e3b; --sidebar-hover: #065f46;
+        }
+        body { font-family: 'Inter', sans-serif; background: var(--bg-main); color: var(--text-primary); }
+        .sidebar { position: fixed; left: 0; top: 0; height: 100vh; width: 280px; background: var(--sidebar-bg); padding: 2rem 0; z-index: 1000; }
+        .sidebar-logo { padding: 0 2rem 2rem; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 2rem; }
+        .sidebar-logo h2 { color: white; font-size: 1.5rem; font-weight: 700; display: flex; align-items: center; gap: 0.75rem; }
+        .sidebar-logo .badge { background: linear-gradient(135deg, var(--accent), var(--accent-dark)); color: var(--sidebar-bg); padding: 0.25rem 0.75rem; border-radius: 1rem; font-size: 0.75rem; }
+        .sidebar-menu { list-style: none; }
+        .menu-item { margin: 0.25rem 1rem; }
+        .menu-link { display: flex; align-items: center; gap: 1rem; padding: 0.875rem 1rem; color: #d1fae5; text-decoration: none; border-radius: 0.75rem; transition: all 0.2s; font-weight: 500; }
+        .menu-link:hover, .menu-link.active { background: var(--sidebar-hover); color: white; }
+        .menu-link i { width: 20px; text-align: center; }
+        .main-content { margin-left: 280px; min-height: 100vh; }
+        .topbar { background: var(--bg-card); padding: 1.5rem 2rem; border-bottom: 3px solid var(--accent); display: flex; justify-content: space-between; align-items: center; }
+        .topbar-left h1 { font-size: 1.75rem; font-weight: 700; background: linear-gradient(135deg, var(--primary), var(--primary-light)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .topbar-left p { color: var(--text-secondary); margin-top: 0.25rem; }
+        .btn { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.5rem; border-radius: 0.75rem; text-decoration: none; font-weight: 600; font-size: 0.875rem; transition: all 0.2s; border: none; cursor: pointer; }
+        .btn-primary { background: linear-gradient(135deg, var(--accent), var(--accent-dark)); color: white; }
+        .btn-primary:hover { transform: translateY(-2px); }
+        .btn-secondary { background: var(--bg-main); color: var(--primary); border: 2px solid var(--primary); }
+        .content { padding: 2rem; max-width: 900px; }
+        .form-card { background: var(--bg-card); border-radius: 1rem; padding: 2rem; border: 2px solid var(--border); }
+        .form-section { margin-bottom: 2rem; padding-bottom: 2rem; border-bottom: 1px solid var(--border); }
+        .form-section:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+        .form-section-title { font-size: 1.1rem; font-weight: 700; color: var(--text-primary); margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.5rem; }
+        .form-section-title i { color: var(--primary); }
+        .form-group { margin-bottom: 1.25rem; }
+        .form-group label { display: block; font-weight: 600; color: var(--text-primary); margin-bottom: 0.5rem; font-size: 0.875rem; }
+        .form-group label .required { color: #ef4444; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 0.75rem 1rem; border: 2px solid var(--border); border-radius: 0.5rem; font-size: 0.95rem; transition: border-color 0.2s; background: var(--bg-main); }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: var(--primary); background: white; }
+        .form-group textarea { min-height: 120px; resize: vertical; }
+        .form-group .hint { font-size: 0.8rem; color: var(--text-muted); margin-top: 0.35rem; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+        .form-actions { display: flex; gap: 1rem; margin-top: 2rem; }
+        .upload-area { border: 2px dashed var(--border); border-radius: 0.75rem; padding: 2rem; text-align: center; background: var(--bg-main); cursor: pointer; transition: all 0.2s; }
+        .upload-area:hover { border-color: var(--primary); background: #f0fdf4; }
+        .upload-area i { font-size: 2.5rem; color: var(--primary); margin-bottom: 0.75rem; }
+        .upload-area p { color: var(--text-secondary); margin-bottom: 0.5rem; }
+        .upload-area small { color: var(--text-muted); }
+        .preview-container { margin-top: 1rem; }
+        .preview-container img, .preview-container video { max-width: 100%; max-height: 200px; border-radius: 0.5rem; }
+        .current-media { margin-top: 1rem; padding: 1rem; background: var(--bg-main); border-radius: 0.5rem; }
+        .current-media img { max-width: 200px; border-radius: 0.5rem; }
+        @media (max-width: 768px) {
+            .sidebar { width: 70px; }
+            .sidebar-logo h2 span, .sidebar-logo .badge, .menu-link span { display: none; }
+            .menu-link { justify-content: center; }
+            .main-content { margin-left: 70px; }
+            .form-row { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="sidebar-logo">
+            <h2><img src="/uploads/logo.jpg" alt="HeritageLink" style="width: 40px; height: 40px; object-fit: contain;"> <span>HeritageLink</span> <span class="badge">Admin</span></h2>
+        </div>
+        <ul class="sidebar-menu">
+            <li class="menu-item"><a href="/admin/dashboard" class="menu-link"><i class="fas fa-th-large"></i><span>Dashboard</span></a></li>
+            <li class="menu-item"><a href="/admin/destinations" class="menu-link"><i class="fas fa-map-marked-alt"></i><span>Destinations</span></a></li>
+            <li class="menu-item"><a href="/admin/events" class="menu-link"><i class="fas fa-calendar-alt"></i><span>Events</span></a></li>
+            <li class="menu-item"><a href="/admin/heritage-gallery" class="menu-link active"><i class="fas fa-landmark"></i><span>Heritage Gallery</span></a></li>
+            <li class="menu-item"><a href="/admin/users" class="menu-link"><i class="fas fa-users"></i><span>Users</span></a></li>
+            <li class="menu-item"><a href="/admin/moderate" class="menu-link"><i class="fas fa-shield-alt"></i><span>Moderation</span></a></li>
+            <li class="menu-item"><a href="/" class="menu-link"><i class="fas fa-home"></i><span>Home</span></a></li>
+            <li class="menu-item"><a href="/logout" class="menu-link"><i class="fas fa-sign-out-alt"></i><span>Logout</span></a></li>
+        </ul>
+    </aside>
+
+    <main class="main-content">
+        <div class="topbar">
+            <div class="topbar-left">
+                <h1><i class="fas fa-<%= item ? 'edit' : 'plus' %>"></i> <%= item ? 'Edit' : 'Add' %> Heritage Item</h1>
+                <p><%= item ? 'Update cultural asset information' : 'Add a new cultural asset to the archive' %></p>
+            </div>
+        </div>
+
+        <div class="content">
+            <form action="/admin/heritage-gallery/save" method="POST" enctype="multipart/form-data" class="form-card">
+                <% if (item) { %>
+                    <input type="hidden" name="id" value="<%= item.id %>">
+                <% } %>
+
+                <!-- Basic Information -->
+                <div class="form-section">
+                    <h3 class="form-section-title"><i class="fas fa-info-circle"></i> Basic Information</h3>
+                    <div class="form-group">
+                        <label>Title <span class="required">*</span></label>
+                        <input type="text" name="title" value="<%= item ? item.title : '' %>" required placeholder="e.g., Traditional Mangyan Weaving Demonstration">
+                    </div>
+                    <div class="form-group">
+                        <label>Description</label>
+                        <textarea name="description" placeholder="Describe the cultural significance and context of this item..."><%= item ? item.description : '' %></textarea>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Category <span class="required">*</span></label>
+                            <select name="category" required>
+                                <option value="">Select Category</option>
+                                <option value="traditional_crafts" <%= item && item.category === 'traditional_crafts' ? 'selected' : '' %>>Traditional Crafts</option>
+                                <option value="festivals" <%= item && item.category === 'festivals' ? 'selected' : '' %>>Festivals</option>
+                                <option value="oral_history" <%= item && item.category === 'oral_history' ? 'selected' : '' %>>Oral History</option>
+                                <option value="historical_photos" <%= item && item.category === 'historical_photos' ? 'selected' : '' %>>Historical Photos</option>
+                                <option value="traditional_music" <%= item && item.category === 'traditional_music' ? 'selected' : '' %>>Traditional Music</option>
+                                <option value="dance" <%= item && item.category === 'dance' ? 'selected' : '' %>>Dance</option>
+                                <option value="cuisine" <%= item && item.category === 'cuisine' ? 'selected' : '' %>>Cuisine</option>
+                                <option value="architecture" <%= item && item.category === 'architecture' ? 'selected' : '' %>>Architecture</option>
+                                <option value="clothing" <%= item && item.category === 'clothing' ? 'selected' : '' %>>Clothing</option>
+                                <option value="rituals" <%= item && item.category === 'rituals' ? 'selected' : '' %>>Rituals</option>
+                                <option value="documents" <%= item && item.category === 'documents' ? 'selected' : '' %>>Documents</option>
+                                <option value="other" <%= item && item.category === 'other' ? 'selected' : '' %>>Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Media Type <span class="required">*</span></label>
+                            <select name="media_type" id="mediaType" required onchange="updateUploadHint()">
+                                <option value="">Select Type</option>
+                                <option value="photo" <%= item && item.media_type === 'photo' ? 'selected' : '' %>>Photo</option>
+                                <option value="video" <%= item && item.media_type === 'video' ? 'selected' : '' %>>Video</option>
+                                <option value="audio" <%= item && item.media_type === 'audio' ? 'selected' : '' %>>Audio (Oral History)</option>
+                                <option value="document" <%= item && item.media_type === 'document' ? 'selected' : '' %>>Document</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Media Upload -->
+                <div class="form-section">
+                    <h3 class="form-section-title"><i class="fas fa-upload"></i> Media File</h3>
+                    <div class="form-group">
+                        <label>Upload File <%= item ? '' : '<span class="required">*</span>' %></label>
+                        <div class="upload-area" onclick="document.getElementById('mediaFile').click()">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <p>Click to upload or drag and drop</p>
+                            <small id="uploadHint">Photos: JPG, PNG | Videos: MP4, WebM | Audio: MP3, WAV | Documents: PDF</small>
+                        </div>
+                        <input type="file" id="mediaFile" name="media_file" accept="image/*,video/*,audio/*,.pdf" style="display: none;" onchange="previewFile(this)">
+                        <div class="preview-container" id="previewContainer"></div>
+                        <% if (item && item.media_url) { %>
+                            <div class="current-media">
+                                <p style="font-weight: 600; margin-bottom: 0.5rem;">Current file:</p>
+                                <% if (item.media_type === 'photo') { %>
+                                    <img src="<%= item.media_url %>" alt="Current media">
+                                <% } else { %>
+                                    <a href="<%= item.media_url %>" target="_blank"><%= item.media_url %></a>
+                                <% } %>
+                            </div>
+                        <% } %>
+                    </div>
+                    <div class="form-group">
+                        <label>Or Enter Media URL</label>
+                        <input type="url" name="media_url" value="<%= item ? item.media_url : '' %>" placeholder="https://example.com/media/file.jpg">
+                        <p class="hint">Use this if the file is hosted externally (YouTube, Vimeo, etc.)</p>
+                    </div>
+                </div>
+
+                <!-- Historical Context -->
+                <div class="form-section">
+                    <h3 class="form-section-title"><i class="fas fa-history"></i> Historical Context</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Historical Date/Era</label>
+                            <input type="text" name="historical_date" value="<%= item ? item.historical_date : '' %>" placeholder="e.g., 1950s, Pre-colonial, 2020">
+                            <p class="hint">Approximate date or era when this was created/captured</p>
+                        </div>
+                        <div class="form-group">
+                            <label>Location</label>
+                            <input type="text" name="location" value="<%= item ? item.location : '' %>" placeholder="e.g., Gloria Town Plaza, Barangay Agsalin">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Contributor/Source Person</label>
+                            <input type="text" name="contributor_name" value="<%= item ? item.contributor_name : '' %>" placeholder="e.g., Elder Juan Dela Cruz, Maria Santos">
+                        </div>
+                        <div class="form-group">
+                            <label>Source/Collection</label>
+                            <input type="text" name="source" value="<%= item ? item.source : '' %>" placeholder="e.g., Municipal Archives, Family Collection">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Additional Details -->
+                <div class="form-section">
+                    <h3 class="form-section-title"><i class="fas fa-tags"></i> Additional Details</h3>
+                    <div class="form-group">
+                        <label>Tags</label>
+                        <input type="text" name="tags" value="<%= item ? item.tags : '' %>" placeholder="mangyan, weaving, traditional, craft (comma-separated)">
+                        <p class="hint">Add keywords to help with search and discovery</p>
+                    </div>
+                    <div class="form-group" id="transcriptGroup" style="display: none;">
+                        <label>Transcript (for audio/video)</label>
+                        <textarea name="transcript" placeholder="Enter transcript of oral history or video narration..."><%= item ? item.transcript : '' %></textarea>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group" id="durationGroup" style="display: none;">
+                            <label>Duration</label>
+                            <input type="text" name="duration" value="<%= item ? item.duration : '' %>" placeholder="e.g., 5:30, 1:23:45">
+                        </div>
+                        <div class="form-group">
+                            <label>Status</label>
+                            <select name="status">
+                                <option value="published" <%= !item || item.status === 'published' ? 'selected' : '' %>>Published</option>
+                                <option value="draft" <%= item && item.status === 'draft' ? 'selected' : '' %>>Draft</option>
+                                <option value="archived" <%= item && item.status === 'archived' ? 'selected' : '' %>>Archived</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> <%= item ? 'Update' : 'Save' %> Item</button>
+                    <a href="/admin/heritage-gallery" class="btn btn-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <script>
+        function updateUploadHint() {
+            const mediaType = document.getElementById('mediaType').value;
+            const transcriptGroup = document.getElementById('transcriptGroup');
+            const durationGroup = document.getElementById('durationGroup');
+            
+            if (mediaType === 'audio' || mediaType === 'video') {
+                transcriptGroup.style.display = 'block';
+                durationGroup.style.display = 'block';
+            } else {
+                transcriptGroup.style.display = 'none';
+                durationGroup.style.display = 'none';
+            }
+        }
+
+        function previewFile(input) {
+            const container = document.getElementById('previewContainer');
+            container.innerHTML = '';
+            
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+                const reader = new FileReader();
+                
+                if (file.type.startsWith('image/')) {
+                    reader.onload = function(e) {
+                        container.innerHTML = '<img src="' + e.target.result + '" alt="Preview">';
+                    };
+                    reader.readAsDataURL(file);
+                } else if (file.type.startsWith('video/')) {
+                    reader.onload = function(e) {
+                        container.innerHTML = '<video src="' + e.target.result + '" controls style="max-width: 100%;"></video>';
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    container.innerHTML = '<p style="padding: 1rem; background: var(--bg-main); border-radius: 0.5rem;"><i class="fas fa-file"></i> ' + file.name + '</p>';
+                }
+            }
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', updateUploadHint);
+    </script>
+</body>
+</html>

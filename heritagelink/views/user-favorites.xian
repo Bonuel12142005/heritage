@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title><%= title %></title>
+    <%- include('partials/user-dashboard-styles.xian') %>
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="sidebar-logo">
+            <h2>
+                <img src="/uploads/logo.jpg" alt="HeritageLink">
+                HeritageLink
+                <span class="badge badge-info">Explorer</span>
+            </h2>
+        </div>
+        <ul class="sidebar-menu">
+            <li class="menu-item">
+                <a href="/user/dashboard" class="menu-link">
+                    <i class="fas fa-th-large"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="/destinations" class="menu-link">
+                    <i class="fas fa-map-marked-alt"></i>
+                    <span>Discover Sites</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="/events" class="menu-link">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span>Events</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="/artisans" class="menu-link">
+                    <i class="fas fa-palette"></i>
+                    <span>Artisans</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="/workshops" class="menu-link">
+                    <i class="fas fa-chalkboard-teacher"></i>
+                    <span>Workshops</span>
+                </a>
+            </li>
+            <div class="menu-section">My Activity</div>
+            <li class="menu-item">
+                <a href="/user/reviews" class="menu-link">
+                    <i class="fas fa-star"></i>
+                    <span>My Reviews</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="/user/favorites" class="menu-link active">
+                    <i class="fas fa-heart"></i>
+                    <span>Favorites</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="/user/workshops" class="menu-link">
+                    <i class="fas fa-chalkboard-teacher"></i>
+                    <span>My Workshops</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="/user/gallery" class="menu-link">
+                    <i class="fas fa-images"></i>
+                    <span>My Gallery</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="/user/messages" class="menu-link">
+                    <i class="fas fa-envelope"></i>
+                    <span>Messages</span>
+                </a>
+            </li>
+            <div class="menu-section">Account</div>
+            <li class="menu-item">
+                <a href="/user/profile" class="menu-link">
+                    <i class="fas fa-user-circle"></i>
+                    <span>My Profile</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="/" class="menu-link">
+                    <i class="fas fa-home"></i>
+                    <span>Home</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="/logout" class="menu-link">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Logout</span>
+                </a>
+            </li>
+        </ul>
+    </aside>
+
+    <main class="main-content">
+        <div class="topbar">
+            <div class="topbar-left">
+                <h1><i class="fas fa-heart"></i> My Favorites</h1>
+                <p>Your saved destinations and places to visit</p>
+            </div>
+        </div>
+
+        <div class="dashboard-content">
+            <% if (favorites.length === 0) { %>
+                <div class="card text-center" style="padding: 3rem;">
+                    <div style="font-size: 4rem; margin-bottom: 1rem;">❤️</div>
+                    <h2 style="margin-bottom: 1rem;">No Favorites Yet</h2>
+                    <p style="color: var(--slate-gray); margin-bottom: 2rem;">
+                        Start exploring and save your favorite destinations for later!
+                    </p>
+                    <a href="/destinations" class="btn btn-primary">
+                        <i class="fas fa-map-marked-alt"></i> Discover Sites
+                    </a>
+                </div>
+            <% } else { %>
+                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem;">
+                    <% favorites.forEach(fav => { %>
+                        <div class="card" style="padding: 0; overflow: hidden;">
+                            <% if (fav.image_url) { %>
+                                <img src="/<%= fav.image_url %>" alt="<%= fav.name %>" 
+                                     style="width: 100%; height: 200px; object-fit: cover;">
+                            <% } else { %>
+                                <div style="width: 100%; height: 200px; background: linear-gradient(135deg, var(--sage-green), var(--mint-green)); display: flex; align-items: center; justify-content: center; color: white; font-size: 3rem;">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                </div>
+                            <% } %>
+                            <div style="padding: 1.5rem;">
+                                <h3 style="font-size: 1.25rem; margin-bottom: 0.75rem;">
+                                    <%= fav.name %>
+                                </h3>
+                                <p style="color: var(--slate-gray); font-size: 0.9375rem; margin-bottom: 1rem; line-height: 1.5;">
+                                    <%= fav.description ? fav.description.substring(0, 120) + '...' : 'Explore this amazing destination' %>
+                                </p>
+                                <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
+                                    <span class="badge badge-success">
+                                        <i class="fas fa-map-pin"></i> <%= fav.type || 'Destination' %>
+                                    </span>
+                                    <span class="badge badge-info" style="font-size: 0.75rem;">
+                                        <i class="fas fa-calendar"></i> Saved <%= new Date(fav.favorited_at).toLocaleDateString() %>
+                                    </span>
+                                </div>
+                                <div style="display: flex; gap: 0.5rem;">
+                                    <a href="/destinations/<%= fav.id %>" class="btn btn-primary" style="flex: 1;">
+                                        <i class="fas fa-eye"></i> View
+                                    </a>
+                                    <form method="POST" action="/user/favorites/<%= fav.id %>/remove" style="flex: 1;">
+                                        <button type="submit" class="btn btn-secondary" style="width: 100%;">
+                                            <i class="fas fa-heart-broken"></i> Remove
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    <% }) %>
+                </div>
+            <% } %>
+        </div>
+    </main>
+</body>
+</html>

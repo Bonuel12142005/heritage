@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Dashboard - HeritageLink</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="/js/smooth-transitions.js" defer></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --primary: #2d8659; --primary-dark: #1a5f3f; --primary-light: #3fa872;
+            --accent: #ff6b35; --accent-dark: #e55a2b;
+            --bg-main: #f8faf9; --bg-card: #ffffff;
+            --text-primary: #064e3b; --text-secondary: #6b7280; --text-muted: #9ca3af;
+            --border: #d1e7dd;
+        }
+        
+        body { font-family: 'Inter', sans-serif; background: var(--bg-main); color: var(--text-primary); }
+        
+        /* Topbar */
+        .topbar { background: var(--bg-card); padding: 1rem 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid var(--accent); flex-wrap: wrap; gap: 1rem; }
+        .topbar-left h1 { font-size: 1.35rem; font-weight: 700; background: linear-gradient(135deg, var(--primary), var(--primary-light)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .topbar-left p { color: var(--text-secondary); margin-top: 0.2rem; font-size: 0.85rem; }
+        .topbar-right { display: flex; align-items: center; gap: 1rem; }
+        .search-box { position: relative; }
+        .search-box input { padding: 0.5rem 2.5rem 0.5rem 1rem; border: 2px solid var(--border); border-radius: 0.5rem; background: var(--bg-main); font-size: 0.85rem; width: 250px; }
+        .search-box i { position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
+        .user-info { display: flex; align-items: center; gap: 0.5rem; }
+        .user-avatar { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--primary-light)); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; }
+        
+        /* Content */
+        .content { padding: 1.5rem; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.25rem; margin-bottom: 2rem; }
+        .stat-card { background: var(--bg-card); padding: 1.5rem; border-radius: 0.75rem; box-shadow: 0 2px 8px rgba(0,0,0,0.08); border-left: 4px solid var(--primary); transition: all 0.2s; }
+        .stat-card:hover { transform: translateY(-2px); box-shadow: 0 4px 15px rgba(0,0,0,0.12); }
+        .stat-header { display: flex; justify-content: between; align-items: flex-start; margin-bottom: 0.75rem; }
+        .stat-icon { width: 48px; height: 48px; border-radius: 0.5rem; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; color: white; }
+        .stat-icon.exploring { background: linear-gradient(135deg, var(--primary), var(--primary-light)); }
+        .stat-icon.active { background: linear-gradient(135deg, #f59e0b, #d97706); }
+        .stat-icon.helpful { background: linear-gradient(135deg, #10b981, #059669); }
+        .stat-icon.connected { background: linear-gradient(135deg, var(--accent), var(--accent-dark)); }
+        .stat-number { font-size: 2rem; font-weight: 800; color: var(--text-primary); }
+        .stat-label { color: var(--text-secondary); font-size: 0.85rem; font-weight: 500; }
+        .stat-status { font-size: 0.75rem; font-weight: 600; padding: 0.2rem 0.5rem; border-radius: 1rem; }
+        .stat-status.exploring { background: #d1fae5; color: var(--primary-dark); }
+        .stat-status.active { background: #fef3c7; color: #92400e; }
+        .stat-status.helpful { background: #d1fae5; color: #065f46; }
+        .stat-status.connected { background: #fed7aa; color: var(--accent-dark); }
+        
+        /* Map Section */
+        .map-section { background: var(--bg-card); border-radius: 0.75rem; box-shadow: 0 2px 8px rgba(0,0,0,0.08); overflow: hidden; margin-bottom: 2rem; }
+        .map-header { padding: 1.25rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+        .map-header h3 { font-size: 1.1rem; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 0.5rem; }
+        .map-header p { color: var(--text-secondary); font-size: 0.85rem; margin-top: 0.25rem; }
+        .map-container { height: 300px; position: relative; }
+        #dashboardMap { width: 100%; height: 100%; }
+        
+        /* Quick Actions */
+        .quick-actions { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.25rem; }
+        .action-card { background: var(--bg-card); padding: 1.5rem; border-radius: 0.75rem; box-shadow: 0 2px 8px rgba(0,0,0,0.08); text-decoration: none; color: inherit; transition: all 0.2s; border: 1px solid transparent; }
+        .action-card:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(0,0,0,0.12); border-color: var(--primary); }
+        .action-icon { width: 56px; height: 56px; border-radius: 0.75rem; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: white; margin-bottom: 1rem; }
+        .action-icon.destinations { background: linear-gradient(135deg, var(--primary), var(--primary-light)); }
+        .action-icon.events { background: linear-gradient(135deg, #f59e0b, #d97706); }
+        .action-icon.artisans { background: linear-gradient(135deg, var(--accent), var(--accent-dark)); }
+        .action-title { font-size: 1.1rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.5rem; }
+        .action-desc { color: var(--text-secondary); font-size: 0.85rem; line-height: 1.5; }
+        
+        /* Quick Stats */
+        .quick-stats { background: var(--bg-card); padding: 1.25rem; border-radius: 0.75rem; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        .quick-stats h4 { font-size: 1rem; font-weight: 700; color: var(--text-primary); margin-bottom: 1rem; }
+        .quick-stat { display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 0; border-bottom: 1px solid var(--border); }
+        .quick-stat:last-child { border-bottom: none; }
+        .quick-stat-label { color: var(--text-secondary); font-size: 0.85rem; }
+        .quick-stat-value { font-weight: 700; color: var(--text-primary); }
+        
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .topbar { padding: 1rem; flex-direction: column; align-items: stretch; }
+            .search-box input { width: 100%; }
+            .content { padding: 1rem; }
+            .stats-grid { grid-template-columns: 1fr; }
+            .quick-actions { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Include Unified Dashboard Sidebar -->
+    <%- include('partials/dashboard-sidebar.xian', { 
+        user: user,
+        currentPage: 'user-dashboard'
+    }) %>
+
+    <!-- Main Dashboard Content -->
+    <main class="dashboard-main" id="dashboardMain">
+        <!-- Topbar -->
+        <div class="topbar">
+            <div class="topbar-left">
+                <h1><i class="fas fa-compass"></i> Welcome, <%= user.name %> User!</h1>
+                <p>Explore cultural heritage and discover traditions</p>
+            </div>
+            <div class="topbar-right">
+                <div class="search-box">
+                    <input type="text" placeholder="Search destinations...">
+                    <i class="fas fa-search"></i>
+                </div>
+                <div class="user-info">
+                    <div class="user-avatar">
+                        <%= user.name.charAt(0).toUpperCase() %>
+                    </div>
+                    <span><%= user.name %></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Content -->
+        <div class="content">
+            <!-- Stats Grid -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-icon exploring">
+                            <i class="fas fa-map-marked-alt"></i>
+                        </div>
+                    </div>
+                    <div class="stat-number">0</div>
+                    <div class="stat-label">Destinations Visited</div>
+                    <div class="stat-status exploring">🔍 Exploring</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-icon active">
+                            <i class="fas fa-calendar-check"></i>
+                        </div>
+                    </div>
+                    <div class="stat-number">0</div>
+                    <div class="stat-label">Events Attended</div>
+                    <div class="stat-status active">🎯 Active</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-icon helpful">
+                            <i class="fas fa-star"></i>
+                        </div>
+                    </div>
+                    <div class="stat-number">0</div>
+                    <div class="stat-label">Reviews Written</div>
+                    <div class="stat-status helpful">💚 Helpful</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-icon connected">
+                            <i class="fas fa-users"></i>
+                        </div>
+                    </div>
+                    <div class="stat-number">0</div>
+                    <div class="stat-label">Artisans Met</div>
+                    <div class="stat-status connected">🤝 Connected</div>
+                </div>
+            </div>
+
+            <!-- Map Section -->
+            <div class="map-section">
+                <div class="map-header">
+                    <div>
+                        <h3><i class="fas fa-map"></i> Explore Destinations</h3>
+                        <p>📍 Gloria, Oriental Mindoro - Interactive Map</p>
+                    </div>
+                </div>
+                <div class="map-container">
+                    <div id="dashboardMap"></div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="quick-actions">
+                <a href="/destinations" class="action-card">
+                    <div class="action-icon destinations">
+                        <i class="fas fa-map-marked-alt"></i>
+                    </div>
+                    <div class="action-title">Explore Destinations</div>
+                    <div class="action-desc">Discover cultural sites, historical landmarks, and natural wonders</div>
+                </a>
+                
+                <a href="/events" class="action-card">
+                    <div class="action-icon events">
+                        <i class="fas fa-calendar-alt"></i>
+                    </div>
+                    <div class="action-title">Cultural Events</div>
+                    <div class="action-desc">Find upcoming festivals, workshops, and demonstrations</div>
+                </a>
+                
+                <a href="/showcase" class="action-card">
+                    <div class="action-icon artisans">
+                        <i class="fas fa-palette"></i>
+                    </div>
+                    <div class="action-title">Local Artisans</div>
+                    <div class="action-desc">Connect with skilled artisans and discover traditional institute</div>
+                </a>
+                
+                <div class="quick-stats">
+                    <h4><i class="fas fa-chart-line"></i> Quick Stats</h4>
+                    <div class="quick-stat">
+                        <span class="quick-stat-label">Destinations to Visit</span>
+                        <span class="quick-stat-value">12</span>
+                    </div>
+                    <div class="quick-stat">
+                        <span class="quick-stat-label">Upcoming Events</span>
+                        <span class="quick-stat-value">5</span>
+                    </div>
+                    <div class="quick-stat">
+                        <span class="quick-stat-label">Artisans to Discover</span>
+                        <span class="quick-stat-value">8</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Initialize dashboard map
+        const map = L.map('dashboardMap').setView([12.9841, 121.4678], 13);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
+        
+        // Add sample marker
+        L.marker([12.9841, 121.4678])
+            .addTo(map)
+            .bindPopup('<b>Gloria, Oriental Mindoro</b><br>Town Center')
+            .openPopup();
+    </script>
+</body>
+</html>

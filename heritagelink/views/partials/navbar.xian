@@ -1,0 +1,668 @@
+<!-- Unified Navigation Bar Component -->
+<nav class="navbar">
+    <div class="nav-container">
+        <!-- Logo -->
+        <a href="/" class="nav-logo">
+            <img src="/uploads/logo.jpg" alt="HeritageLink" class="nav-logo-img">
+            <span class="nav-logo-text">HeritageLink</span>
+        </a>
+
+        <!-- Mobile Menu Toggle -->
+        <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation">
+            <span class="nav-toggle-line"></span>
+            <span class="nav-toggle-line"></span>
+            <span class="nav-toggle-line"></span>
+        </button>
+
+        <!-- Navigation Links -->
+        <div class="nav-menu" id="navMenu">
+            <div class="nav-close" id="navClose">
+                <i class="fas fa-times"></i>
+            </div>
+
+            <!-- Public Navigation -->
+            <% if (!user) { %>
+                <a href="/" class="nav-link"><i class="fas fa-home"></i><span>Home</span></a>
+                <a href="/destinations" class="nav-link"><i class="fas fa-map-marked-alt"></i><span>Destinations</span></a>
+                <a href="/events" class="nav-link"><i class="fas fa-calendar-alt"></i><span>Events</span></a>
+                <a href="/heritage-gallery" class="nav-link"><i class="fas fa-landmark"></i><span>Heritage</span></a>
+                <a href="/showcase" class="nav-link"><i class="fas fa-palette"></i><span>Artisans</span></a>
+                <a href="/workshops" class="nav-link"><i class="fas fa-chalkboard-teacher"></i><span>Workshops</span></a>
+                <div class="nav-divider"></div>
+                <a href="/login" class="nav-btn nav-btn-secondary">Login</a>
+                <a href="/register" class="nav-btn nav-btn-primary">Sign Up</a>
+            <% } else { %>
+                <!-- Authenticated Navigation -->
+                <a href="/" class="nav-link"><i class="fas fa-home"></i><span>Home</span></a>
+                <a href="/destinations" class="nav-link"><i class="fas fa-map-marked-alt"></i><span>Destinations</span></a>
+                <a href="/events" class="nav-link"><i class="fas fa-calendar-alt"></i><span>Events</span></a>
+                <a href="/heritage-gallery" class="nav-link"><i class="fas fa-landmark"></i><span>Heritage</span></a>
+                <a href="/showcase" class="nav-link"><i class="fas fa-palette"></i><span>Artisans</span></a>
+                <a href="/workshops" class="nav-link"><i class="fas fa-chalkboard-teacher"></i><span>Workshops</span></a>
+                
+                <div class="nav-divider"></div>
+                
+                <!-- Role-specific Dashboard Links -->
+                <% if (user.role === 'admin') { %>
+                    <a href="/admin/dashboard" class="nav-link nav-dashboard"><i class="fas fa-tachometer-alt"></i><span>Admin Panel</span></a>
+                <% } else if (user.role === 'artisan') { %>
+                    <a href="/artisan/dashboard" class="nav-link nav-dashboard"><i class="fas fa-palette"></i><span>Artisan Hub</span></a>
+                <% } else { %>
+                    <a href="/user/dashboard" class="nav-link nav-dashboard"><i class="fas fa-compass"></i><span>My Dashboard</span></a>
+                <% } %>
+                
+                <!-- User Menu -->
+                <div class="nav-user-menu">
+                    <div class="nav-user-toggle" id="navUserToggle">
+                        <% if (user.profile_photo) { %>
+                            <img src="/<%= user.profile_photo %>" alt="<%= user.name %>" class="nav-user-avatar">
+                        <% } else { %>
+                            <div class="nav-user-avatar nav-user-avatar-text">
+                                <%= user.name ? user.name.charAt(0).toUpperCase() : 'U' %>
+                            </div>
+                        <% } %>
+                        <span class="nav-user-name"><%= user.name %></span>
+                        <i class="fas fa-chevron-down nav-user-chevron"></i>
+                    </div>
+                    <div class="nav-user-dropdown" id="navUserDropdown">
+                        <div class="nav-user-info">
+                            <% if (user.profile_photo) { %>
+                                <img src="/<%= user.profile_photo %>" alt="<%= user.name %>" class="nav-dropdown-avatar">
+                            <% } else { %>
+                                <div class="nav-dropdown-avatar nav-dropdown-avatar-text">
+                                    <%= user.name ? user.name.charAt(0).toUpperCase() : 'U' %>
+                                </div>
+                            <% } %>
+                            <div class="nav-user-details">
+                                <span class="nav-user-display-name"><%= user.name %></span>
+                                <span class="nav-user-role"><%= user.role.charAt(0).toUpperCase() + user.role.slice(1) %></span>
+                            </div>
+                        </div>
+                        <div class="nav-dropdown-divider"></div>
+                        <% if (user.role === 'admin') { %>
+                            <a href="/admin/profile" class="nav-dropdown-item"><i class="fas fa-user"></i>My Profile</a>
+                            <a href="/admin/settings" class="nav-dropdown-item"><i class="fas fa-cog"></i>Settings</a>
+                        <% } else if (user.role === 'artisan') { %>
+                            <a href="/artisan/profile" class="nav-dropdown-item"><i class="fas fa-user"></i>My Profile</a>
+                            <a href="/artisan/products" class="nav-dropdown-item"><i class="fas fa-box"></i>My Products</a>
+                            <a href="/artisan/orders" class="nav-dropdown-item"><i class="fas fa-shopping-cart"></i>Orders</a>
+                        <% } else { %>
+                            <a href="/user/profile" class="nav-dropdown-item"><i class="fas fa-user"></i>My Profile</a>
+                            <a href="/user/favorites" class="nav-dropdown-item"><i class="fas fa-heart"></i>Favorites</a>
+                            <a href="/user/reviews" class="nav-dropdown-item"><i class="fas fa-star"></i>My Reviews</a>
+                        <% } %>
+                        <div class="nav-dropdown-divider"></div>
+                        <a href="/logout" class="nav-dropdown-item nav-dropdown-logout"><i class="fas fa-sign-out-alt"></i>Logout</a>
+                    </div>
+                </div>
+            <% } %>
+        </div>
+
+        <!-- Mobile Overlay -->
+        <div class="nav-overlay" id="navOverlay"></div>
+    </div>
+</nav>
+
+<!-- Navigation Styles -->
+<style>
+    :root {
+        --nav-primary: #1a5f3f;
+        --nav-primary-light: #2d8659;
+        --nav-accent: #ff6b35;
+        --nav-white: #ffffff;
+        --nav-gray-50: #f8faf9;
+        --nav-gray-100: #f1f5f4;
+        --nav-gray-200: #e2e8e6;
+        --nav-gray-600: #6b7280;
+        --nav-gray-900: #111827;
+        --nav-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        --nav-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        --nav-transition: all 0.2s ease;
+        --nav-height: 70px;
+    }
+
+    .navbar {
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+        background: var(--nav-white);
+        border-bottom: 3px solid var(--nav-accent);
+        box-shadow: var(--nav-shadow);
+    }
+
+    .nav-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 0 1.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        height: var(--nav-height);
+    }
+
+    /* Logo */
+    .nav-logo {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        text-decoration: none;
+        font-weight: 700;
+        font-size: 1.25rem;
+        color: var(--nav-primary);
+        transition: var(--nav-transition);
+    }
+
+    .nav-logo:hover {
+        color: var(--nav-primary-light);
+    }
+
+    .nav-logo-img {
+        width: 40px;
+        height: 40px;
+        object-fit: contain;
+        border-radius: 8px;
+    }
+
+    .nav-logo-text {
+        font-family: 'Poppins', sans-serif;
+        font-weight: 700;
+    }
+
+    /* Mobile Toggle */
+    .nav-toggle {
+        display: none;
+        flex-direction: column;
+        gap: 4px;
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 8px;
+        border-radius: 6px;
+        transition: var(--nav-transition);
+    }
+
+    .nav-toggle:hover {
+        background: var(--nav-gray-100);
+    }
+
+    .nav-toggle-line {
+        width: 24px;
+        height: 3px;
+        background: var(--nav-primary);
+        border-radius: 2px;
+        transition: var(--nav-transition);
+    }
+
+    .nav-toggle.active .nav-toggle-line:nth-child(1) {
+        transform: rotate(45deg) translate(6px, 6px);
+    }
+
+    .nav-toggle.active .nav-toggle-line:nth-child(2) {
+        opacity: 0;
+    }
+
+    .nav-toggle.active .nav-toggle-line:nth-child(3) {
+        transform: rotate(-45deg) translate(6px, -6px);
+    }
+
+    /* Navigation Menu */
+    .nav-menu {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .nav-close {
+        display: none;
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        background: var(--nav-gray-100);
+        border: none;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        cursor: pointer;
+        font-size: 1.25rem;
+        color: var(--nav-gray-600);
+        align-items: center;
+        justify-content: center;
+        transition: var(--nav-transition);
+    }
+
+    .nav-close:hover {
+        background: var(--nav-gray-200);
+        color: var(--nav-gray-900);
+    }
+
+    /* Navigation Links */
+    .nav-link {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1rem;
+        text-decoration: none;
+        color: var(--nav-gray-600);
+        font-weight: 500;
+        font-size: 0.9rem;
+        border-radius: 8px;
+        transition: var(--nav-transition);
+        white-space: nowrap;
+    }
+
+    .nav-link:hover {
+        background: var(--nav-gray-100);
+        color: var(--nav-primary);
+    }
+
+    .nav-link.nav-dashboard {
+        background: linear-gradient(135deg, var(--nav-primary), var(--nav-primary-light));
+        color: var(--nav-white);
+        font-weight: 600;
+    }
+
+    .nav-link.nav-dashboard:hover {
+        background: linear-gradient(135deg, var(--nav-primary-light), var(--nav-primary));
+        color: var(--nav-white);
+        transform: translateY(-1px);
+        box-shadow: var(--nav-shadow);
+    }
+
+    .nav-link i {
+        font-size: 0.9rem;
+        width: 16px;
+        text-align: center;
+    }
+
+    /* Navigation Buttons */
+    .nav-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.25rem;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 0.9rem;
+        border-radius: 8px;
+        transition: var(--nav-transition);
+        white-space: nowrap;
+    }
+
+    .nav-btn-secondary {
+        background: var(--nav-gray-100);
+        color: var(--nav-gray-600);
+        border: 2px solid var(--nav-gray-200);
+    }
+
+    .nav-btn-secondary:hover {
+        background: var(--nav-gray-200);
+        color: var(--nav-gray-900);
+        border-color: var(--nav-gray-600);
+    }
+
+    .nav-btn-primary {
+        background: linear-gradient(135deg, var(--nav-accent), #e55a2b);
+        color: var(--nav-white);
+        border: 2px solid transparent;
+        box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+    }
+
+    .nav-btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(255, 107, 53, 0.4);
+    }
+
+    /* Divider */
+    .nav-divider {
+        width: 1px;
+        height: 24px;
+        background: var(--nav-gray-200);
+        margin: 0 0.5rem;
+    }
+
+    /* User Menu */
+    .nav-user-menu {
+        position: relative;
+    }
+
+    .nav-user-toggle {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.5rem 1rem;
+        background: var(--nav-gray-50);
+        border: 2px solid var(--nav-gray-200);
+        border-radius: 12px;
+        cursor: pointer;
+        transition: var(--nav-transition);
+    }
+
+    .nav-user-toggle:hover {
+        background: var(--nav-gray-100);
+        border-color: var(--nav-primary);
+    }
+
+    .nav-user-toggle.active {
+        background: var(--nav-gray-100);
+        border-color: var(--nav-primary);
+    }
+
+    .nav-user-avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+
+    .nav-user-avatar-text {
+        background: linear-gradient(135deg, var(--nav-primary), var(--nav-primary-light));
+        color: var(--nav-white);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 0.9rem;
+    }
+
+    .nav-user-name {
+        font-weight: 600;
+        font-size: 0.9rem;
+        color: var(--nav-gray-900);
+    }
+
+    .nav-user-chevron {
+        font-size: 0.75rem;
+        color: var(--nav-gray-600);
+        transition: var(--nav-transition);
+    }
+
+    .nav-user-toggle.active .nav-user-chevron {
+        transform: rotate(180deg);
+    }
+
+    /* User Dropdown */
+    .nav-user-dropdown {
+        position: absolute;
+        top: calc(100% + 0.5rem);
+        right: 0;
+        width: 280px;
+        background: var(--nav-white);
+        border: 1px solid var(--nav-gray-200);
+        border-radius: 12px;
+        box-shadow: var(--nav-shadow-lg);
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(-10px);
+        transition: var(--nav-transition);
+        z-index: 100;
+    }
+
+    .nav-user-dropdown.active {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+    }
+
+    .nav-user-info {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 1rem;
+    }
+
+    .nav-dropdown-avatar {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        object-fit: cover;
+        flex-shrink: 0;
+    }
+
+    .nav-dropdown-avatar-text {
+        background: linear-gradient(135deg, var(--nav-primary), var(--nav-primary-light));
+        color: var(--nav-white);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 1.1rem;
+    }
+
+    .nav-user-details {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .nav-user-display-name {
+        display: block;
+        font-weight: 700;
+        font-size: 0.95rem;
+        color: var(--nav-gray-900);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .nav-user-role {
+        display: block;
+        font-size: 0.8rem;
+        color: var(--nav-gray-600);
+        text-transform: capitalize;
+    }
+
+    .nav-dropdown-divider {
+        height: 1px;
+        background: var(--nav-gray-200);
+        margin: 0.25rem 0;
+    }
+
+    .nav-dropdown-item {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.75rem 1rem;
+        text-decoration: none;
+        color: var(--nav-gray-600);
+        font-size: 0.9rem;
+        font-weight: 500;
+        transition: var(--nav-transition);
+    }
+
+    .nav-dropdown-item:hover {
+        background: var(--nav-gray-50);
+        color: var(--nav-primary);
+    }
+
+    .nav-dropdown-item i {
+        width: 18px;
+        text-align: center;
+        font-size: 0.9rem;
+    }
+
+    .nav-dropdown-logout {
+        color: #ef4444;
+    }
+
+    .nav-dropdown-logout:hover {
+        background: rgba(239, 68, 68, 0.1);
+        color: #ef4444;
+    }
+
+    /* Mobile Overlay */
+    .nav-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 999;
+        opacity: 0;
+        transition: var(--nav-transition);
+    }
+
+    .nav-overlay.active {
+        display: block;
+        opacity: 1;
+    }
+
+    /* Mobile Styles */
+    @media (max-width: 768px) {
+        .nav-toggle {
+            display: flex;
+        }
+
+        .nav-menu {
+            position: fixed;
+            top: 0;
+            right: -100%;
+            width: 320px;
+            height: 100vh;
+            background: var(--nav-white);
+            flex-direction: column;
+            align-items: stretch;
+            gap: 0;
+            padding: 4rem 1.5rem 2rem;
+            box-shadow: var(--nav-shadow-lg);
+            transition: var(--nav-transition);
+            overflow-y: auto;
+        }
+
+        .nav-menu.active {
+            right: 0;
+        }
+
+        .nav-close {
+            display: flex;
+        }
+
+        .nav-link {
+            padding: 1rem;
+            border-radius: 12px;
+            margin-bottom: 0.25rem;
+        }
+
+        .nav-btn {
+            padding: 1rem;
+            border-radius: 12px;
+            margin-bottom: 0.25rem;
+            justify-content: center;
+        }
+
+        .nav-divider {
+            width: 100%;
+            height: 1px;
+            margin: 1rem 0;
+        }
+
+        .nav-user-menu {
+            width: 100%;
+        }
+
+        .nav-user-toggle {
+            width: 100%;
+            justify-content: space-between;
+            padding: 1rem;
+            border-radius: 12px;
+        }
+
+        .nav-user-dropdown {
+            position: static;
+            width: 100%;
+            margin-top: 0.5rem;
+            opacity: 1;
+            visibility: visible;
+            transform: none;
+            box-shadow: none;
+            border: 1px solid var(--nav-gray-200);
+        }
+
+        .nav-user-name {
+            display: none;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .nav-container {
+            padding: 0 1rem;
+        }
+
+        .nav-menu {
+            width: 100%;
+            right: -100%;
+        }
+
+        .nav-logo-text {
+            display: none;
+        }
+    }
+</style>
+
+<!-- Navigation JavaScript -->
+<script>
+(function() {
+    const navToggle = document.getElementById('navToggle');
+    const navMenu = document.getElementById('navMenu');
+    const navClose = document.getElementById('navClose');
+    const navOverlay = document.getElementById('navOverlay');
+    const navUserToggle = document.getElementById('navUserToggle');
+    const navUserDropdown = document.getElementById('navUserDropdown');
+
+    // Mobile menu toggle
+    function toggleMobileMenu() {
+        navToggle?.classList.toggle('active');
+        navMenu?.classList.toggle('active');
+        navOverlay?.classList.toggle('active');
+        document.body.style.overflow = navMenu?.classList.contains('active') ? 'hidden' : '';
+    }
+
+    function closeMobileMenu() {
+        navToggle?.classList.remove('active');
+        navMenu?.classList.remove('active');
+        navOverlay?.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+
+    // User dropdown toggle
+    function toggleUserDropdown(e) {
+        e?.stopPropagation();
+        navUserToggle?.classList.toggle('active');
+        navUserDropdown?.classList.toggle('active');
+    }
+
+    function closeUserDropdown() {
+        navUserToggle?.classList.remove('active');
+        navUserDropdown?.classList.remove('active');
+    }
+
+    // Event listeners
+    navToggle?.addEventListener('click', toggleMobileMenu);
+    navClose?.addEventListener('click', closeMobileMenu);
+    navOverlay?.addEventListener('click', closeMobileMenu);
+    navUserToggle?.addEventListener('click', toggleUserDropdown);
+
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!navUserToggle?.contains(e.target) && !navUserDropdown?.contains(e.target)) {
+            closeUserDropdown();
+        }
+    });
+
+    // Close mobile menu on window resize
+    window.addEventListener('resize', () => {
+        if (window.innerWidth > 768) {
+            closeMobileMenu();
+        }
+    });
+
+    // Close mobile menu when clicking nav links
+    document.querySelectorAll('.nav-link, .nav-btn').forEach(link => {
+        link.addEventListener('click', () => {
+            if (window.innerWidth <= 768) {
+                closeMobileMenu();
+            }
+        });
+    });
+})();
+</script>

@@ -1,0 +1,46 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %> - HeritageLink</title>
+    <style>
+        :root { --primary-green: #166534; --secondary-green: #16a34a; --accent-gold: #d97706; --light-beige: #fef7ed; --text-dark: #1f2937; --text-light: #6b7280; --white: #ffffff; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background: var(--light-beige); color: var(--text-dark); min-height: 100vh; }
+        .navbar { background: linear-gradient(135deg, var(--primary-green) 0%, #15803d 100%); padding: 1rem 0; }
+        .nav-container { max-width: 1400px; margin: 0 auto; padding: 0 2rem; display: flex; justify-content: space-between; align-items: center; }
+        .logo { color: white; text-decoration: none; font-size: 1.5rem; font-weight: bold; }
+        .admin-badge { background: var(--accent-gold); color: white; padding: 0.25rem 0.75rem; border-radius: 1rem; font-size: 0.875rem; font-weight: 600; margin-left: 1rem; }
+        .nav-links { display: flex; gap: 1.5rem; align-items: center; }
+        .nav-link { color: white; text-decoration: none; padding: 0.5rem 1rem; border-radius: 0.5rem; }
+        .dashboard-container { max-width: 1400px; margin: 0 auto; padding: 2rem; text-align: center; }
+        .page-header { background: var(--white); padding: 3rem; border-radius: 1rem; box-shadow: 0 4px 20px rgba(0,0,0,0.08); margin-bottom: 2rem; }
+        .page-title { color: var(--primary-green); font-size: 2rem; font-weight: 800; margin-bottom: 1rem; }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="/admin/dashboard" class="logo">
+                🏛️ HeritageLink 
+                <span class="admin-badge">Admin</span>
+            </a>
+            <div class="nav-links">
+                <a href="/admin/dashboard" class="nav-link">Dashboard</a>
+                <a href="/admin/users" class="nav-link">Users</a>
+                <a href="/admin/destinations" class="nav-link">Destinations</a>
+                <a href="/admin/events" class="nav-link">Events</a>
+                <a href="/admin/moderate" class="nav-link">Moderate</a>
+                <a href="/logout" class="nav-link">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="dashboard-container">
+        <div class="page-header">
+            <h1 class="page-title"><%= title %></h1>
+            <p>This section is coming soon. Check back later for updates!</p>
+        </div>
+    </div>
+</body>
+</html>

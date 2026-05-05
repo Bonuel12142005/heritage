@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Interactive Map - HeritageLink</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="/css/heritagelink-unified.css">
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    html,body{overflow:hidden;height:100%;width:100%}
+    
+    /* Override navbar for map page */
+    .navbar{position:fixed;top:0;left:0;right:0;z-index:1000;padding:0.6rem 0}
+    
+    /* Main Layout */
+    .map-layout{display:flex;height:100vh;padding-top:60px}
+    
+    /* Sidebar */
+    .map-sidebar{width:360px;background:#fff;box-shadow:2px 0 15px rgba(0,0,0,0.1);display:flex;flex-direction:column;z-index:100;flex-shrink:0}
+    .sidebar-header{padding:1rem 1.25rem;background:var(--gradient-nature);color:#fff}
+    .sidebar-header h2{font-size:1.1rem;font-weight:700;margin:0 0 0.25rem;display:flex;align-items:center;gap:0.5rem}
+    .sidebar-header p{font-size:0.8rem;opacity:0.9;margin:0}
+    
+    /* Tabs */
+    .sidebar-tabs{display:flex;border-bottom:2px solid var(--rock-gray);background:#fff}
+    .tab-btn{flex:1;padding:0.75rem 0.5rem;text-align:center;cursor:pointer;font-weight:600;font-size:0.85rem;color:var(--slate-gray);border:none;background:none;border-bottom:3px solid transparent;transition:all 0.2s}
+    .tab-btn:hover{color:var(--sage-green)}
+    .tab-btn.active{color:var(--forest-green);border-bottom-color:var(--sage-green);background:var(--leaf-green)}
+    .tab-btn i{margin-right:0.35rem}
+    
+    /* Sidebar Content */
+    .sidebar-body{flex:1;overflow-y:auto}
+    .tab-panel{display:none;padding:0}
+    .tab-panel.active{display:block}
+    
+    /* Filter Section */
+    .filter-box{padding:0.85rem;background:var(--pebble-gray);border-bottom:1px solid var(--rock-gray)}
+    .filter-row{display:flex;gap:0.5rem;margin-bottom:0.5rem}
+    .filter-row:last-child{margin-bottom:0}
+    .filter-input,.filter-select{flex:1;padding:0.55rem 0.75rem;border:1px solid var(--rock-gray);border-radius:var(--radius-sm);font-size:0.8rem;background:#fff}
+    .filter-input:focus,.filter-select:focus{outline:none;border-color:var(--sage-green)}
+    
+    /* Category Pills */
+    .cat-pills{display:flex;flex-wrap:wrap;gap:0.35rem;padding:0.75rem}
+    .cat-pill{padding:0.35rem 0.7rem;border-radius:var(--radius-full);border:1px solid var(--rock-gray);background:#fff;font-size:0.75rem;font-weight:600;cursor:pointer;transition:all 0.2s;color:var(--slate-gray)}
+    .cat-pill:hover,.cat-pill.active{background:var(--sage-green);color:#fff;border-color:var(--sage-green)}
+    .cat-pill i{margin-right:0.25rem}
+    
+    /* Place List */
+    .place-list{padding:0.5rem}
+    .place-card{background:#fff;border-radius:var(--radius-md);margin-bottom:0.6rem;border:1px solid var(--rock-gray);cursor:pointer;transition:all 0.2s;overflow:hidden}
+    .place-card:hover{box-shadow:var(--shadow-md);border-color:var(--sage-green);transform:translateY(-2px)}
+    .place-card-inner{display:flex;gap:0.75rem;padding:0.75rem}
+    .place-thumb{width:65px;height:65px;border-radius:var(--radius-sm);background:var(--gradient-nature);display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.25rem;flex-shrink:0;overflow:hidden}
+    .place-thumb img{width:100%;height:100%;object-fit:cover}
+    .place-info{flex:1;min-width:0}
+    .place-name{font-weight:700;color:var(--forest-green);font-size:0.9rem;margin-bottom:0.2rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .place-type{font-size:0.7rem;color:var(--textile-orange);text-transform:uppercase;font-weight:700;letter-spacing:0.03em}
+    .place-meta{display:flex;align-items:center;gap:0.6rem;font-size:0.75rem;color:var(--slate-gray);margin-top:0.3rem}
+    .place-meta i{font-size:0.7rem}
+    .place-rating{color:#f59e0b}
+    .place-distance{color:var(--sage-green)}
+    
+    /* Route Cards */
+    .route-card{background:#fff;border-radius:var(--radius-md);margin-bottom:0.6rem;border:1px solid var(--rock-gray);overflow:hidden}
+    .route-header{padding:0.85rem;cursor:pointer}
+    .route-name{font-weight:700;color:var(--forest-green);font-size:0.9rem;margin-bottom:0.3rem}
+    .route-desc{font-size:0.8rem;color:var(--slate-gray);margin-bottom:0.4rem}
+    .route-meta{display:flex;gap:1rem;font-size:0.75rem;color:var(--slate-gray)}
+    .route-meta span{display:flex;align-items:center;gap:0.25rem}
+    .route-meta i{color:var(--sage-green)}
+    .route-actions{display:flex;gap:0.5rem;padding:0.6rem 0.85rem;border-top:1px solid var(--rock-gray);background:var(--pebble-gray)}
+    .btn-sm{padding:0.4rem 0.75rem;border-radius:var(--radius-sm);font-size:0.75rem;font-weight:600;cursor:pointer;border:none;display:inline-flex;align-items:center;gap:0.3rem;transition:all 0.2s}
+    .btn-sm:hover{transform:translateY(-1px)}
+    .btn-green{background:var(--sage-green);color:#fff}
+    .btn-orange{background:var(--textile-orange);color:#fff}
+    .btn-outline{background:#fff;color:var(--forest-green);border:1px solid var(--rock-gray)}
+    
+    /* Map Container */
+    .map-container{flex:1;position:relative;background:var(--pebble-gray)}
+    #map{width:100%;height:100%}
+    
+    /* Map Controls */
+    .map-controls{position:absolute;top:1rem;right:1rem;display:flex;flex-direction:column;gap:0.5rem;z-index:50}
+    .map-ctrl-btn{width:42px;height:42px;background:#fff;border:none;border-radius:var(--radius-md);box-shadow:var(--shadow-md);cursor:pointer;font-size:1rem;color:var(--forest-green);transition:all 0.2s;display:flex;align-items:center;justify-content:center}
+    .map-ctrl-btn:hover{background:var(--sage-green);color:#fff}
+    
+    /* Legend */
+    .map-legend{position:absolute;bottom:1rem;right:1rem;background:#fff;border-radius:var(--radius-md);padding:0.85rem;box-shadow:var(--shadow-md);z-index:50;min-width:150px}
+    .legend-title{font-weight:700;font-size:0.8rem;color:var(--forest-green);margin-bottom:0.5rem}
+    .legend-item{display:flex;align-items:center;gap:0.5rem;font-size:0.75rem;color:var(--slate-gray);margin-bottom:0.3rem}
+    .legend-item:last-child{margin-bottom:0}
+    .legend-dot{width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:0.55rem}
+    
+    /* Directions Panel */
+    .directions-panel{display:none;position:absolute;bottom:1rem;left:380px;right:180px;background:#fff;border-radius:var(--radius-lg);box-shadow:var(--shadow-lg);padding:1rem;z-index:50;border:2px solid var(--sage-green)}
+    .directions-panel.active{display:block;animation:slideUp 0.3s ease}
+    .directions-panel.auto-hide{opacity:0.8}
+    .dir-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem}
+    .dir-header h3{font-size:1rem;font-weight:700;color:var(--forest-green);margin:0}
+    .dir-close{background:none;border:none;font-size:1.1rem;cursor:pointer;color:var(--slate-gray);padding:0.25rem;border-radius:var(--radius-sm);transition:all 0.2s}
+    .dir-close:hover{color:var(--forest-green);background:var(--pebble-gray)}
+    .dir-stats{display:flex;gap:2rem}
+    .dir-stat{text-align:center}
+    .dir-stat .val{font-size:1.35rem;font-weight:800;color:var(--sage-green)}
+    .dir-stat .lbl{font-size:0.75rem;color:var(--slate-gray)}
+    
+    @keyframes slideUp {
+      from { transform: translateY(20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    
+    /* Mobile Toggle */
+    .sidebar-toggle{display:none;position:absolute;top:0.75rem;left:0.75rem;z-index:200;width:42px;height:42px;background:#fff;border:none;border-radius:var(--radius-md);box-shadow:var(--shadow-md);cursor:pointer;font-size:1.1rem;color:var(--forest-green)}
+    
+    /* Info Window */
+    .gm-style-iw{max-width:280px!important}
+    .info-window h3{font-size:1rem;font-weight:700;color:var(--forest-green);margin-bottom:0.4rem}
+    .info-window p{font-size:0.85rem;color:var(--slate-gray);margin-bottom:0.5rem;line-height:1.5}
+    .info-window .info-meta{font-size:0.8rem;margin-bottom:0.6rem}
+    .info-window .info-meta div{margin-bottom:0.2rem;display:flex;align-items:center;gap:0.35rem}
+    .info-window .info-meta i{color:var(--sage-green);width:14px}
+    .info-window .btn-sm{width:100%;justify-content:center;margin-top:0.5rem}
+    
+    /* Empty State */
+    .empty-msg{text-align:center;padding:2rem 1rem;color:var(--slate-gray)}
+    .empty-msg i{font-size:2.5rem;color:var(--rock-gray);margin-bottom:0.75rem}
+    .empty-msg p{font-size:0.9rem}
+    
+    /* Responsive */
+    @media(max-width:900px){
+      .map-sidebar{position:fixed;left:0;top:60px;bottom:0;width:320px;transform:translateX(-100%);transition:transform 0.3s ease;z-index:500}
+      .map-sidebar.open{transform:translateX(0)}
+      .sidebar-toggle{display:flex;align-items:center;justify-content:center}
+      .directions-panel{left:1rem;right:1rem}
+      .map-legend{bottom:auto;top:4rem;right:0.75rem}
+    }
+    @media(max-width:600px){
+      .map-sidebar{width:100%}
+      .map-legend{display:none}
+      .map-controls{top:0.75rem;right:0.75rem}
+      .map-ctrl-btn{width:38px;height:38px;font-size:0.9rem}
+    }
+  </style>
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="nav-container">
+      <a href="/" class="logo">
+        <img src="/uploads/logo.jpg" alt="HeritageLink"> HeritageLink
+      </a>
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">
+        <i class="fas fa-bars"></i>
+      </button>
+      <div class="nav-overlay" id="navOverlay"></div>
+      <div class="nav-links" id="navLinks">
+        <button class="nav-close" id="navClose" aria-label="Close menu">
+          <i class="fas fa-times"></i>
+        </button>
+        <a href="/" class="nav-link"><i class="fas fa-home"></i> <span>Home</span></a>
+        <a href="/destinations" class="nav-link"><i class="fas fa-map-marked-alt"></i> <span>Discover Sites</span></a>
+        <a href="/events" class="nav-link"><i class="fas fa-calendar-alt"></i> <span>Events</span></a>
+        <a href="/heritage-gallery" class="nav-link"><i class="fas fa-landmark"></i> <span>Heritage Gallery</span></a>
+        <a href="/map" class="nav-link" style="background:rgba(255,255,255,0.15);color:#fff"><i class="fas fa-map"></i> <span>Map</span></a>
+        <a href="/showcase" class="nav-link"><i class="fas fa-palette"></i> <span>Artisans</span></a>
+        <a href="/feedback" class="nav-link"><i class="fas fa-comment-dots"></i> <span>Feedback</span></a>
+        <% if (typeof user !== 'undefined' && user) { %>
+          <a href="/dashboard" class="btn btn-primary">Dashboard</a>
+        <% } else { %>
+          <a href="/login" class="btn btn-secondary">Login</a>
+        <% } %>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Map Layout -->
+  <div class="map-layout">
+    <!-- Sidebar Toggle (Mobile) -->
+    <button class="sidebar-toggle" id="sidebarToggle"><i class="fas fa-layer-group"></i></button>
+    
+    <!-- Sidebar -->
+    <aside class="map-sidebar" id="mapSidebar">
+      <div class="sidebar-header">
+        <h2><i class="fas fa-compass"></i> Explore Gloria</h2>
+        <p>Discover heritage sites & cultural landmarks</p>
+      </div>
+      
+      <div class="sidebar-tabs">
+        <button class="tab-btn active" data-tab="places"><i class="fas fa-map-marker-alt"></i> Places</button>
+        <button class="tab-btn" data-tab="routes"><i class="fas fa-route"></i> Routes</button>
+      </div>
+      
+      <div class="sidebar-body">
+        <!-- Places Tab -->
+        <div class="tab-panel active" id="placesTab">
+          <div class="filter-box">
+            <div class="filter-row">
+              <input type="text" class="filter-input" id="searchPlace" placeholder="Search places...">
+            </div>
+            <div class="filter-row">
+              <select class="filter-select" id="filterType">
+                <option value="">All Types</option>
+                <option value="heritage">Heritage Site</option>
+                <option value="natural">Natural</option>
+                <option value="cultural">Cultural</option>
+                <option value="religious">Religious</option>
+              </select>
+            </div>
+          </div>
+          <div class="cat-pills">
+            <span class="cat-pill active" data-cat=""><i class="fas fa-th"></i> All</span>
+            <span class="cat-pill" data-cat="heritage"><i class="fas fa-landmark"></i> Heritage</span>
+            <span class="cat-pill" data-cat="natural"><i class="fas fa-tree"></i> Nature</span>
+            <span class="cat-pill" data-cat="cultural"><i class="fas fa-theater-masks"></i> Cultural</span>
+            <span class="cat-pill" data-cat="religious"><i class="fas fa-church"></i> Religious</span>
+          </div>
+          <div class="place-list" id="placeList">
+            <div class="empty-msg"><i class="fas fa-spinner fa-spin"></i><p>Loading places...</p></div>
+          </div>
+        </div>
+        
+        <!-- Routes Tab -->
+        <div class="tab-panel" id="routesTab">
+          <div class="place-list" id="routeList">
+            <div class="empty-msg"><i class="fas fa-route"></i><p>No routes available yet</p></div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Map Container -->
+    <div class="map-container">
+      <div id="map"></div>
+      
+      <!-- Map Controls -->
+      <div class="map-controls">
+        <button class="map-ctrl-btn" id="myLocationBtn" title="My Location"><i class="fas fa-crosshairs"></i></button>
+        <button class="map-ctrl-btn" id="zoomInBtn" title="Zoom In"><i class="fas fa-plus"></i></button>
+        <button class="map-ctrl-btn" id="zoomOutBtn" title="Zoom Out"><i class="fas fa-minus"></i></button>
+      </div>
+      
+      <!-- Legend -->
+      <div class="map-legend">
+        <div class="legend-title">Map Legend</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#2d8659"><i class="fas fa-landmark"></i></div> Heritage Site</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#0891b2"><i class="fas fa-tree"></i></div> Natural</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#7c3aed"><i class="fas fa-theater-masks"></i></div> Cultural</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#dc2626"><i class="fas fa-church"></i></div> Religious</div>
+        <div class="legend-item" style="border-top: 1px solid #e5e7eb; padding-top: 0.5rem; margin-top: 0.5rem;">
+          <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.75rem; color: #16a34a;">
+            <div style="width: 18px; height: 2px; background: #16a34a; border-radius: 1px; border: 1px dashed #16a34a;"></div>
+            Gloria Boundary
+          </div>
+        </div>
+      </div>
+      
+      <!-- Directions Panel -->
+      <div class="directions-panel" id="directionsPanel">
+        <div class="dir-header">
+          <h3><i class="fas fa-directions"></i> Directions</h3>
+          <button class="dir-close" id="closeDirections"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="dir-stats">
+          <div class="dir-stat"><div class="val" id="dirDistance">--</div><div class="lbl">Distance</div></div>
+          <div class="dir-stat"><div class="val" id="dirDuration">--</div><div class="lbl">Duration</div></div>
+          <div class="dir-stat"><div class="val" id="dirStops">--</div><div class="lbl">Stops</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const PLACES = <%- JSON.stringify(places || []) %>;
+    const ROUTES = <%- JSON.stringify(routes || []) %>;
+  </script>
+  
+  <script>
+    // Mobile nav toggle
+    (function(){
+      const toggle = document.getElementById('navToggle');
+      const links = document.getElementById('navLinks');
+      const overlay = document.getElementById('navOverlay');
+      const close = document.getElementById('navClose');
+      function openMenu() { links.classList.add('active'); overlay.classList.add('active'); document.body.style.overflow = 'hidden'; }
+      function closeMenu() { links.classList.remove('active'); overlay.classList.remove('active'); document.body.style.overflow = ''; }
+      if(toggle) toggle.addEventListener('click', openMenu);
+      if(close) close.addEventListener('click', closeMenu);
+      if(overlay) overlay.addEventListener('click', closeMenu);
+    })();
+
+    // Sidebar toggle (mobile)
+    const sidebarToggle = document.getElementById('sidebarToggle');
+    const mapSidebar = document.getElementById('mapSidebar');
+    if (sidebarToggle) {
+      sidebarToggle.addEventListener('click', () => {
+        mapSidebar.classList.toggle('open');
+        sidebarToggle.innerHTML = mapSidebar.classList.contains('open') ? '<i class="fas fa-times"></i>' : '<i class="fas fa-layer-group"></i>';
+      });
+    }
+
+    // Tab switching
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById(btn.dataset.tab + 'Tab').classList.add('active');
+      });
+    });
+
+    // Category pills
+    document.querySelectorAll('.cat-pill').forEach(pill => {
+      pill.addEventListener('click', () => {
+        document.querySelectorAll('.cat-pill').forEach(p => p.classList.remove('active'));
+        pill.classList.add('active');
+        document.getElementById('filterType').value = pill.dataset.cat;
+        filterPlaces();
+      });
+    });
+
+    // Close directions
+    document.getElementById('closeDirections').addEventListener('click', () => {
+      document.getElementById('directionsPanel').classList.remove('active');
+    });
+
+    // Render places
+    function renderPlaces(places) {
+      const list = document.getElementById('placeList');
+      if (!places || places.length === 0) {
+        list.innerHTML = '<div class="empty-msg"><i class="fas fa-map-marker-alt"></i><p>No places found</p></div>';
+        return;
+      }
+      list.innerHTML = places.map(p => `
+        <div class="place-card" onclick="focusPlace(${p.id})">
+          <div class="place-card-inner">
+            <div class="place-thumb">
+              ${p.image_url ? `<img src="${p.image_url}" alt="${p.name}" onerror="this.style.display='none'">` : `<i class="fas fa-${getTypeIcon(p.type)}"></i>`}
+            </div>
+            <div class="place-info">
+              <div class="place-name">${escapeHtml(p.name)}</div>
+              <div class="place-type">${escapeHtml(p.type || 'Place')}</div>
+              <div class="place-meta">
+                ${p.rating ? `<span class="place-rating"><i class="fas fa-star"></i> ${p.rating}</span>` : ''}
+                ${p.distance ? `<span class="place-distance"><i class="fas fa-walking"></i> ${p.distance}</span>` : ''}
+              </div>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Render routes
+    function renderRoutes(routes) {
+      const list = document.getElementById('routeList');
+      if (!routes || routes.length === 0) {
+        list.innerHTML = '<div class="empty-msg"><i class="fas fa-route"></i><p>No routes available</p></div>';
+        return;
+      }
+      list.innerHTML = routes.map(r => `
+        <div class="route-card">
+          <div class="route-header">
+            <div class="route-name">${escapeHtml(r.name)}</div>
+            <div class="route-desc">${escapeHtml(r.description || '')}</div>
+            <div class="route-meta">
+              <span><i class="fas fa-map-marker-alt"></i> ${r.stops || 0} stops</span>
+              <span><i class="fas fa-clock"></i> ${r.duration || 'N/A'}</span>
+              <span><i class="fas fa-road"></i> ${r.distance || 'N/A'}</span>
+            </div>
+          </div>
+          <div class="route-actions">
+            <button class="btn-sm btn-green" onclick="startRoute(${r.id})"><i class="fas fa-play"></i> Start</button>
+            <button class="btn-sm btn-outline" onclick="previewRoute(${r.id})"><i class="fas fa-eye"></i> Preview</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function getTypeIcon(type) {
+      const icons = { heritage: 'landmark', natural: 'tree', cultural: 'theater-masks', religious: 'church' };
+      return icons[(type || '').toLowerCase()] || 'map-marker-alt';
+    }
+
+    function escapeHtml(str) {
+      return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    function filterPlaces() {
+      const search = document.getElementById('searchPlace').value.toLowerCase();
+      const type = document.getElementById('filterType').value.toLowerCase();
+      const filtered = PLACES.filter(p => {
+        const matchType = !type || (p.type || '').toLowerCase().includes(type);
+        const matchSearch = !search || (p.name || '').toLowerCase().includes(search);
+        return matchType && matchSearch;
+      });
+      renderPlaces(filtered);
+    }
+
+    document.getElementById('searchPlace').addEventListener('input', filterPlaces);
+    document.getElementById('filterType').addEventListener('change', filterPlaces);
+
+    // Map interaction functions are now in external JS file
+    // focusPlace, showRoute, previewRoute, startRoute are defined in interactive-map.js
+
+    // Initialize
+    renderPlaces(PLACES);
+    renderRoutes(ROUTES);
+  </script>
+  
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script src="/js/interactive-map.js"></script>
+</body>
+</html>

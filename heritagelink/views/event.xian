@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title><%= title %> - HeritageLink</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="/css/heritagelink-unified.css">
+  <style>
+    html,body{overflow-x:hidden;max-width:100vw}
+    
+    .container{max-width:1200px;margin:0 auto;padding:1.5rem}
+    
+    /* Breadcrumb */
+    .breadcrumb{display:flex;align-items:center;gap:0.5rem;margin-bottom:1.25rem;font-size:0.9rem;flex-wrap:wrap}
+    .breadcrumb a{color:var(--sage-green);text-decoration:none;font-weight:500}
+    .breadcrumb a:hover{text-decoration:underline}
+    .breadcrumb span{color:var(--slate-gray)}
+    
+    /* Content Grid */
+    .content-grid{display:grid;grid-template-columns:1fr 340px;gap:1.5rem;align-items:start}
+    
+    /* Event Hero */
+    .event-hero{background:#fff;border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow-md);margin-bottom:1.25rem}
+    .hero-img{height:280px;background:linear-gradient(135deg,#fef3c7,#fed7aa);position:relative}
+    .hero-img img{width:100%;height:100%;object-fit:cover}
+    .hero-img .no-img{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:var(--clay-brown);gap:0.5rem}
+    .hero-img .no-img i{font-size:4rem;opacity:0.4}
+    .event-type-badge{position:absolute;top:1rem;right:1rem;background:var(--gradient-sunset);color:#fff;padding:0.4rem 1rem;border-radius:var(--radius-full);font-size:0.8rem;font-weight:700;text-transform:uppercase}
+    .date-overlay{position:absolute;bottom:1rem;left:1rem;background:#fff;border-radius:var(--radius-md);padding:0.75rem 1rem;text-align:center;box-shadow:var(--shadow-md);min-width:70px}
+    .date-overlay .day{font-size:1.75rem;font-weight:800;color:var(--forest-green);line-height:1}
+    .date-overlay .month{font-size:0.75rem;font-weight:700;color:var(--slate-gray);text-transform:uppercase}
+    .hero-content{padding:1.25rem}
+    .event-title{font-size:1.5rem;font-weight:800;color:var(--forest-green);margin:0 0 0.75rem;line-height:1.3}
+    .event-meta{display:flex;flex-wrap:wrap;gap:1rem;font-size:0.9rem;color:var(--slate-gray)}
+    .event-meta span{display:flex;align-items:center;gap:0.4rem}
+    .event-meta i{color:var(--sage-green)}
+    
+    /* Gallery */
+    .gallery-strip{display:flex;gap:0.5rem;padding:0 1.25rem 1.25rem;overflow-x:auto;-webkit-overflow-scrolling:touch}
+    .gallery-strip::-webkit-scrollbar{height:4px}
+    .gallery-strip::-webkit-scrollbar-thumb{background:var(--rock-gray);border-radius:2px}
+    .gallery-thumb{width:120px;height:80px;flex-shrink:0;border-radius:var(--radius-sm);object-fit:cover;cursor:pointer;border:2px solid transparent;transition:var(--transition)}
+    .gallery-thumb:hover{border-color:var(--sage-green)}
+    
+    /* Info Cards */
+    .info-card{background:#fff;border-radius:var(--radius-lg);padding:1.25rem;box-shadow:var(--shadow-sm);border:1px solid var(--rock-gray);margin-bottom:1rem}
+    .info-card h3{font-size:1rem;font-weight:700;color:var(--forest-green);margin:0 0 0.75rem;display:flex;align-items:center;gap:0.5rem}
+    .info-card h3 i{color:var(--sage-green)}
+    .info-card p{color:var(--slate-gray);font-size:0.9rem;line-height:1.7;margin:0}
+    
+    /* Sidebar */
+    .sidebar-card{background:#fff;border-radius:var(--radius-lg);padding:1.25rem;box-shadow:var(--shadow-sm);border:1px solid var(--rock-gray);margin-bottom:1rem}
+    .sidebar-card .label{font-size:0.75rem;font-weight:700;color:var(--sage-green);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.75rem;display:flex;align-items:center;gap:0.4rem}
+    .detail-row{display:flex;flex-direction:column;gap:0.2rem;padding:0.6rem 0;border-bottom:1px solid var(--rock-gray)}
+    .detail-row:last-child{border-bottom:none}
+    .detail-row strong{font-size:0.8rem;color:var(--forest-green)}
+    .detail-row span{font-size:0.9rem;color:var(--slate-gray)}
+    .highlight-box{background:var(--leaf-green);border-radius:var(--radius-md);padding:0.75rem;text-align:center;margin-bottom:0.75rem}
+    .highlight-box .big{font-size:1.5rem;font-weight:800;color:var(--forest-green)}
+    .highlight-box .label{font-size:0.75rem;color:var(--slate-gray);margin-top:0.25rem}
+    
+    /* RSVP Form */
+    .rsvp-form{display:flex;flex-direction:column;gap:0.75rem}
+    .form-group{display:flex;flex-direction:column;gap:0.3rem}
+    .form-group label{font-size:0.8rem;font-weight:600;color:var(--forest-green)}
+    .form-input{padding:0.65rem 0.85rem;border:2px solid var(--rock-gray);border-radius:var(--radius-md);font-size:0.9rem;transition:var(--transition)}
+    .form-input:focus{outline:none;border-color:var(--sage-green);box-shadow:0 0 0 3px rgba(45,134,89,0.1)}
+    .btn-rsvp{background:var(--gradient-sunset);color:#fff;border:none;padding:0.75rem 1rem;border-radius:var(--radius-md);font-weight:700;font-size:0.9rem;cursor:pointer;transition:var(--transition);display:flex;align-items:center;justify-content:center;gap:0.5rem}
+    .btn-rsvp:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(249,115,22,0.3)}
+    .btn-rsvp:disabled{opacity:0.7;cursor:not-allowed;transform:none}
+    
+    /* Action Buttons */
+    .action-btn{display:flex;align-items:center;justify-content:center;gap:0.5rem;width:100%;padding:0.7rem 1rem;border-radius:var(--radius-md);font-weight:600;font-size:0.85rem;text-decoration:none;transition:var(--transition);margin-top:0.5rem}
+    .action-btn-primary{background:var(--gradient-nature);color:#fff}
+    .action-btn-primary:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(45,134,89,0.3)}
+    .action-btn-secondary{background:var(--pebble-gray);color:var(--forest-green);border:1px solid var(--rock-gray)}
+    .action-btn-secondary:hover{background:var(--leaf-green)}
+    
+    /* Status Badge */
+    .status-badge{display:inline-flex;align-items:center;gap:0.3rem;padding:0.4rem 0.8rem;border-radius:var(--radius-full);font-size:0.8rem;font-weight:600}
+    .status-upcoming{background:var(--leaf-green);color:var(--forest-green)}
+    .status-ongoing{background:#dbeafe;color:#1e40af}
+    .status-past{background:var(--pebble-gray);color:var(--slate-gray)}
+    
+    /* Toast */
+    @keyframes toastIn{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes toastOut{from{opacity:1}to{opacity:0}}
+    
+    /* Responsive */
+    @media(max-width:900px){
+      .content-grid{grid-template-columns:1fr}
+      .hero-img{height:240px}
+      .container{padding:1rem}
+    }
+    @media(max-width:600px){
+      .container{padding:0.75rem}
+      .hero-img{height:200px}
+      .event-title{font-size:1.25rem}
+      .hero-content{padding:1rem}
+      .event-meta{flex-direction:column;gap:0.5rem}
+      .info-card,.sidebar-card{padding:1rem;border-radius:var(--radius-md)}
+      .gallery-thumb{width:100px;height:65px}
+      .date-overlay{padding:0.5rem 0.75rem}
+      .date-overlay .day{font-size:1.35rem}
+    }
+    @media(max-width:400px){
+      .hero-img{height:160px}
+      .event-title{font-size:1.1rem}
+    }
+  </style>
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="nav-container">
+      <a href="/" class="logo">
+        <img src="/uploads/logo.jpg" alt="HeritageLink"> HeritageLink
+      </a>
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">
+        <i class="fas fa-bars"></i>
+      </button>
+      <div class="nav-overlay" id="navOverlay"></div>
+      <div class="nav-links" id="navLinks">
+        <button class="nav-close" id="navClose" aria-label="Close menu">
+          <i class="fas fa-times"></i>
+        </button>
+        <a href="/" class="nav-link"><i class="fas fa-home"></i> <span>Home</span></a>
+        <a href="/destinations" class="nav-link"><i class="fas fa-map-marked-alt"></i> <span>Discover Sites</span></a>
+        <a href="/events" class="nav-link" style="background:rgba(255,255,255,0.15);color:#fff"><i class="fas fa-calendar-alt"></i> <span>Events</span></a>
+        <a href="/heritage-gallery" class="nav-link"><i class="fas fa-landmark"></i> <span>Heritage Gallery</span></a>
+        <a href="/map" class="nav-link"><i class="fas fa-map"></i> <span>Map</span></a>
+        <a href="/showcase" class="nav-link"><i class="fas fa-palette"></i> <span>Artisans</span></a>
+        <a href="/feedback" class="nav-link"><i class="fas fa-comment-dots"></i> <span>Feedback</span></a>
+        <% if (typeof user !== 'undefined' && user) { %>
+          <a href="/dashboard" class="btn btn-primary">Dashboard</a>
+        <% } else { %>
+          <a href="/login" class="btn btn-secondary">Login</a>
+        <% } %>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container">
+    <!-- Breadcrumb -->
+    <div class="breadcrumb">
+      <a href="/"><i class="fas fa-home"></i></a>
+      <span>/</span>
+      <a href="/events">Events</a>
+      <span>/</span>
+      <span><%= event.title %></span>
+    </div>
+
+    <div class="content-grid">
+      <!-- Main Content -->
+      <div>
+        <!-- Event Hero -->
+        <div class="event-hero">
+          <div class="hero-img">
+            <% if (images && images.length > 0) { %>
+              <img id="mainImg" src="<%= images[0].url || images[0].image_url || '' %>" alt="<%= event.title %>">
+            <% } else { %>
+              <div class="no-img">
+                <i class="fas fa-calendar-alt"></i>
+                <span>Event Image</span>
+              </div>
+            <% } %>
+            <span class="event-type-badge"><%= event.type || event.category || 'Event' %></span>
+            <% 
+              const eventDate = event.event_date ? new Date(event.event_date) : null;
+              const day = eventDate ? eventDate.getDate() : '?';
+              const month = eventDate ? eventDate.toLocaleString('en-US', { month: 'short' }) : 'TBD';
+            %>
+            <div class="date-overlay">
+              <div class="day"><%= day %></div>
+              <div class="month"><%= month %></div>
+            </div>
+          </div>
+          
+          <div class="hero-content">
+            <h1 class="event-title"><%= event.title %></h1>
+            <div class="event-meta">
+              <span><i class="fas fa-calendar"></i> <%= event.event_date ? new Date(event.event_date).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }) : 'Date TBD' %></span>
+              <span><i class="fas fa-clock"></i> <%= event.event_time || 'Time TBD' %></span>
+              <span><i class="fas fa-map-marker-alt"></i> <%= event.location || event.venue || 'Location TBA' %></span>
+            </div>
+          </div>
+          
+          <% if (images && images.length > 1) { %>
+          <div class="gallery-strip">
+            <% images.forEach((img, idx) => { %>
+              <img class="gallery-thumb" src="<%= img.url || img.image_url || '' %>" alt="Gallery" onclick="document.getElementById('mainImg').src=this.src">
+            <% }) %>
+          </div>
+          <% } %>
+        </div>
+
+        <!-- About -->
+        <div class="info-card">
+          <h3><i class="fas fa-info-circle"></i> About This Event</h3>
+          <p><%= event.description || 'No description provided for this event.' %></p>
+        </div>
+
+        <!-- Schedule -->
+        <div class="info-card">
+          <h3><i class="fas fa-list-alt"></i> Schedule & Notes</h3>
+          <p><%= event.schedule || event.notes || 'Program schedule and additional details will be announced soon. Stay tuned!' %></p>
+        </div>
+      </div>
+
+      <!-- Sidebar -->
+      <aside>
+        <!-- RSVP Stats -->
+        <div class="sidebar-card">
+          <div class="highlight-box">
+            <div class="big" id="rsvpCount"><%= typeof rsvpCount !== 'undefined' ? rsvpCount : '0' %></div>
+            <div class="label">People Attending</div>
+          </div>
+          <%
+            const now = new Date();
+            const evDate = event.event_date ? new Date(event.event_date) : null;
+            let statusClass = 'status-upcoming';
+            let statusLabel = 'Upcoming';
+            if (evDate) {
+              const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+              const eventDay = new Date(evDate.getFullYear(), evDate.getMonth(), evDate.getDate());
+              if (eventDay.getTime() === today.getTime()) { statusClass = 'status-ongoing'; statusLabel = 'Happening Today'; }
+              else if (eventDay < today) { statusClass = 'status-past'; statusLabel = 'Past Event'; }
+            }
+          %>
+          <div style="text-align:center">
+            <span class="status-badge <%= statusClass %>"><i class="fas fa-circle" style="font-size:0.5rem"></i> <%= statusLabel %></span>
+          </div>
+        </div>
+
+        <!-- Event Details -->
+        <div class="sidebar-card">
+          <div class="label"><i class="fas fa-clipboard-list"></i> Event Details</div>
+          <div class="detail-row">
+            <strong>Organizer</strong>
+            <span><%= event.organizer || 'Not specified' %></span>
+          </div>
+          <div class="detail-row">
+            <strong>Contact</strong>
+            <span><%= event.contact_info || 'Not provided' %></span>
+          </div>
+          <div class="detail-row">
+            <strong>Ticket Price</strong>
+            <span><%= event.ticket_price && Number(event.ticket_price) > 0 ? '₱' + Number(event.ticket_price).toFixed(2) : 'Free Admission' %></span>
+          </div>
+          <div class="detail-row">
+            <strong>Capacity</strong>
+            <span><%= event.max_attendees ? event.max_attendees + ' attendees' : 'Unlimited' %></span>
+          </div>
+        </div>
+
+        <!-- RSVP Form -->
+        <div class="sidebar-card">
+          <div class="label"><i class="fas fa-user-plus"></i> RSVP Now</div>
+          <form id="rsvpForm" class="rsvp-form">
+            <div class="form-group">
+              <label>Your Name *</label>
+              <input type="text" name="name" class="form-input" placeholder="Enter your name" required>
+            </div>
+            <div class="form-group">
+              <label>Email (optional)</label>
+              <input type="email" name="email" class="form-input" placeholder="your@email.com">
+            </div>
+            <div class="form-group">
+              <label>Number of Guests</label>
+              <input type="number" name="guests" class="form-input" min="1" value="1">
+            </div>
+            <button type="submit" class="btn-rsvp" id="rsvpBtn">
+              <i class="fas fa-check-circle"></i> Confirm RSVP
+            </button>
+          </form>
+        </div>
+
+        <!-- Actions -->
+        <div class="sidebar-card">
+          <div class="label"><i class="fas fa-share-alt"></i> Share & Navigate</div>
+          <a class="action-btn action-btn-primary" href="mailto:?subject=<%= encodeURIComponent(event.title || '') %>&body=<%= encodeURIComponent('Check out this event: ' + (event.title||'') + ' on ' + (event.event_date||'TBD') + ' at ' + (event.location||'TBA')) %>">
+            <i class="fas fa-envelope"></i> Share via Email
+          </a>
+          <a class="action-btn action-btn-secondary" target="_blank" href="https://www.google.com/maps/search/?api=1&query=<%= encodeURIComponent(event.location || event.venue || 'Gloria Oriental Mindoro') %>">
+            <i class="fas fa-directions"></i> Get Directions
+          </a>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <script>
+    // Mobile nav toggle
+    (function(){
+      const toggle = document.getElementById('navToggle');
+      const links = document.getElementById('navLinks');
+      const overlay = document.getElementById('navOverlay');
+      const close = document.getElementById('navClose');
+      
+      function openMenu() {
+        links.classList.add('active');
+        overlay.classList.add('active');
+        document.body.style.overflow = 'hidden';
+      }
+      
+      function closeMenu() {
+        links.classList.remove('active');
+        overlay.classList.remove('active');
+        document.body.style.overflow = '';
+      }
+      
+      if(toggle) toggle.addEventListener('click', openMenu);
+      if(close) close.addEventListener('click', closeMenu);
+      if(overlay) overlay.addEventListener('click', closeMenu);
+    })();
+
+    // Toast notification
+    function showToast(message, type) {
+      const colors = { success: '#10b981', error: '#ef4444', warning: '#f59e0b' };
+      const toast = document.createElement('div');
+      toast.style.cssText = `position:fixed;top:20px;right:20px;background:${colors[type]};color:#fff;padding:0.85rem 1.25rem;border-radius:0.75rem;box-shadow:0 10px 25px rgba(0,0,0,0.2);z-index:10000;font-weight:600;animation:toastIn 0.3s ease;max-width:90vw`;
+      toast.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'exclamation-triangle'}"></i> ${message}`;
+      document.body.appendChild(toast);
+      setTimeout(() => { toast.style.animation = 'toastOut 0.3s ease'; setTimeout(() => toast.remove(), 300); }, 3500);
+    }
+
+    // RSVP form
+    (function(){
+      const form = document.getElementById('rsvpForm');
+      const btn = document.getElementById('rsvpBtn');
+      if (!form) return;
+      
+      form.addEventListener('submit', async function(e){
+        e.preventDefault();
+        const data = {
+          name: form.name.value.trim(),
+          email: form.email.value.trim(),
+          guests: Number(form.guests.value) || 1
+        };
+        
+        if (!data.name) {
+          showToast('Please enter your name', 'warning');
+          return;
+        }
+        
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
+        
+        try {
+          const res = await fetch('/api/events/<%= event.id %>/rsvp', {
+            method: 'POST',
+            headers: {'Content-Type':'application/json'},
+            body: JSON.stringify(data)
+          });
+          
+          if (!res.ok) throw new Error(await res.text() || res.statusText);
+          
+          const json = await res.json().catch(() => null);
+          showToast('RSVP confirmed! See you there!', 'success');
+          
+          const countEl = document.getElementById('rsvpCount');
+          if (countEl) {
+            if (json && typeof json.count !== 'undefined') countEl.textContent = json.count;
+            else if (!isNaN(Number(countEl.textContent))) countEl.textContent = Number(countEl.textContent) + data.guests;
+          }
+          form.reset();
+          form.guests.value = 1;
+        } catch(err) {
+          console.error('RSVP failed', err);
+          showToast('Could not submit RSVP. Please try again.', 'error');
+        } finally {
+          btn.disabled = false;
+          btn.innerHTML = '<i class="fas fa-check-circle"></i> Confirm RSVP';
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

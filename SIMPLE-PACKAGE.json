@@ -1,0 +1,15 @@
+{
+  "name": "heritagelink-backend-simple",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "SIMPLE-SINGLE-FILE-BACKEND.js",
+  "scripts": {
+    "start": "node SIMPLE-SINGLE-FILE-BACKEND.js",
+    "dev": "node SIMPLE-SINGLE-FILE-BACKEND.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "express-session": "^1.17.3"
+  }
+}

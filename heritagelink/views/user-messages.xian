@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Messages - HeritageLink</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="/js/smooth-transitions.js" defer></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --primary: #2d8659; --primary-dark: #1a5f3f; --primary-light: #3fa872;
+            --accent: #ff6b35; --accent-dark: #e55a2b;
+            --bg-main: #f8faf9; --bg-card: #ffffff;
+            --text-primary: #064e3b; --text-secondary: #6b7280; --text-muted: #9ca3af;
+            --border: #d1e7dd; --border-light: #e5f3ea;
+            --success: #10b981; --warning: #f59e0b; --error: #ef4444;
+        }
+        
+        body { font-family: 'Inter', sans-serif; background: var(--bg-main); color: var(--text-primary); }
+        
+        /* Topbar */
+        .topbar { background: var(--bg-card); padding: 1rem 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid var(--accent); }
+        .topbar-left h1 { font-size: 1.35rem; font-weight: 700; background: linear-gradient(135deg, var(--primary), var(--primary-light)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .topbar-left p { color: var(--text-secondary); margin-top: 0.2rem; font-size: 0.85rem; }
+        
+        /* Content */
+        .content { padding: 1.5rem; height: calc(100vh - 120px); }
+        
+        /* Messages Layout */
+        .messages-container { display: grid; grid-template-columns: 350px 1fr; gap: 1.5rem; height: 100%; }
+        
+        /* Conversations List */
+        .conversations-panel { background: var(--bg-card); border-radius: 1rem; box-shadow: 0 4px 12px rgba(0,0,0,0.08); border: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden; }
+        .conversations-header { padding: 1.25rem; border-bottom: 1px solid var(--border); background: linear-gradient(135deg, var(--primary), var(--primary-light)); color: white; }
+        .conversations-header h3 { font-size: 1.1rem; font-weight: 700; display: flex; align-items: center; gap: 0.5rem; }
+        .conversations-list { flex: 1; overflow-y: auto; }
+        
+        .conversation-item { padding: 1rem 1.25rem; border-bottom: 1px solid var(--border-light); cursor: pointer; transition: all 0.2s; position: relative; }
+        .conversation-item:hover { background: var(--border-light); }
+        .conversation-item.active { background: var(--primary); color: white; }
+        .conversation-item.active .conversation-name { color: white; }
+        .conversation-item.active .conversation-preview, .conversation-item.active .conversation-time { color: rgba(255,255,255,0.8); }
+        
+        .conversation-avatar { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, var(--accent), var(--accent-dark)); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; margin-bottom: 0.75rem; }
+        .conversation-name { font-weight: 700; color: var(--text-primary); margin-bottom: 0.25rem; font-size: 0.95rem; }
+        .conversation-preview { color: var(--text-secondary); font-size: 0.85rem; line-height: 1.4; margin-bottom: 0.5rem; }
+        .conversation-time { color: var(--text-muted); font-size: 0.75rem; }
+        .unread-badge { position: absolute; top: 1rem; right: 1rem; background: var(--accent); color: white; border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 700; }
+        
+        /* Message Panel */
+        .message-panel { background: var(--bg-card); border-radius: 1rem; box-shadow: 0 4px 12px rgba(0,0,0,0.08); border: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden; }
+        
+        .message-header { padding: 1.25rem; border-bottom: 1px solid var(--border); background: var(--bg-card); }
+        .message-header h3 { color: var(--text-primary); font-size: 1.1rem; font-weight: 700; display: flex; align-items: center; gap: 0.75rem; }
+        .message-header .contact-avatar { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--primary-light)); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 0.9rem; }
+        
+        .messages-area { flex: 1; padding: 1.5rem; overflow-y: auto; background: #fafbfc; }
+        
+        .message { margin-bottom: 1.5rem; display: flex; gap: 0.75rem; align-items: flex-start; }
+        .message.sent { flex-direction: row-reverse; }
+        
+        .message-avatar { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, var(--text-secondary), var(--text-muted)); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 0.8rem; flex-shrink: 0; }
+        .message.sent .message-avatar { background: linear-gradient(135deg, var(--primary), var(--primary-light)); }
+        
+        .message-content { max-width: 70%; }
+        .message-bubble { padding: 1rem 1.25rem; border-radius: 1.25rem; word-wrap: break-word; }
+        .message.received .message-bubble { background: white; color: var(--text-primary); border: 1px solid var(--border); }
+        .message.sent .message-bubble { background: linear-gradient(135deg, var(--primary), var(--primary-light)); color: white; }
+        
+        .message-time { font-size: 0.75rem; color: var(--text-muted); margin-top: 0.5rem; }
+        .message.sent .message-time { color: var(--text-muted); text-align: right; }
+        
+        /* Message Input */
+        .message-input-area { padding: 1.25rem; border-top: 1px solid var(--border); background: var(--bg-card); }
+        .message-form { display: flex; gap: 0.75rem; align-items: flex-end; }
+        .message-input { flex: 1; padding: 0.875rem 1rem; border: 2px solid var(--border); border-radius: 1.25rem; font-size: 0.95rem; background: white; font-family: 'Inter', sans-serif; resize: none; min-height: 44px; max-height: 120px; }
+        .message-input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(45, 134, 89, 0.1); }
+        .send-btn { background: linear-gradient(135deg, var(--primary), var(--primary-light)); color: white; border: none; padding: 0.875rem 1.25rem; border-radius: 1.25rem; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 0.5rem; transition: all 0.2s; }
+        .send-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(45, 134, 89, 0.3); }
+        .send-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+        
+        /* Empty States */
+        .empty-conversations { text-align: center; padding: 3rem 2rem; color: var(--text-secondary); }
+        .empty-conversations i { font-size: 3rem; margin-bottom: 1rem; color: var(--text-muted); }
+        .empty-conversations h4 { margin-bottom: 0.5rem; color: var(--text-primary); }
+        
+        .empty-messages { text-align: center; padding: 4rem 2rem; color: var(--text-secondary); }
+        .empty-messages i { font-size: 4rem; margin-bottom: 1.5rem; color: var(--text-muted); }
+        .empty-messages h4 { margin-bottom: 0.75rem; color: var(--text-primary); }
+        
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .messages-container { grid-template-columns: 1fr; }
+            .conversations-panel { display: none; }
+            .conversations-panel.mobile-show { display: flex; }
+            .message-panel.mobile-hide { display: none; }
+            .content { padding: 1rem; }
+        }
+        
+        /* Loading State */
+        .loading { display: flex; align-items: center; justify-content: center; padding: 2rem; color: var(--text-secondary); }
+        .loading i { margin-right: 0.5rem; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+    <!-- Include Unified Dashboard Sidebar -->
+    <%- include('partials/dashboard-sidebar.xian', { 
+        user: user,
+        currentPage: 'user-messages'
+    }) %>
+
+    <!-- Main Content -->
+    <main class="dashboard-main" id="dashboardMain">
+        <!-- Topbar -->
+        <div class="topbar">
+            <div class="topbar-left">
+                <h1><i class="fas fa-envelope"></i> My Messages</h1>
+                <p>Connect with artisans and get support</p>
+            </div>
+        </div>
+
+        <!-- Content -->
+        <div class="content">
+            <div class="messages-container">
+                <!-- Conversations List -->
+                <div class="conversations-panel">
+                    <div class="conversations-header">
+                        <h3><i class="fas fa-comments"></i> Conversations</h3>
+                    </div>
+                    <div class="conversations-list" id="conversationsList">
+                        <% if (conversations && conversations.length > 0) { %>
+                            <% conversations.forEach(conversation => { %>
+                                <div class="conversation-item <%= selectedUserId == conversation.user_id ? 'active' : '' %>" 
+                                     onclick="selectConversation('<%= conversation.user_id %>', '<%= (conversation.sender_name || conversation.receiver_name).replace(/'/g, "\\'") %>')">
+                                    <div class="conversation-avatar">
+                                        <%= (conversation.sender_name || conversation.receiver_name).charAt(0).toUpperCase() %>
+                                    </div>
+                                    <div class="conversation-name"><%= conversation.sender_name || conversation.receiver_name %></div>
+                                    <div class="conversation-preview">
+                                        <%= conversation.latest_message ? conversation.latest_message.substring(0, 60) + '...' : 'No messages yet' %>
+                                    </div>
+                                    <div class="conversation-time">
+                                        <%= conversation.latest_time ? new Date(conversation.latest_time).toLocaleDateString() : '' %>
+                                    </div>
+                                    <% if (conversation.unread_count && conversation.unread_count > 0) { %>
+                                        <div class="unread-badge"><%= conversation.unread_count %></div>
+                                    <% } %>
+                                </div>
+                            <% }) %>
+                        <% } else { %>
+                            <div class="empty-conversations">
+                                <i class="fas fa-inbox"></i>
+                                <h4>No conversations yet</h4>
+                                <p>Start messaging artisans to see your conversations here</p>
+                            </div>
+                        <% } %>
+                    </div>
+                </div>
+
+                <!-- Message Panel -->
+                <div class="message-panel">
+                    <% if (selectedUserId && selectedUserName) { %>
+                        <div class="message-header">
+                            <h3>
+                                <div class="contact-avatar">
+                                    <%= selectedUserName.charAt(0).toUpperCase() %>
+                                </div>
+                                <%= selectedUserName %>
+                            </h3>
+                        </div>
+                        
+                        <div class="messages-area" id="messagesArea">
+                            <% if (conversationMessages && conversationMessages.length > 0) { %>
+                                <% conversationMessages.forEach(message => { %>
+                                    <div class="message <%= message.sender_id == user.id ? 'sent' : 'received' %>">
+                                        <div class="message-avatar">
+                                            <%= message.sender_name.charAt(0).toUpperCase() %>
+                                        </div>
+                                        <div class="message-content">
+                                            <div class="message-bubble">
+                                                <%= message.message %>
+                                            </div>
+                                            <div class="message-time">
+                                                <%= new Date(message.created_at).toLocaleString() %>
+                                            </div>
+                                        </div>
+                                    </div>
+                                <% }) %>
+                            <% } else { %>
+                                <div class="empty-messages">
+                                    <i class="fas fa-comment-dots"></i>
+                                    <h4>No messages yet</h4>
+                                    <p>Start the conversation by sending a message below</p>
+                                </div>
+                            <% } %>
+                        </div>
+                        
+                        <div class="message-input-area">
+                            <form class="message-form" onsubmit="sendMessage(event)">
+                                <textarea class="message-input" id="messageInput" placeholder="Type your message..." rows="1" required></textarea>
+                                <button type="submit" class="send-btn" id="sendBtn">
+                                    <i class="fas fa-paper-plane"></i>
+                                    Send
+                                </button>
+                            </form>
+                        </div>
+                    <% } else { %>
+                        <div class="empty-messages">
+                            <i class="fas fa-comments"></i>
+                            <h4>Select a conversation</h4>
+                            <p>Choose a conversation from the left to start messaging</p>
+                        </div>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Auto-select first conversation if none selected
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const conversationParam = urlParams.get('conversation');
+            
+            if (!conversationParam) {
+                const firstConversation = document.querySelector('.conversation-item');
+                if (firstConversation) {
+                    // Extract user ID from onclick attribute
+                    const onclickAttr = firstConversation.getAttribute('onclick');
+                    const match = onclickAttr.match(/selectConversation\('(\d+)'/);
+                    if (match && match[1]) {
+                        window.location.href = `/user/messages?conversation=${match[1]}`;
+                    }
+                }
+            }
+        });
+
+        // Auto-resize textarea
+        const messageInput = document.getElementById('messageInput');
+        if (messageInput) {
+            messageInput.addEventListener('input', function() {
+                this.style.height = 'auto';
+                this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+            });
+        }
+
+        // Select conversation
+        function selectConversation(userId, userName) {
+            window.location.href = `/user/messages?conversation=${userId}`;
+        }
+
+        // Send message
+        let isSending = false; // Flag to prevent multiple submissions
+        
+        async function sendMessage(event) {
+            event.preventDefault();
+            
+            if (isSending) {
+                return;
+            }
+            
+            const messageInput = document.getElementById('messageInput');
+            const sendBtn = document.getElementById('sendBtn');
+            const message = messageInput.value.trim();
+            
+            if (!message) {
+                return;
+            }
+            
+            const receiverId = <%= selectedUserId ? selectedUserId : 'null' %>;
+            
+            if (!receiverId || receiverId === null) {
+                alert('Please select a conversation first. Refreshing page...');
+                window.location.reload();
+                return;
+            }
+            
+            // Set sending flag
+            isSending = true;
+            
+            // Disable form
+            sendBtn.disabled = true;
+            sendBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+            
+            try {
+                const response = await fetch('/api/messages/send', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        receiver_id: receiverId,
+                        subject: 'Message from <%= user.name %>',
+                        message: message
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    // Clear input
+                    messageInput.value = '';
+                    messageInput.style.height = 'auto';
+                    
+                    // Add message to UI instead of reloading
+                    const messagesArea = document.getElementById('messagesArea');
+                    if (messagesArea) {
+                        // Remove empty state if it exists
+                        const emptyState = messagesArea.querySelector('.empty-messages');
+                        if (emptyState) {
+                            emptyState.remove();
+                        }
+                        
+                        // Create new message element
+                        const messageDiv = document.createElement('div');
+                        messageDiv.className = 'message sent';
+                        messageDiv.innerHTML = `
+                            <div class="message-content">
+                                <div class="message-bubble">
+                                    ${message}
+                                </div>
+                                <div class="message-time">
+                                    ${new Date().toLocaleString()}
+                                </div>
+                            </div>
+                        `;
+                        
+                        messagesArea.appendChild(messageDiv);
+                        messagesArea.scrollTop = messagesArea.scrollHeight;
+                    }
+                } else {
+                    alert('Failed to send message: ' + (result.error || result.message || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('Send message error:', error);
+                alert('Failed to send message. Please try again.');
+            } finally {
+                // Reset sending flag
+                isSending = false;
+                // Re-enable form
+                sendBtn.disabled = false;
+                sendBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Send';
+            }
+        }
+
+        // Auto-scroll to bottom of messages
+        const messagesArea = document.getElementById('messagesArea');
+        if (messagesArea) {
+            messagesArea.scrollTop = messagesArea.scrollHeight;
+        }
+
+        // Enter key to send (Shift+Enter for new line)
+        if (messageInput) {
+            messageInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    document.querySelector('.message-form').dispatchEvent(new Event('submit'));
+                }
+            });
+        }
+
+        // Add click handler for send button as backup
+        const sendBtn = document.getElementById('sendBtn');
+        if (sendBtn) {
+            sendBtn.addEventListener('click', function(e) {
+                // Only handle if it's not part of form submission
+                if (e.target.type === 'submit') {
+                    return; // Let form handle it
+                }
+                e.preventDefault();
+                sendMessage(e);
+            });
+        }
+    </script>
+</body>
+</html>

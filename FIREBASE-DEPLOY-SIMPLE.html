@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HeritageLink - Discover Gloria, Oriental Mindoro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Open+Sans:wght@300;400;500;600;700&family=Dancing+Script:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Ocean Color Scheme */
+        :root {
+            --ocean-blue: #0077B6;
+            --turquoise: #00B4D8;
+            --palm-green: #2D6A4F;
+            --sand-beige: #F4E1C1;
+            --gold-accent: #D4AF37;
+            --amber-accent: #FFD700;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Open Sans', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, var(--ocean-blue) 0%, var(--turquoise) 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Navigation */
+        .navbar {
+            background: rgba(0, 119, 182, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1rem 0;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .nav-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .nav-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-text {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: white;
+        }
+
+        .nav-menu {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+        }
+
+        .nav-link {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            color: var(--gold-accent);
+        }
+
+        .nav-auth {
+            display: flex;
+            gap: 1rem;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: var(--gold-accent);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--amber-accent);
+            transform: translateY(-2px);
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: white;
+            border: 2px solid white;
+        }
+
+        .btn-outline:hover {
+            background: white;
+            color: var(--ocean-blue);
+        }
+
+        .btn-large {
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
+        }
+
+        /* Hero Section */
+        .hero {
+            padding: 120px 0 80px;
+            text-align: center;
+            color: white;
+        }
+
+        .hero-content {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .hero-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .hero-subtitle {
+            font-size: 1.3rem;
+            margin-bottom: 2.5rem;
+            opacity: 0.9;
+            line-height: 1.8;
+        }
+
+        .hero-actions {
+            display: flex;
+            gap: 1.5rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        /* Features Section */
+        .features {
+            padding: 80px 0;
+            background: white;
+        }
+
+        .section-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.5rem;
+            text-align: center;
+            margin-bottom: 3rem;
+            color: var(--ocean-blue);
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+        }
+
+        .feature-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+            border: 2px solid var(--sand-beige);
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+        }
+
+        .feature-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, var(--ocean-blue), var(--turquoise));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+        }
+
+        .feature-icon i {
+            font-size: 2rem;
+            color: white;
+        }
+
+        .feature-card h3 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--ocean-blue);
+        }
+
+        .feature-card p {
+            margin-bottom: 1.5rem;
+            color: #666;
+        }
+
+        .feature-link {
+            color: var(--gold-accent);
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s ease;
+        }
+
+        .feature-link:hover {
+            color: var(--amber-accent);
+        }
+
+        /* Footer */
+        .footer {
+            background: var(--ocean-blue);
+            color: white;
+            padding: 3rem 0 1rem;
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .footer-section h3,
+        .footer-section h4 {
+            font-family: 'Playfair Display', serif;
+            margin-bottom: 1rem;
+            color: var(--gold-accent);
+        }
+
+        .footer-section ul {
+            list-style: none;
+        }
+
+        .footer-section ul li {
+            margin-bottom: 0.5rem;
+        }
+
+        .footer-section a {
+            color: white;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .footer-section a:hover {
+            color: var(--gold-accent);
+        }
+
+        .footer-bottom {
+            text-align: center;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            opacity: 0.8;
+        }
+
+        /* API Connection */
+        .api-status {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--palm-green);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 25px;
+            font-size: 0.9rem;
+            z-index: 1000;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .nav-menu {
+                display: none;
+            }
+
+            .hero-title {
+                font-size: 2.5rem;
+            }
+
+            .hero-actions {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <span class="logo-text">HeritageLink</span>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="#" class="nav-link active">Home</a></li>
+                <li><a href="#" class="nav-link">Destinations</a></li>
+                <li><a href="#" class="nav-link">Heritage</a></li>
+                <li><a href="#" class="nav-link">Artisans</a></li>
+                <li><a href="#" class="nav-link">Events</a></li>
+            </ul>
+            <div class="nav-auth">
+                <button class="btn btn-outline" onclick="testLogin()">Login</button>
+                <button class="btn btn-primary" onclick="testAPI()">Test API</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1 class="hero-title">Discover the Cultural Heritage of Gloria, Oriental Mindoro</h1>
+            <p class="hero-subtitle">Connect with local artisans, explore breathtaking destinations, and immerse yourself in the rich cultural tapestry of our beautiful island paradise.</p>
+            <div class="hero-actions">
+                <button class="btn btn-primary btn-large" onclick="exploreDestinations()">
+                    <i class="fas fa-map-marked-alt"></i>
+                    Explore Destinations
+                </button>
+                <button class="btn btn-outline btn-large" onclick="meetArtisans()">
+                    <i class="fas fa-palette"></i>
+                    Meet Artisans
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features">
+        <div class="container">
+            <h2 class="section-title">Explore Our Platform</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-mountain"></i>
+                    </div>
+                    <h3>Scenic Destinations</h3>
+                    <p>Discover hidden gems and breathtaking landscapes across Gloria, Oriental Mindoro.</p>
+                    <a href="#" class="feature-link" onclick="exploreDestinations()">Explore Now</a>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-palette"></i>
+                    </div>
+                    <h3>Local Artisans</h3>
+                    <p>Connect with talented craftspeople and discover authentic handmade products.</p>
+                    <a href="#" class="feature-link" onclick="meetArtisans()">Meet Artisans</a>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-calendar-alt"></i>
+                    </div>
+                    <h3>Cultural Events</h3>
+                    <p>Join festivals, workshops, and cultural celebrations throughout the year.</p>
+                    <a href="#" class="feature-link" onclick="viewEvents()">View Events</a>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-camera"></i>
+                    </div>
+                    <h3>Heritage Gallery</h3>
+                    <p>Explore our rich cultural heritage through photos, stories, and artifacts.</p>
+                    <a href="#" class="feature-link" onclick="viewGallery()">View Gallery</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>HeritageLink</h3>
+                    <p>Connecting you with the cultural heritage of Gloria, Oriental Mindoro.</p>
+                    <p><strong>Backend API:</strong> <span id="api-url">https://heritage3.onrender.com</span></p>
+                </div>
+                <div class="footer-section">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="#" onclick="exploreDestinations()">Destinations</a></li>
+                        <li><a href="#" onclick="meetArtisans()">Artisans</a></li>
+                        <li><a href="#" onclick="viewEvents()">Events</a></li>
+                        <li><a href="#" onclick="viewGallery()">Heritage</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Test API</h4>
+                    <ul>
+                        <li><a href="#" onclick="testAPI()">Health Check</a></li>
+                        <li><a href="#" onclick="testLogin()">Test Login</a></li>
+                        <li><a href="#" onclick="testAdmin()">Admin Dashboard</a></li>
+                        <li><a href="#" onclick="testArtisan()">Artisan Dashboard</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Contact</h4>
+                    <p>Gloria, Oriental Mindoro<br>Philippines</p>
+                    <p><strong>Status:</strong> <span id="connection-status">Connecting...</span></p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 HeritageLink. All rights reserved. | Frontend: Firebase | Backend: Render | Database: Aiven MySQL</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- API Status -->
+    <div class="api-status" id="api-status">
+        <i class="fas fa-circle" id="status-icon"></i>
+        <span id="status-text">Checking API...</span>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        // API Configuration
+        const API_BASE = 'https://heritage3.onrender.com';
+        
+        // Test API Connection
+        async function testAPI() {
+            try {
+                updateStatus('Checking API...', 'orange');
+                const response = await fetch(`${API_BASE}/health`);
+                const data = await response.json();
+                
+                if (data.status === 'OK') {
+                    updateStatus('API Connected ✅', 'green');
+                    alert(`✅ API Connected!\n\nService: ${data.service}\nVersion: ${data.version}\nTimestamp: ${data.timestamp}`);
+                } else {
+                    updateStatus('API Error ❌', 'red');
+                    alert('❌ API Error: Unexpected response');
+                }
+            } catch (error) {
+                updateStatus('API Offline ❌', 'red');
+                alert(`❌ API Connection Failed:\n${error.message}`);
+            }
+        }
+
+        // Test Login
+        async function testLogin() {
+            try {
+                const response = await fetch(`${API_BASE}/api/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email: 'admin@heritagelink.com',
+                        password: 'admin123'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert(`✅ Login Successful!\n\nUser: ${data.user.email}\nRole: ${data.user.role}`);
+                } else {
+                    alert(`❌ Login Failed:\n${data.message}`);
+                }
+            } catch (error) {
+                alert(`❌ Login Error:\n${error.message}`);
+            }
+        }
+
+        // Test Admin Dashboard
+        async function testAdmin() {
+            alert('🔐 Admin Dashboard\n\nCredentials:\nEmail: admin@heritagelink.com\nPassword: admin123\n\nThis would redirect to admin panel.');
+        }
+
+        // Test Artisan Dashboard
+        async function testArtisan() {
+            alert('🎨 Artisan Dashboard\n\nCredentials:\nEmail: artisan@heritagelink.com\nPassword: artisan123\n\nThis would redirect to artisan panel.');
+        }
+
+        // Feature Functions
+        function exploreDestinations() {
+            alert('🏔️ Destinations\n\nThis would show all tourist destinations in Gloria, Oriental Mindoro with interactive maps and details.');
+        }
+
+        function meetArtisans() {
+            alert('🎨 Meet Artisans\n\nThis would display local artisans, their products, and allow direct communication for custom orders.');
+        }
+
+        function viewEvents() {
+            alert('📅 Cultural Events\n\nThis would show upcoming festivals, workshops, and cultural celebrations you can join.');
+        }
+
+        function viewGallery() {
+            alert('📸 Heritage Gallery\n\nThis would display photos, stories, and artifacts showcasing the rich cultural heritage of the region.');
+        }
+
+        // Update Status
+        function updateStatus(text, color) {
+            const statusText = document.getElementById('status-text');
+            const statusIcon = document.getElementById('status-icon');
+            const connectionStatus = document.getElementById('connection-status');
+            
+            statusText.textContent = text;
+            statusIcon.style.color = color;
+            connectionStatus.textContent = text;
+            connectionStatus.style.color = color;
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            // Test API connection on load
+            setTimeout(testAPI, 1000);
+            
+            // Update API URL display
+            document.getElementById('api-url').textContent = API_BASE;
+        });
+    </script>
+</body>
+</html>
