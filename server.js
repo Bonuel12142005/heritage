@@ -1485,7 +1485,7 @@ app.get('/artisan/messages', requireAuth, requireRole('artisan'), async (req, re
         
         try {
             const [messageResult] = await db.execute(
-                'SELECT m.*, sender.name as sender_name, sender.profile_photo as sender_photo, recipient.name as recipient_name, recipient.profile_photo as recipient_photo FROM messages m LEFT JOIN users sender ON m.sender_id = sender.id LEFT JOIN users recipient ON m.recipient_id = recipient.id WHERE m.sender_id = ? OR m.recipient_id = ? ORDER BY m.created_at DESC',
+                'SELECT m.*, sender.name as sender_name, sender.profile_photo as sender_photo, receiver.name as receiver_name, receiver.profile_photo as receiver_photo FROM messages m LEFT JOIN users sender ON m.sender_id = sender.id LEFT JOIN users receiver ON m.receiver_id = receiver.id WHERE m.sender_id = ? OR m.receiver_id = ? ORDER BY m.created_at DESC',
                 [req.session.user.id, req.session.user.id]
             );
             conversations = messageResult;
@@ -2201,7 +2201,7 @@ app.get('/user/messages', requireAuth, async (req, res) => {
         let conversationMessages = [];
         try {
             const [messagesResult] = await db.execute(
-                'SELECT m.*, sender.name as sender_name, sender.profile_photo as sender_photo, recipient.name as recipient_name, recipient.profile_photo as recipient_photo FROM messages m LEFT JOIN users sender ON m.sender_id = sender.id LEFT JOIN users recipient ON m.recipient_id = recipient.id WHERE m.sender_id = ? OR m.recipient_id = ? ORDER BY m.created_at DESC',
+                'SELECT m.*, sender.name as sender_name, sender.profile_photo as sender_photo, receiver.name as receiver_name, receiver.profile_photo as receiver_photo FROM messages m LEFT JOIN users sender ON m.sender_id = sender.id LEFT JOIN users receiver ON m.receiver_id = receiver.id WHERE m.sender_id = ? OR m.receiver_id = ? ORDER BY m.created_at DESC',
                 [req.session.user.id, req.session.user.id]
             );
             conversations = messagesResult;
