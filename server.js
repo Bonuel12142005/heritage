@@ -689,11 +689,21 @@ app.get('/admin/heritage', requireAuth, requireRole('admin'), async (req, res) =
             items = [];
         }
         
+        // Calculate stats
+        const stats = {
+            total: items.length,
+            photos: items.filter(item => item.media_type === 'photo').length,
+            videos: items.filter(item => item.media_type === 'video').length,
+            audio: items.filter(item => item.media_type === 'audio').length,
+            documents: items.filter(item => item.media_type === 'document').length
+        };
+        
         const templatePath = path.join(__dirname, 'views/admin-heritage-gallery.xian');
         const html = renderTemplate(templatePath, {
             title: 'Manage Heritage - Admin',
             user: req.session.user,
-            items: items
+            items: items,
+            stats: stats
         });
         res.send(html);
     } catch (error) {
@@ -702,7 +712,8 @@ app.get('/admin/heritage', requireAuth, requireRole('admin'), async (req, res) =
         const html = renderTemplate(templatePath, {
             title: 'Manage Heritage - Admin',
             user: req.session.user,
-            items: []
+            items: [],
+            stats: { total: 0, photos: 0, videos: 0, audio: 0, documents: 0 }
         });
         res.send(html);
     }
@@ -723,11 +734,21 @@ app.get('/admin/heritage-gallery', requireAuth, requireRole('admin'), async (req
             items = [];
         }
         
+        // Calculate stats
+        const stats = {
+            total: items.length,
+            photos: items.filter(item => item.media_type === 'photo').length,
+            videos: items.filter(item => item.media_type === 'video').length,
+            audio: items.filter(item => item.media_type === 'audio').length,
+            documents: items.filter(item => item.media_type === 'document').length
+        };
+        
         const templatePath = path.join(__dirname, 'views/admin-heritage-gallery.xian');
         const html = renderTemplate(templatePath, {
             title: 'Heritage Gallery - Admin',
             user: req.session.user,
-            items: items
+            items: items,
+            stats: stats
         });
         res.send(html);
     } catch (error) {
@@ -736,7 +757,8 @@ app.get('/admin/heritage-gallery', requireAuth, requireRole('admin'), async (req
         const html = renderTemplate(templatePath, {
             title: 'Heritage Gallery - Admin',
             user: req.session.user,
-            items: []
+            items: [],
+            stats: { total: 0, photos: 0, videos: 0, audio: 0, documents: 0 }
         });
         res.send(html);
     }
