@@ -620,13 +620,37 @@ app.get('/admin/destination/:id/edit', requireAuth, requireRole('admin'), (req, 
 });
 
 // Admin Events Management
-app.get('/admin/events', requireAuth, requireRole('admin'), (req, res) => {
-    const templatePath = path.join(__dirname, 'views/admin-events.xian');
-    const html = renderTemplate(templatePath, {
-        title: 'Manage Events - Admin',
-        user: req.session.user
-    });
-    res.send(html);
+app.get('/admin/events', requireAuth, requireRole('admin'), async (req, res) => {
+    try {
+        // Fetch all events
+        let events = [];
+        try {
+            const [eventsResult] = await db.execute(
+                'SELECT * FROM events ORDER BY event_date DESC'
+            );
+            events = eventsResult;
+        } catch (error) {
+            console.log('Events table not found or error:', error.message);
+            events = [];
+        }
+        
+        const templatePath = path.join(__dirname, 'views/admin-events.xian');
+        const html = renderTemplate(templatePath, {
+            title: 'Manage Events - Admin',
+            user: req.session.user,
+            events: events
+        });
+        res.send(html);
+    } catch (error) {
+        console.error('Admin events error:', error);
+        const templatePath = path.join(__dirname, 'views/admin-events.xian');
+        const html = renderTemplate(templatePath, {
+            title: 'Manage Events - Admin',
+            user: req.session.user,
+            events: []
+        });
+        res.send(html);
+    }
 });
 
 app.get('/admin/event/new', requireAuth, requireRole('admin'), (req, res) => {
@@ -651,13 +675,37 @@ app.get('/admin/event/:id/edit', requireAuth, requireRole('admin'), (req, res) =
 });
 
 // Admin Heritage Management
-app.get('/admin/heritage', requireAuth, requireRole('admin'), (req, res) => {
-    const templatePath = path.join(__dirname, 'views/admin-heritage-gallery.xian');
-    const html = renderTemplate(templatePath, {
-        title: 'Manage Heritage - Admin',
-        user: req.session.user
-    });
-    res.send(html);
+app.get('/admin/heritage', requireAuth, requireRole('admin'), async (req, res) => {
+    try {
+        // Fetch all heritage items
+        let items = [];
+        try {
+            const [itemsResult] = await db.execute(
+                'SELECT * FROM heritage_items ORDER BY created_at DESC'
+            );
+            items = itemsResult;
+        } catch (error) {
+            console.log('Heritage items table not found or error:', error.message);
+            items = [];
+        }
+        
+        const templatePath = path.join(__dirname, 'views/admin-heritage-gallery.xian');
+        const html = renderTemplate(templatePath, {
+            title: 'Manage Heritage - Admin',
+            user: req.session.user,
+            items: items
+        });
+        res.send(html);
+    } catch (error) {
+        console.error('Admin heritage error:', error);
+        const templatePath = path.join(__dirname, 'views/admin-heritage-gallery.xian');
+        const html = renderTemplate(templatePath, {
+            title: 'Manage Heritage - Admin',
+            user: req.session.user,
+            items: []
+        });
+        res.send(html);
+    }
 });
 
 app.get('/admin/heritage/new', requireAuth, requireRole('admin'), (req, res) => {
