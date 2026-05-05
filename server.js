@@ -1466,58 +1466,192 @@ app.get('/user/profile', requireAuth, (req, res) => {
     res.send(html);
 });
 
-app.get('/user/favorites', requireAuth, (req, res) => {
-    const templatePath = path.join(__dirname, 'views/user-favorites.xian');
-    const html = renderTemplate(templatePath, {
-        title: 'My Favorites - HeritageLink',
-        user: req.session.user
-    });
-    res.send(html);
+app.get('/user/favorites', requireAuth, async (req, res) => {
+    try {
+        let favorites = [];
+        try {
+            const [favoritesResult] = await db.execute(
+                'SELECT * FROM favorites WHERE user_id = ? ORDER BY created_at DESC',
+                [req.session.user.id]
+            );
+            favorites = favoritesResult;
+        } catch (error) {
+            console.log('Favorites table not found:', error.message);
+        }
+        
+        const templatePath = path.join(__dirname, 'views/user-favorites.xian');
+        const html = renderTemplate(templatePath, {
+            title: 'My Favorites - HeritageLink',
+            user: req.session.user,
+            favorites: favorites
+        });
+        res.send(html);
+    } catch (error) {
+        console.error('User favorites error:', error);
+        res.send(renderTemplate(path.join(__dirname, 'views/user-favorites.xian'), {
+            title: 'My Favorites - HeritageLink',
+            user: req.session.user,
+            favorites: []
+        }));
+    }
 });
 
-app.get('/user/orders', requireAuth, (req, res) => {
-    const templatePath = path.join(__dirname, 'views/user-orders.xian');
-    const html = renderTemplate(templatePath, {
-        title: 'My Orders - HeritageLink',
-        user: req.session.user
-    });
-    res.send(html);
+app.get('/user/orders', requireAuth, async (req, res) => {
+    try {
+        let orders = [];
+        try {
+            const [ordersResult] = await db.execute(
+                'SELECT * FROM orders WHERE user_id = ? ORDER BY created_at DESC',
+                [req.session.user.id]
+            );
+            orders = ordersResult;
+        } catch (error) {
+            console.log('Orders table not found:', error.message);
+        }
+        
+        const templatePath = path.join(__dirname, 'views/user-orders.xian');
+        const html = renderTemplate(templatePath, {
+            title: 'My Orders - HeritageLink',
+            user: req.session.user,
+            orders: orders
+        });
+        res.send(html);
+    } catch (error) {
+        console.error('User orders error:', error);
+        res.send(renderTemplate(path.join(__dirname, 'views/user-orders.xian'), {
+            title: 'My Orders - HeritageLink',
+            user: req.session.user,
+            orders: []
+        }));
+    }
 });
 
-app.get('/user/workshops', requireAuth, (req, res) => {
-    const templatePath = path.join(__dirname, 'views/user-workshops.xian');
-    const html = renderTemplate(templatePath, {
-        title: 'My Workshops - HeritageLink',
-        user: req.session.user
-    });
-    res.send(html);
+app.get('/user/workshops', requireAuth, async (req, res) => {
+    try {
+        let workshops = [];
+        try {
+            const [workshopsResult] = await db.execute(
+                'SELECT * FROM workshop_registrations WHERE user_id = ? ORDER BY created_at DESC',
+                [req.session.user.id]
+            );
+            workshops = workshopsResult;
+        } catch (error) {
+            console.log('Workshop registrations table not found:', error.message);
+        }
+        
+        const templatePath = path.join(__dirname, 'views/user-workshops.xian');
+        const html = renderTemplate(templatePath, {
+            title: 'My Workshops - HeritageLink',
+            user: req.session.user,
+            workshops: workshops
+        });
+        res.send(html);
+    } catch (error) {
+        console.error('User workshops error:', error);
+        res.send(renderTemplate(path.join(__dirname, 'views/user-workshops.xian'), {
+            title: 'My Workshops - HeritageLink',
+            user: req.session.user,
+            workshops: []
+        }));
+    }
 });
 
-app.get('/user/reviews', requireAuth, (req, res) => {
-    const templatePath = path.join(__dirname, 'views/user-reviews.xian');
-    const html = renderTemplate(templatePath, {
-        title: 'My Reviews - HeritageLink',
-        user: req.session.user
-    });
-    res.send(html);
+app.get('/user/reviews', requireAuth, async (req, res) => {
+    try {
+        let reviews = [];
+        try {
+            const [reviewsResult] = await db.execute(
+                'SELECT * FROM reviews WHERE user_id = ? ORDER BY created_at DESC',
+                [req.session.user.id]
+            );
+            reviews = reviewsResult;
+        } catch (error) {
+            console.log('Reviews table not found:', error.message);
+        }
+        
+        const templatePath = path.join(__dirname, 'views/user-reviews.xian');
+        const html = renderTemplate(templatePath, {
+            title: 'My Reviews - HeritageLink',
+            user: req.session.user,
+            reviews: reviews
+        });
+        res.send(html);
+    } catch (error) {
+        console.error('User reviews error:', error);
+        res.send(renderTemplate(path.join(__dirname, 'views/user-reviews.xian'), {
+            title: 'My Reviews - HeritageLink',
+            user: req.session.user,
+            reviews: []
+        }));
+    }
 });
 
-app.get('/user/messages', requireAuth, (req, res) => {
-    const templatePath = path.join(__dirname, 'views/user-messages.xian');
-    const html = renderTemplate(templatePath, {
-        title: 'Messages - HeritageLink',
-        user: req.session.user
-    });
-    res.send(html);
+app.get('/user/messages', requireAuth, async (req, res) => {
+    try {
+        let conversations = [];
+        let conversationMessages = [];
+        try {
+            const [messagesResult] = await db.execute(
+                'SELECT * FROM messages WHERE sender_id = ? OR recipient_id = ? ORDER BY created_at DESC',
+                [req.session.user.id, req.session.user.id]
+            );
+            conversations = messagesResult;
+            conversationMessages = messagesResult;
+        } catch (error) {
+            console.log('Messages table not found:', error.message);
+        }
+        
+        const templatePath = path.join(__dirname, 'views/user-messages.xian');
+        const html = renderTemplate(templatePath, {
+            title: 'Messages - HeritageLink',
+            user: req.session.user,
+            conversations: conversations,
+            conversationMessages: conversationMessages
+        });
+        res.send(html);
+    } catch (error) {
+        console.error('User messages error:', error);
+        res.send(renderTemplate(path.join(__dirname, 'views/user-messages.xian'), {
+            title: 'Messages - HeritageLink',
+            user: req.session.user,
+            conversations: [],
+            conversationMessages: []
+        }));
+    }
 });
 
-app.get('/user/gallery', requireAuth, (req, res) => {
-    const templatePath = path.join(__dirname, 'views/user-gallery.xian');
-    const html = renderTemplate(templatePath, {
-        title: 'My Gallery - HeritageLink',
-        user: req.session.user
-    });
-    res.send(html);
+app.get('/user/gallery', requireAuth, async (req, res) => {
+    try {
+        let gallery = [];
+        try {
+            const [galleryResult] = await db.execute(
+                'SELECT * FROM user_gallery WHERE user_id = ? ORDER BY created_at DESC',
+                [req.session.user.id]
+            );
+            gallery = galleryResult;
+        } catch (error) {
+            console.log('User gallery table not found:', error.message);
+        }
+        
+        const templatePath = path.join(__dirname, 'views/user-gallery.xian');
+        const html = renderTemplate(templatePath, {
+            title: 'My Gallery - HeritageLink',
+            user: req.session.user,
+            gallery: gallery,
+            success: null,
+            error: null
+        });
+        res.send(html);
+    } catch (error) {
+        console.error('User gallery error:', error);
+        res.send(renderTemplate(path.join(__dirname, 'views/user-gallery.xian'), {
+            title: 'My Gallery - HeritageLink',
+            user: req.session.user,
+            gallery: [],
+            success: null,
+            error: null
+        }));
+    }
 });
 
 app.get('/user/feedback', requireAuth, (req, res) => {
