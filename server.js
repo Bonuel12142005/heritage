@@ -496,6 +496,40 @@ app.get('/api/workshops', async (req, res) => {
     }
 });
 
+// Send message API
+app.post('/api/messages/send', requireAuth, async (req, res) => {
+    try {
+        const { receiver_id, subject, message } = req.body;
+        
+        if (!receiver_id || !message) {
+            return res.json({
+                success: false,
+                message: 'Receiver and message are required'
+            });
+        }
+        
+        console.log('📤 Sending message from', req.session.user.id, 'to', receiver_id);
+        
+        await db.execute(
+            'INSERT INTO messages (sender_id, receiver_id, subject, message, is_read, created_at) VALUES (?, ?, ?, ?, FALSE, NOW())',
+            [req.session.user.id, receiver_id, subject || 'No Subject', message]
+        );
+        
+        console.log('✅ Message sent successfully');
+        
+        res.json({
+            success: true,
+            message: 'Message sent successfully'
+        });
+    } catch (error) {
+        console.error('❌ Send message error:', error);
+        res.json({
+            success: false,
+            message: 'Failed to send message: ' + error.message
+        });
+    }
+});
+
 // Test route for EJS debugging
 app.get('/test-ejs', (req, res) => {
     try {
