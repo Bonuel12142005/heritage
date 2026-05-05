@@ -288,9 +288,12 @@
     async function loadDestinations() {
       try {
         const res = await fetch('/api/destinations');
-        const destinations = await res.json();
+        const result = await res.json();
         const grid = document.getElementById('destGrid');
         const countEl = document.getElementById('resultsCount');
+
+        // Extract destinations array from API response
+        const destinations = result.data || [];
 
         if (!Array.isArray(destinations) || destinations.length === 0) {
           grid.innerHTML = `

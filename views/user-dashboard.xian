@@ -391,8 +391,10 @@
 
         // Fetch destinations
         fetch('/api/destinations').then(r => r.json()).then(data => {
-            if (data.success && data.destinations) {
-                data.destinations.forEach(d => {
+            // API returns {success: true, data: [...]}
+            const destinations = data.data || data.destinations || [];
+            if (data.success && destinations.length > 0) {
+                destinations.forEach(d => {
                     if (d.latitude && d.longitude) {
                         L.marker([d.latitude, d.longitude], {
                             icon: L.divIcon({
