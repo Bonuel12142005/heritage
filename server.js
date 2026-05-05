@@ -477,6 +477,25 @@ app.get('/api/heritage', async (req, res) => {
     }
 });
 
+app.get('/api/workshops', async (req, res) => {
+    try {
+        const [workshops] = await db.execute(
+            'SELECT w.*, u.name as artisan_name FROM workshops w LEFT JOIN users u ON w.artisan_id = u.id WHERE w.status = \'active\' ORDER BY w.workshop_date ASC'
+        );
+        res.json({
+            success: true,
+            data: workshops || []
+        });
+    } catch (error) {
+        console.error('API workshops error:', error);
+        res.json({ 
+            success: false, 
+            message: 'Failed to load workshops',
+            data: []
+        });
+    }
+});
+
 // Test route for EJS debugging
 app.get('/test-ejs', (req, res) => {
     try {
@@ -1978,13 +1997,35 @@ app.get('/product/:id', (req, res) => {
 });
 
 // Workshops routes
-app.get('/workshops', (req, res) => {
-    const templatePath = path.join(__dirname, 'views/workshops.xian');
-    const html = renderTemplate(templatePath, {
-        title: 'Workshops - HeritageLink',
-        user: req.session.user
-    });
-    res.send(html);
+app.get('/workshops', async (req, res) => {
+    try {
+        console.log('🎓 Loading workshops...');
+        
+        // Fetch workshops from database
+        const [workshops] = await db.execute(
+            'SELECT w.*, u.name as artisan_name FROM workshops w LEFT JOIN users u ON w.artisan_id = u.id WHERE w.status = \'active\' ORDER BY w.workshop_date ASC'
+        );
+        
+        console.log('✅ Workshops found:', workshops.length);
+        
+        const templatePath = path.join(__dirname, 'views/workshops.xian');
+        const html = renderTemplate(templatePath, {
+            title: 'Workshops - HeritageLink',
+            user: req.session.user,
+            workshops: workshops || []
+        });
+        res.send(html);
+    } catch (error) {
+        console.error('❌ Workshops error:', error);
+        console.error('Error stack:', error.stack);
+        const templatePath = path.join(__dirname, 'views/workshops.xian');
+        const html = renderTemplate(templatePath, {
+            title: 'Workshops - HeritageLink',
+            user: req.session.user,
+            workshops: []
+        });
+        res.send(html);
+    }
 });
 
 // Feedback route
