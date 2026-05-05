@@ -488,24 +488,50 @@ app.get('/error', (req, res) => {
 
 app.get('/admin', requireAuth, requireRole('admin'), async (req, res) => {
     try {
-        const [totalUsersResult] = await db.execute('SELECT COUNT(*) as count FROM users');
-        const [totalDestinationsResult] = await db.execute('SELECT COUNT(*) as count FROM destinations');
-        const [totalArtisansResult] = await db.execute('SELECT COUNT(*) as count FROM users WHERE role = "artisan"');
+        let totalUsers = 0;
+        let totalDestinations = 0;
+        let totalArtisans = 0;
+        
+        try {
+            const [totalUsersResult] = await db.execute('SELECT COUNT(*) as count FROM users');
+            totalUsers = totalUsersResult[0].count;
+        } catch (error) {
+            console.log('Users table not found or error:', error.message);
+        }
+        
+        try {
+            const [totalDestinationsResult] = await db.execute('SELECT COUNT(*) as count FROM destinations');
+            totalDestinations = totalDestinationsResult[0].count;
+        } catch (error) {
+            console.log('Destinations table not found or error:', error.message);
+        }
+        
+        try {
+            const [totalArtisansResult] = await db.execute('SELECT COUNT(*) as count FROM users WHERE role = "artisan"');
+            totalArtisans = totalArtisansResult[0].count;
+        } catch (error) {
+            console.log('Error counting artisans:', error.message);
+        }
         
         const templatePath = path.join(__dirname, 'views/admin-dashboard.xian');
         const html = renderTemplate(templatePath, {
             title: 'Admin Dashboard - HeritageLink',
             user: req.session.user,
-            totalUsers: totalUsersResult[0].count,
-            totalDestinations: totalDestinationsResult[0].count,
-            totalArtisans: totalArtisansResult[0].count,
+            totalUsers: totalUsers,
+            totalDestinations: totalDestinations,
+            totalArtisans: totalArtisans,
             totalEvents: 0,
             pendingReviews: 0
         });
         res.send(html);
     } catch (error) {
         console.error('Admin dashboard error:', error);
-        res.status(500).send('Error loading admin dashboard');
+        res.status(500).send(`
+            <h1>Error Loading Admin Dashboard</h1>
+            <p>Database tables may not be initialized yet.</p>
+            <p>Error: ${error.message}</p>
+            <p><a href="/">Go to Homepage</a></p>
+        `);
     }
 });
 
