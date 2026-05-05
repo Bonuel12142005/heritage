@@ -1477,19 +1477,22 @@ app.get('/artisan/workshop/:id/edit', requireAuth, requireRole('artisan'), (req,
 // Artisan Messages - WITH DATA FETCHING
 app.get('/artisan/messages', requireAuth, requireRole('artisan'), async (req, res) => {
     try {
-        // Fetch messages for the artisan (if messages table exists)
+        console.log('💬 Loading artisan messages for user:', req.session.user.id);
+        
+        // Fetch messages for the artisan (both sent and received)
         let conversations = [];
         let conversationMessages = [];
         
         try {
             const [messageResult] = await db.execute(
-                'SELECT * FROM messages WHERE recipient_id = ? ORDER BY created_at DESC',
-                [req.session.user.id]
+                'SELECT m.*, sender.name as sender_name, sender.profile_photo as sender_photo, recipient.name as recipient_name, recipient.profile_photo as recipient_photo FROM messages m LEFT JOIN users sender ON m.sender_id = sender.id LEFT JOIN users recipient ON m.recipient_id = recipient.id WHERE m.sender_id = ? OR m.recipient_id = ? ORDER BY m.created_at DESC',
+                [req.session.user.id, req.session.user.id]
             );
             conversations = messageResult;
-            conversationMessages = messageResult; // Same data for now
+            conversationMessages = messageResult;
+            console.log('✅ Found', messageResult.length, 'messages');
         } catch (error) {
-            // Messages table might not exist
+            console.log('⚠️ Messages table error:', error.message);
             conversations = [];
             conversationMessages = [];
         }
@@ -1503,7 +1506,7 @@ app.get('/artisan/messages', requireAuth, requireRole('artisan'), async (req, re
         });
         res.send(html);
     } catch (error) {
-        console.error('Artisan messages error:', error);
+        console.error('❌ Artisan messages error:', error);
         const templatePath = path.join(__dirname, 'views/artisan-messages.xian');
         const html = renderTemplate(templatePath, {
             title: 'Messages - Artisan',
@@ -2192,17 +2195,20 @@ app.get('/user/reviews', requireAuth, async (req, res) => {
 
 app.get('/user/messages', requireAuth, async (req, res) => {
     try {
+        console.log('💬 Loading user messages for user:', req.session.user.id);
+        
         let conversations = [];
         let conversationMessages = [];
         try {
             const [messagesResult] = await db.execute(
-                'SELECT * FROM messages WHERE sender_id = ? OR recipient_id = ? ORDER BY created_at DESC',
+                'SELECT m.*, sender.name as sender_name, sender.profile_photo as sender_photo, recipient.name as recipient_name, recipient.profile_photo as recipient_photo FROM messages m LEFT JOIN users sender ON m.sender_id = sender.id LEFT JOIN users recipient ON m.recipient_id = recipient.id WHERE m.sender_id = ? OR m.recipient_id = ? ORDER BY m.created_at DESC',
                 [req.session.user.id, req.session.user.id]
             );
             conversations = messagesResult;
             conversationMessages = messagesResult;
+            console.log('✅ Found', messagesResult.length, 'messages');
         } catch (error) {
-            console.log('Messages table not found:', error.message);
+            console.log('⚠️ Messages table error:', error.message);
         }
         
         const templatePath = path.join(__dirname, 'views/user-messages.xian');
@@ -2214,7 +2220,7 @@ app.get('/user/messages', requireAuth, async (req, res) => {
         });
         res.send(html);
     } catch (error) {
-        console.error('User messages error:', error);
+        console.error('❌ User messages error:', error);
         res.send(renderTemplate(path.join(__dirname, 'views/user-messages.xian'), {
             title: 'Messages - HeritageLink',
             user: req.session.user,
