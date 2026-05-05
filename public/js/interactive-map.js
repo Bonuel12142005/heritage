@@ -47,79 +47,69 @@ function initMap() {
     setupControls();
 }
 
-// Create custom marker icon with upgraded visuals
+// Create custom marker icon with upgraded circular design
 function createMarkerIcon(color, iconClass) {
     return L.divIcon({
         className: 'custom-marker',
-        html: `<div class="marker-container" style="position: relative; width: 40px; height: 50px;">
-                 <!-- Marker pin shape -->
-                 <div class="marker-pin" style="
+        html: `<div class="marker-wrapper" style="position: relative; width: 44px; height: 44px;">
+                 <!-- Main marker circle with gradient -->
+                 <div class="marker-circle" style="
                    position: absolute;
-                   width: 40px;
-                   height: 40px;
-                   background: linear-gradient(135deg, ${color} 0%, ${adjustBrightness(color, -20)} 100%);
-                   border-radius: 50% 50% 50% 0;
-                   transform: rotate(-45deg);
-                   left: 0;
-                   top: 0;
-                   border: 3px solid white;
-                   box-shadow: 0 4px 12px rgba(0,0,0,0.25), 0 2px 4px rgba(0,0,0,0.15);
-                 "></div>
-                 <!-- Icon inside marker -->
-                 <div class="marker-icon" style="
-                   position: absolute;
-                   width: 40px;
-                   height: 40px;
+                   width: 44px;
+                   height: 44px;
+                   background: linear-gradient(135deg, ${color} 0%, ${adjustBrightness(color, -15)} 100%);
+                   border-radius: 50%;
+                   border: 4px solid white;
+                   box-shadow: 0 4px 12px rgba(0,0,0,0.3), 0 2px 6px rgba(0,0,0,0.2), inset 0 -2px 4px rgba(0,0,0,0.1);
                    display: flex;
                    align-items: center;
                    justify-content: center;
-                   left: 0;
-                   top: 0;
-                   z-index: 2;
+                   transition: all 0.3s ease;
                  ">
                    <i class="fas ${iconClass}" style="
                      color: white;
-                     font-size: 16px;
-                     text-shadow: 0 1px 2px rgba(0,0,0,0.3);
-                     transform: rotate(0deg);
+                     font-size: 18px;
+                     text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+                     filter: drop-shadow(0 1px 2px rgba(0,0,0,0.2));
                    "></i>
                  </div>
                  <!-- Pulsing ring animation -->
                  <div class="marker-pulse" style="
                    position: absolute;
-                   width: 40px;
-                   height: 40px;
+                   width: 44px;
+                   height: 44px;
                    border-radius: 50%;
                    background: ${color};
                    opacity: 0;
-                   left: 0;
-                   top: 0;
-                   animation: pulse 2s ease-out infinite;
+                   animation: markerPulse 2.5s ease-out infinite;
                  "></div>
                </div>
                <style>
-                 @keyframes pulse {
+                 @keyframes markerPulse {
                    0% {
-                     transform: scale(0.8) rotate(-45deg);
-                     opacity: 0.8;
+                     transform: scale(0.9);
+                     opacity: 0.7;
                    }
                    50% {
-                     transform: scale(1.2) rotate(-45deg);
-                     opacity: 0.4;
+                     transform: scale(1.3);
+                     opacity: 0.3;
                    }
                    100% {
-                     transform: scale(1.5) rotate(-45deg);
+                     transform: scale(1.6);
                      opacity: 0;
                    }
                  }
-                 .custom-marker:hover .marker-pin {
-                   transform: rotate(-45deg) scale(1.1);
-                   transition: transform 0.2s ease;
+                 .custom-marker:hover .marker-circle {
+                   transform: scale(1.15);
+                   box-shadow: 0 6px 16px rgba(0,0,0,0.4), 0 3px 8px rgba(0,0,0,0.25), inset 0 -2px 4px rgba(0,0,0,0.1);
+                 }
+                 .custom-marker {
+                   cursor: pointer;
                  }
                </style>`,
-        iconSize: [40, 50],
-        iconAnchor: [20, 40],
-        popupAnchor: [0, -40]
+        iconSize: [44, 44],
+        iconAnchor: [22, 22],
+        popupAnchor: [0, -22]
     });
 }
 
