@@ -1692,7 +1692,9 @@ app.get('/user/profile', requireAuth, (req, res) => {
     const templatePath = path.join(__dirname, 'views/user-profile.xian');
     const html = renderTemplate(templatePath, {
         title: 'My Profile - HeritageLink',
-        user: req.session.user
+        user: req.session.user,
+        success: req.query.success || null,
+        error: req.query.error || null
     });
     res.send(html);
 });
