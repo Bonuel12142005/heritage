@@ -47,17 +47,93 @@ function initMap() {
     setupControls();
 }
 
-// Create custom marker icon
+// Create custom marker icon with upgraded visuals
 function createMarkerIcon(color, iconClass) {
     return L.divIcon({
         className: 'custom-marker',
-        html: `<div style="background-color: ${color}; width: 32px; height: 32px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 6px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center;">
-                 <i class="fas ${iconClass}" style="color: white; font-size: 14px;"></i>
-               </div>`,
-        iconSize: [32, 32],
-        iconAnchor: [16, 16],
-        popupAnchor: [0, -16]
+        html: `<div class="marker-container" style="position: relative; width: 40px; height: 50px;">
+                 <!-- Marker pin shape -->
+                 <div class="marker-pin" style="
+                   position: absolute;
+                   width: 40px;
+                   height: 40px;
+                   background: linear-gradient(135deg, ${color} 0%, ${adjustBrightness(color, -20)} 100%);
+                   border-radius: 50% 50% 50% 0;
+                   transform: rotate(-45deg);
+                   left: 0;
+                   top: 0;
+                   border: 3px solid white;
+                   box-shadow: 0 4px 12px rgba(0,0,0,0.25), 0 2px 4px rgba(0,0,0,0.15);
+                 "></div>
+                 <!-- Icon inside marker -->
+                 <div class="marker-icon" style="
+                   position: absolute;
+                   width: 40px;
+                   height: 40px;
+                   display: flex;
+                   align-items: center;
+                   justify-content: center;
+                   left: 0;
+                   top: 0;
+                   z-index: 2;
+                 ">
+                   <i class="fas ${iconClass}" style="
+                     color: white;
+                     font-size: 16px;
+                     text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+                     transform: rotate(0deg);
+                   "></i>
+                 </div>
+                 <!-- Pulsing ring animation -->
+                 <div class="marker-pulse" style="
+                   position: absolute;
+                   width: 40px;
+                   height: 40px;
+                   border-radius: 50%;
+                   background: ${color};
+                   opacity: 0;
+                   left: 0;
+                   top: 0;
+                   animation: pulse 2s ease-out infinite;
+                 "></div>
+               </div>
+               <style>
+                 @keyframes pulse {
+                   0% {
+                     transform: scale(0.8) rotate(-45deg);
+                     opacity: 0.8;
+                   }
+                   50% {
+                     transform: scale(1.2) rotate(-45deg);
+                     opacity: 0.4;
+                   }
+                   100% {
+                     transform: scale(1.5) rotate(-45deg);
+                     opacity: 0;
+                   }
+                 }
+                 .custom-marker:hover .marker-pin {
+                   transform: rotate(-45deg) scale(1.1);
+                   transition: transform 0.2s ease;
+                 }
+               </style>`,
+        iconSize: [40, 50],
+        iconAnchor: [20, 40],
+        popupAnchor: [0, -40]
     });
+}
+
+// Helper function to adjust color brightness
+function adjustBrightness(color, percent) {
+    const num = parseInt(color.replace("#",""), 16);
+    const amt = Math.round(2.55 * percent);
+    const R = (num >> 16) + amt;
+    const G = (num >> 8 & 0x00FF) + amt;
+    const B = (num & 0x0000FF) + amt;
+    return "#" + (0x1000000 + (R<255?R<1?0:R:255)*0x10000 +
+           (G<255?G<1?0:G:255)*0x100 +
+           (B<255?B<1?0:B:255))
+           .toString(16).slice(1);
 }
 
 // Add markers to map
