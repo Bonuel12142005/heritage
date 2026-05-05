@@ -1854,12 +1854,14 @@ app.get('/user/messages', requireAuth, async (req, res) => {
 app.get('/user/gallery', requireAuth, async (req, res) => {
     try {
         let gallery = [];
+        let photos = [];
         try {
             const [galleryResult] = await db.execute(
                 'SELECT * FROM user_gallery WHERE user_id = ? ORDER BY created_at DESC',
                 [req.session.user.id]
             );
             gallery = galleryResult;
+            photos = galleryResult; // Alias for template compatibility
         } catch (error) {
             console.log('User gallery table not found:', error.message);
         }
@@ -1869,6 +1871,7 @@ app.get('/user/gallery', requireAuth, async (req, res) => {
             title: 'My Gallery - HeritageLink',
             user: req.session.user,
             gallery: gallery,
+            photos: photos,
             success: null,
             error: null
         });
@@ -1879,6 +1882,7 @@ app.get('/user/gallery', requireAuth, async (req, res) => {
             title: 'My Gallery - HeritageLink',
             user: req.session.user,
             gallery: [],
+            photos: [],
             success: null,
             error: null
         }));
