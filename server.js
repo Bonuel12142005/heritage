@@ -1610,6 +1610,56 @@ app.get('/dashboard', requireAuth, async (req, res) => {
     }
 });
 
+// Alias route for /user/dashboard
+app.get('/user/dashboard', requireAuth, async (req, res) => {
+    try {
+        // Fetch user statistics and recent activity
+        const userId = req.session.user.id;
+        
+        // Get user orders (if orders table exists)
+        let userOrders = [];
+        try {
+            const [orders] = await db.execute(`
+                SELECT o.*, ap.name as product_name 
+                FROM orders o 
+                JOIN artisan_products ap ON o.product_id = ap.id 
+                WHERE o.user_id = ? 
+                ORDER BY o.created_at DESC 
+                LIMIT 5
+            `, [userId]);
+            userOrders = orders;
+        } catch (error) {
+            // Orders table might not exist yet
+            userOrders = [];
+        }
+        
+        const templatePath = path.join(__dirname, 'views/user-dashboard.xian');
+        const html = renderTemplate(templatePath, {
+            title: 'Dashboard - HeritageLink',
+            user: req.session.user,
+            visitedDestinations: 5,
+            eventsAttended: 3,
+            reviewsWritten: 8,
+            artisansMet: 4,
+            userOrders: userOrders
+        });
+        res.send(html);
+    } catch (error) {
+        console.error('User dashboard error:', error);
+        const templatePath = path.join(__dirname, 'views/user-dashboard.xian');
+        const html = renderTemplate(templatePath, {
+            title: 'Dashboard - HeritageLink',
+            user: req.session.user,
+            visitedDestinations: 0,
+            eventsAttended: 0,
+            reviewsWritten: 0,
+            artisansMet: 0,
+            userOrders: []
+        });
+        res.send(html);
+    }
+});
+
 // Destinations route
 app.get('/destinations', async (req, res) => {
     try {
