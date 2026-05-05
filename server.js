@@ -818,7 +818,6 @@ app.get('/admin/map-places', requireAuth, requireRole('admin'), async (req, res)
         res.send(html);
     }
 });
-});
 
 app.get('/admin/map-place/new', requireAuth, requireRole('admin'), (req, res) => {
     const templatePath = path.join(__dirname, 'views/admin-map-place-form.xian');
