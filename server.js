@@ -56,80 +56,9 @@ async function initializeDatabase() {
         console.log('✅ MySQL database connected!');
         console.log(`📍 Connected to: ${connectionConfig.host}:${connectionConfig.port}/${connectionConfig.database}`);
         
-        // Create tables if they don't exist
-        await db.execute(`
-            CREATE TABLE IF NOT EXISTS users (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                email VARCHAR(255) UNIQUE NOT NULL,
-                password VARCHAR(255) NOT NULL,
-                role ENUM('admin', 'artisan', 'user') DEFAULT 'user',
-                name VARCHAR(255),
-                phone VARCHAR(50),
-                address TEXT,
-                profile_photo VARCHAR(255),
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-        `);
-
-        await db.execute(`
-            CREATE TABLE IF NOT EXISTS destinations (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                name VARCHAR(255) NOT NULL,
-                description TEXT,
-                location VARCHAR(255),
-                latitude DECIMAL(10, 8),
-                longitude DECIMAL(11, 8),
-                image_url VARCHAR(255),
-                category VARCHAR(100),
-                status ENUM('active', 'inactive') DEFAULT 'active',
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-        `);
-
-        await db.execute(`
-            CREATE TABLE IF NOT EXISTS artisan_products (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                artisan_id INT,
-                name VARCHAR(255) NOT NULL,
-                description TEXT,
-                price DECIMAL(10, 2),
-                image_url VARCHAR(255),
-                category VARCHAR(100),
-                stock_quantity INT DEFAULT 0,
-                status ENUM('active', 'inactive') DEFAULT 'active',
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-                FOREIGN KEY (artisan_id) REFERENCES users(id) ON DELETE CASCADE
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-        `);
-
-        // Insert default users if they don't exist
-        const [adminExists] = await db.execute('SELECT id FROM users WHERE email = ?', ['admin@heritagelink.com']);
-        if (adminExists.length === 0) {
-            const hashedAdminPassword = await bcrypt.hash('admin123', 10);
-            const hashedArtisanPassword = await bcrypt.hash('artisan123', 10);
-            const hashedUserPassword = await bcrypt.hash('user123', 10);
-            
-            await db.execute(`
-                INSERT INTO users (email, password, role, name) VALUES 
-                (?, ?, 'admin', 'System Administrator')
-            `, ['admin@heritagelink.com', hashedAdminPassword]);
-            
-            await db.execute(`
-                INSERT INTO users (email, password, role, name) VALUES 
-                (?, ?, 'artisan', 'Master Artisan')
-            `, ['artisan@heritagelink.com', hashedArtisanPassword]);
-            
-            await db.execute(`
-                INSERT INTO users (email, password, role, name) VALUES 
-                (?, ?, 'user', 'Demo User')
-            `, ['user@heritagelink.com', hashedUserPassword]);
-            
-            console.log('✅ Default users created');
-        }
-
+        // Skip table creation - tables already exist from database import
+        console.log('ℹ️  Skipping table creation (using imported database structure)');
+        
         console.log('✅ Database initialized successfully!');
         return true;
     } catch (error) {
