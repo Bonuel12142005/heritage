@@ -1736,10 +1736,33 @@ app.get('/destinations/:id', async (req, res) => {
         
         const destination = destinations[0];
         
+        // Fetch images for this destination
+        const [images] = await db.execute(
+            'SELECT * FROM destination_images WHERE destination_id = ? ORDER BY is_primary DESC, created_at ASC',
+            [destinationId]
+        );
+        
+        // If no images in destination_images table, create array from destination's image_url or photo
+        let destinationImages = images || [];
+        if (destinationImages.length === 0 && (destination.image_url || destination.photo)) {
+            destinationImages = [{
+                url: destination.image_url || destination.photo,
+                image_url: destination.image_url || destination.photo,
+                photo: destination.image_url || destination.photo,
+                is_primary: 1
+            }];
+        }
+        
         // Fetch reviews for this destination
         const [reviews] = await db.execute(
             'SELECT r.*, u.username, u.profile_photo FROM reviews r LEFT JOIN users u ON r.user_id = u.id WHERE r.destination_id = ? ORDER BY r.created_at DESC',
             [destinationId]
+        );
+        
+        // Fetch related destinations (same category/type)
+        const [relatedDests] = await db.execute(
+            'SELECT * FROM destinations WHERE id != ? AND (site_type = ? OR category = ?) AND status = "active" ORDER BY RAND() LIMIT 3',
+            [destinationId, destination.site_type || '', destination.category || '']
         );
         
         const templatePath = path.join(__dirname, 'views/destination.xian');
@@ -1747,7 +1770,11 @@ app.get('/destinations/:id', async (req, res) => {
             title: `${destination.name} - HeritageLink`,
             user: req.session.user,
             destination: destination,
-            reviews: reviews || []
+            images: destinationImages,
+            reviews: reviews || [],
+            relatedDestinations: relatedDests || [],
+            amenities: destination.amenities ? (typeof destination.amenities === 'string' ? JSON.parse(destination.amenities) : destination.amenities) : [],
+            facilities: destination.facilities ? (typeof destination.facilities === 'string' ? JSON.parse(destination.facilities) : destination.facilities) : []
         });
         res.send(html);
     } catch (error) {
