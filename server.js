@@ -530,6 +530,42 @@ app.post('/api/messages/send', requireAuth, async (req, res) => {
     }
 });
 
+// Get reviews for a destination
+app.get('/api/destinations/:id/reviews', async (req, res) => {
+    try {
+        const destinationId = req.params.id;
+        
+        const [reviews] = await db.execute(
+            'SELECT r.*, u.username, u.name, u.profile_photo FROM reviews r LEFT JOIN users u ON r.user_id = u.id WHERE r.destination_id = ? ORDER BY r.created_at DESC',
+            [destinationId]
+        );
+        
+        res.json({
+            success: true,
+            reviews: reviews || []
+        });
+    } catch (error) {
+        console.error('❌ Reviews API error:', error);
+        res.json({
+            success: false,
+            message: 'Failed to load reviews',
+            reviews: []
+        });
+    }
+});
+
+// Placeholder image route
+app.get('/placeholder-hero.jpg', (req, res) => {
+    // Redirect to a default image or send a simple SVG placeholder
+    res.setHeader('Content-Type', 'image/svg+xml');
+    res.send(`<svg width="800" height="400" xmlns="http://www.w3.org/2000/svg">
+        <rect width="800" height="400" fill="#0077B6"/>
+        <text x="50%" y="50%" font-family="Arial, sans-serif" font-size="24" fill="white" text-anchor="middle" dominant-baseline="middle">
+            HeritageLink
+        </text>
+    </svg>`);
+});
+
 // Test route for EJS debugging
 app.get('/test-ejs', (req, res) => {
     try {
