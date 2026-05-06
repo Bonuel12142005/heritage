@@ -1924,8 +1924,8 @@ app.get('/artisan/product/:id/edit', requireAuth, requireRole('artisan'), async 
         const artisanId = req.session.user.id;
         
         // Fetch the product from database
-        const [products] = await pool.query(
-            'SELECT * FROM products WHERE id = ? AND user_id = ?',
+        const [products] = await db.execute(
+            'SELECT * FROM artisan_products WHERE id = ? AND artisan_id = ?',
             [productId, artisanId]
         );
         
@@ -1957,8 +1957,8 @@ app.get('/artisan/products/edit/:id', requireAuth, requireRole('artisan'), async
         const artisanId = req.session.user.id;
         
         // Fetch the product from database
-        const [products] = await pool.query(
-            'SELECT * FROM products WHERE id = ? AND user_id = ?',
+        const [products] = await db.execute(
+            'SELECT * FROM artisan_products WHERE id = ? AND artisan_id = ?',
             [productId, artisanId]
         );
         
