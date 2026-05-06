@@ -375,7 +375,7 @@ app.get('/api/admin/dashboard', async (req, res) => {
     try {
         const [totalUsers] = await db.execute('SELECT COUNT(*) as count FROM users');
         const [totalDestinations] = await db.execute('SELECT COUNT(*) as count FROM destinations');
-        const [totalArtisans] = await db.execute('SELECT COUNT(*) as count FROM users WHERE role = "artisan"');
+        const [totalArtisans] = await db.execute('SELECT COUNT(*) as count FROM users WHERE role = \'artisan\'');
         
         res.json({
             success: true,
@@ -389,6 +389,81 @@ app.get('/api/admin/dashboard', async (req, res) => {
     } catch (error) {
         console.error('Admin dashboard error:', error);
         res.json({ success: false, message: 'Failed to load dashboard data' });
+    }
+});
+
+// Admin stats API
+app.get('/api/admin/stats', requireAuth, requireRole('admin'), async (req, res) => {
+    try {
+        // Get counts for various entities
+        const [users] = await db.execute('SELECT COUNT(*) as count FROM users');
+        const [destinations] = await db.execute('SELECT COUNT(*) as count FROM destinations WHERE status = \'active\'');
+        const [events] = await db.execute('SELECT COUNT(*) as count FROM events WHERE status = \'active\'');
+        const [products] = await db.execute('SELECT COUNT(*) as count FROM artisan_products WHERE status = \'active\'');
+        const [heritage] = await db.execute('SELECT COUNT(*) as count FROM heritage_gallery WHERE status = \'active\'');
+        const [workshops] = await db.execute('SELECT COUNT(*) as count FROM workshops WHERE status = \'active\'');
+        const [messages] = await db.execute('SELECT COUNT(*) as count FROM messages');
+        const [reviews] = await db.execute('SELECT COUNT(*) as count FROM reviews');
+        
+        // Get recent activity
+        const [recentUsers] = await db.execute('SELECT COUNT(*) as count FROM users WHERE created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)');
+        const [recentDestinations] = await db.execute('SELECT COUNT(*) as count FROM destinations WHERE created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)');
+        
+        res.json({
+            success: true,
+            data: {
+                totalUsers: users[0].count,
+                totalDestinations: destinations[0].count,
+                totalEvents: events[0].count,
+                totalProducts: products[0].count,
+                totalHeritage: heritage[0].count,
+                totalWorkshops: workshops[0].count,
+                totalMessages: messages[0].count,
+                totalReviews: reviews[0].count,
+                recentUsers: recentUsers[0].count,
+                recentDestinations: recentDestinations[0].count
+            }
+        });
+    } catch (error) {
+        console.error('❌ Admin stats error:', error);
+        res.status(500).json({ success: false, message: 'Failed to load stats' });
+    }
+});
+
+// Notifications count API
+app.get('/api/notifications/count', requireAuth, async (req, res) => {
+    try {
+        const userId = req.session.user.id;
+        
+        // Count unread messages
+        const [messages] = await db.execute(
+            'SELECT COUNT(*) as count FROM messages WHERE receiver_id = ? AND is_read = 0',
+            [userId]
+        );
+        
+        // Count unread notifications (if notifications table exists)
+        let notifications = [{ count: 0 }];
+        try {
+            const [notifs] = await db.execute(
+                'SELECT COUNT(*) as count FROM notifications WHERE user_id = ? AND is_read = 0',
+                [userId]
+            );
+            notifications = notifs;
+        } catch (e) {
+            // Notifications table might not exist, use 0
+        }
+        
+        res.json({
+            success: true,
+            data: {
+                messages: messages[0].count,
+                notifications: notifications[0].count,
+                total: messages[0].count + notifications[0].count
+            }
+        });
+    } catch (error) {
+        console.error('❌ Notifications count error:', error);
+        res.status(500).json({ success: false, message: 'Failed to load notification count' });
     }
 });
 
