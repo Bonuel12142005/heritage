@@ -1097,6 +1097,38 @@ app.get('/admin/event/:id/edit', requireAuth, requireRole('admin'), async (req, 
     }
 });
 
+// Alias route for /admin/events/edit/:id
+app.get('/admin/events/edit/:id', requireAuth, requireRole('admin'), async (req, res) => {
+    try {
+        const eventId = req.params.id;
+        
+        // Fetch event details from database
+        const [events] = await db.execute(
+            'SELECT * FROM events WHERE id = ? LIMIT 1',
+            [eventId]
+        );
+        
+        if (!events || events.length === 0) {
+            return res.status(404).send('Event not found');
+        }
+        
+        const event = events[0];
+        
+        const templatePath = path.join(__dirname, 'views/admin-event-form.xian');
+        const html = renderTemplate(templatePath, {
+            title: 'Edit Event - Admin',
+            user: req.session.user,
+            editMode: true,
+            eventId: req.params.id,
+            event: event
+        });
+        res.send(html);
+    } catch (error) {
+        console.error('Error loading event for edit:', error);
+        res.status(500).send('Error loading event');
+    }
+});
+
 // Admin Heritage Management
 app.get('/admin/heritage', requireAuth, requireRole('admin'), async (req, res) => {
     try {
