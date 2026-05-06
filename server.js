@@ -725,22 +725,32 @@ app.get('/login', (req, res) => {
 // Handle login form submission
 app.post('/login', async (req, res) => {
     try {
+        console.log('🔐 Login attempt:', req.body.email);
         const { email, password } = req.body;
         
         if (!email || !password) {
+            console.log('❌ Missing email or password');
             return res.redirect('/login?error=Please enter both email and password');
         }
         
+        console.log('📊 Querying database for user:', email);
         const [users] = await db.execute('SELECT * FROM users WHERE email = ?', [email]);
+        console.log('📊 Query result:', users.length, 'users found');
+        
         if (users.length === 0) {
+            console.log('❌ User not found');
             return res.redirect('/login?error=Invalid email or password');
         }
         
         const user = users[0];
+        console.log('👤 User found:', user.email, 'Role:', user.role);
         
+        console.log('🔒 Comparing passwords...');
         const isValidPassword = await bcrypt.compare(password, user.password);
+        console.log('🔒 Password valid:', isValidPassword);
         
         if (!isValidPassword) {
+            console.log('❌ Invalid password');
             return res.redirect('/login?error=Invalid email or password');
         }
         
@@ -751,6 +761,8 @@ app.post('/login', async (req, res) => {
             role: user.role
         };
         
+        console.log('✅ Login successful, redirecting to:', user.role);
+        
         // Redirect based on role
         if (user.role === 'admin') {
             res.redirect('/admin');
@@ -760,7 +772,8 @@ app.post('/login', async (req, res) => {
             res.redirect('/dashboard');
         }
     } catch (error) {
-        console.error('Login form error:', error);
+        console.error('❌ Login form error:', error);
+        console.error('❌ Error stack:', error.stack);
         res.redirect('/login?error=Login failed. Please try again.');
     }
 });
