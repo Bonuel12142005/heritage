@@ -1140,7 +1140,7 @@ app.post('/admin/events/save', requireAuth, requireRole('admin'), upload.single(
         
         if (id) {
             // Update existing event
-            let updateQuery = 'UPDATE events SET title = ?, description = ?, event_date = ?, event_time = ?, location = ?, organizer = ?, category = ?, price = ?, capacity = ?, status = ?';
+            let updateQuery = 'UPDATE events SET title = ?, description = ?, event_date = ?, event_time = ?, location = ?, organizer = ?, category = ?, ticket_price = ?, max_attendees = ?, status = ?';
             let updateParams = [
                 safeValue(title), 
                 safeValue(description), 
@@ -1155,7 +1155,7 @@ app.post('/admin/events/save', requireAuth, requireRole('admin'), upload.single(
             ];
             
             if (eventImage) {
-                updateQuery += ', event_image = ?';
+                updateQuery += ', image_url = ?';
                 updateParams.push(eventImage);
             }
             
@@ -1167,7 +1167,7 @@ app.post('/admin/events/save', requireAuth, requireRole('admin'), upload.single(
             res.json({ success: true, message: 'Event updated successfully', eventId: id });
         } else {
             // Create new event
-            const insertQuery = 'INSERT INTO events (title, description, event_date, event_time, location, organizer, category, price, capacity, status, event_image) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
+            const insertQuery = 'INSERT INTO events (title, description, event_date, event_time, location, organizer, category, ticket_price, max_attendees, status, image_url) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
             const [result] = await db.execute(insertQuery, [
                 safeValue(title),
                 safeValue(description),
