@@ -6,48 +6,166 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         :root {
-            --primary: #2d8659; --primary-dark: #1a5f3f; --primary-light: #3fa872;
-            --accent: #ff6b35; --accent-dark: #e55a2b;
-            --bg-main: #f8faf9; --bg-card: #ffffff;
-            --text-primary: #064e3b; --text-secondary: #6b7280; --text-muted: #9ca3af;
-            --border: #d1fae5; --sidebar-bg: #064e3b; --sidebar-hover: #065f46;
+            --ocean-blue: #0077B6;
+            --ocean-dark: #005A8D;
+            --ocean-light: #0096C7;
+            --accent-gold: #FFD700;
+            --bg-main: #f8faf9;
+            --bg-card: #ffffff;
+            --text-primary: #064e3b;
+            --text-secondary: #6b7280;
         }
         body { font-family: 'Inter', sans-serif; background: var(--bg-main); color: var(--text-primary); }
-        .sidebar { position: fixed; left: 0; top: 0; height: 100vh; width: 260px; background: var(--sidebar-bg); padding: 2rem 0; z-index: 1000; }
-        .sidebar-logo { padding: 0 2rem 2rem; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 2rem; }
-        .sidebar-logo h2 { color: white; font-size: 1.5rem; font-weight: 700; display: flex; align-items: center; gap: 0.75rem; }
-        .sidebar-logo .badge { background: linear-gradient(135deg, var(--accent), var(--accent-dark)); color: var(--sidebar-bg); padding: 0.25rem 0.75rem; border-radius: 1rem; font-size: 0.75rem; }
-        .sidebar-menu { list-style: none; }
-        .menu-item { margin: 0.25rem 1rem; }
-        .menu-link { display: flex; align-items: center; gap: 1rem; padding: 0.875rem 1rem; color: #d1fae5; text-decoration: none; border-radius: 0.75rem; transition: all 0.2s; font-weight: 500; }
-        .menu-link:hover, .menu-link.active { background: var(--sidebar-hover); color: white; }
-        .menu-link i { width: 20px; text-align: center; }
+        
+        /* Sidebar - Ocean Blue Theme */
+        .sidebar { 
+            position: fixed; 
+            left: 0; 
+            top: 0; 
+            height: 100vh; 
+            width: 260px; 
+            background: linear-gradient(180deg, var(--ocean-blue) 0%, var(--ocean-dark) 100%);
+            padding: 0;
+            z-index: 1000;
+            overflow-y: auto;
+        }
+        
+        .sidebar-logo { 
+            padding: 2rem 1.5rem;
+            text-align: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .sidebar-logo img {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            margin-bottom: 0.75rem;
+            background: white;
+            padding: 4px;
+        }
+        
+        .sidebar-logo h2 { 
+            color: white; 
+            font-size: 1.35rem; 
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .sidebar-logo .badge { 
+            background: var(--accent-gold);
+            color: var(--ocean-dark);
+            padding: 0.35rem 1rem;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 800;
+            letter-spacing: 0.05em;
+            display: inline-block;
+        }
+        
+        .sidebar-menu { 
+            list-style: none;
+            padding: 1rem 0;
+        }
+        
+        .menu-section { 
+            color: rgba(255,255,255,0.4);
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            padding: 1.5rem 1.5rem 0.5rem;
+            margin-top: 0.5rem;
+        }
+        
+        .menu-item { 
+            margin: 0.15rem 0.75rem;
+        }
+        
+        .menu-link { 
+            display: flex;
+            align-items: center;
+            gap: 0.85rem;
+            padding: 0.85rem 1rem;
+            color: rgba(255,255,255,0.85);
+            text-decoration: none;
+            border-radius: 10px;
+            transition: all 0.2s;
+            font-weight: 500;
+            font-size: 0.95rem;
+        }
+        
+        .menu-link:hover { 
+            background: rgba(255,255,255,0.1);
+            color: white;
+        }
+        
+        .menu-link.active { 
+            background: white;
+            color: var(--ocean-blue);
+            font-weight: 600;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+        
+        .menu-link i { 
+            width: 20px;
+            text-align: center;
+            font-size: 1.1rem;
+        }
+        
+        .menu-link .caret {
+            margin-left: auto;
+            font-size: 0.75rem;
+            transition: transform 0.3s;
+        }
+        
+        /* Submenu */
+        .submenu {
+            list-style: none;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+            background: rgba(0,0,0,0.15);
+            margin: 0.25rem 0.75rem;
+            border-radius: 8px;
+        }
+        
+        .submenu.open {
+            max-height: 300px;
+            padding: 0.5rem 0;
+        }
+        
+        .submenu .menu-link {
+            padding-left: 3rem;
+            font-size: 0.9rem;
+        }
+        
         .main-content { margin-left: 260px; min-height: 100vh; }
-        .topbar { background: var(--bg-card); padding: 1.5rem 2rem; border-bottom: 3px solid var(--accent); display: flex; justify-content: space-between; align-items: center; }
-        .topbar-left h1 { font-size: 1.75rem; font-weight: 700; background: linear-gradient(135deg, var(--primary), var(--primary-light)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .topbar { background: var(--bg-card); padding: 1.5rem 2rem; border-bottom: 3px solid var(--ocean-blue); display: flex; justify-content: space-between; align-items: center; }
+        .topbar-left h1 { font-size: 1.75rem; font-weight: 700; color: var(--ocean-blue); }
         .topbar-left p { color: var(--text-secondary); margin-top: 0.25rem; }
         .btn { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.5rem; border-radius: 0.75rem; text-decoration: none; font-weight: 600; font-size: 0.875rem; transition: all 0.2s; border: none; cursor: pointer; }
-        .btn-primary { background: linear-gradient(135deg, var(--accent), var(--accent-dark)); color: white; }
-        .btn-primary:hover { transform: translateY(-2px); }
-        .btn-secondary { background: var(--bg-main); color: var(--primary); border: 2px solid var(--primary); }
+        .btn-primary { background: var(--accent-gold); color: var(--ocean-dark); }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(255,215,0,0.3); }
+        .btn-secondary { background: var(--bg-main); color: var(--ocean-blue); border: 2px solid var(--ocean-blue); }
         .content { padding: 2rem; max-width: 900px; }
-        .form-card { background: var(--bg-card); border-radius: 1rem; padding: 2rem; border: 2px solid var(--border); }
-        .form-section { margin-bottom: 2rem; padding-bottom: 2rem; border-bottom: 1px solid var(--border); }
+        .form-card { background: var(--bg-card); border-radius: 1rem; padding: 2rem; border: 2px solid #e5e7eb; }
+        .form-section { margin-bottom: 2rem; padding-bottom: 2rem; border-bottom: 1px solid #e5e7eb; }
         .form-section:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
         .form-section-title { font-size: 1.1rem; font-weight: 700; color: var(--text-primary); margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.5rem; }
-        .form-section-title i { color: var(--primary); }
+        .form-section-title i { color: var(--ocean-blue); }
         .form-group { margin-bottom: 1.25rem; }
         .form-group label { display: block; font-weight: 600; color: var(--text-primary); margin-bottom: 0.5rem; font-size: 0.875rem; }
         .form-group label .required { color: #ef4444; }
-        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 0.75rem 1rem; border: 2px solid var(--border); border-radius: 0.5rem; font-size: 0.95rem; transition: border-color 0.2s; background: var(--bg-main); }
-        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: var(--primary); background: white; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 0.75rem 1rem; border: 2px solid #e5e7eb; border-radius: 0.5rem; font-size: 0.95rem; transition: border-color 0.2s; background: var(--bg-main); }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: var(--ocean-blue); background: white; }
         .form-group textarea { min-height: 120px; resize: vertical; }
-        .form-group .hint { font-size: 0.8rem; color: var(--text-muted); margin-top: 0.35rem; }
+        .form-group .hint { font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.35rem; }
         .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
         .form-actions { display: flex; gap: 1rem; margin-top: 2rem; }
-        .upload-area { border: 2px dashed var(--border); border-radius: 0.75rem; padding: 2rem; text-align: center; background: var(--bg-main); cursor: pointer; transition: all 0.2s; }
-        .upload-area:hover { border-color: var(--primary); background: #f0fdf4; }
-        .upload-area i { font-size: 2.5rem; color: var(--primary); margin-bottom: 0.75rem; }
+        .upload-area { border: 2px dashed #e5e7eb; border-radius: 0.75rem; padding: 2rem; text-align: center; background: var(--bg-main); cursor: pointer; transition: all 0.2s; }
+        .upload-area:hover { border-color: var(--ocean-blue); background: #f0f9ff; }
+        .upload-area i { font-size: 2.5rem; color: var(--ocean-blue); margin-bottom: 0.75rem; }
         .upload-area p { color: var(--text-secondary); margin-bottom: 0.5rem; }
         .upload-area small { color: var(--text-muted); }
         .preview-container { margin-top: 1rem; }
@@ -90,7 +208,9 @@
 <body>
     <aside class="sidebar">
         <div class="sidebar-logo">
-            <h2><img src="/uploads/logo.jpg" alt="HeritageLink" style="width: 40px; height: 40px; object-fit: contain;"> <span>HeritageLink</span> <span class="badge">ADMIN</span></h2>
+            <img src="/uploads/logo.jpg" alt="HeritageLink">
+            <h2>HeritageLink</h2>
+            <span class="badge">ADMIN</span>
         </div>
         <ul class="sidebar-menu">
             <li class="menu-section">MAIN</li>
