@@ -1928,6 +1928,18 @@ app.get('/artisan/product/:id/edit', requireAuth, requireRole('artisan'), (req, 
     res.send(html);
 });
 
+// Alias route for /artisan/products/edit/:id
+app.get('/artisan/products/edit/:id', requireAuth, requireRole('artisan'), (req, res) => {
+    const templatePath = path.join(__dirname, 'views/artisan-product-form.xian');
+    const html = renderTemplate(templatePath, {
+        title: 'Edit Product - Artisan',
+        user: req.session.user,
+        editMode: true,
+        productId: req.params.id
+    });
+    res.send(html);
+});
+
 // Artisan Workshop Forms
 app.get('/artisan/workshop/new', requireAuth, requireRole('artisan'), (req, res) => {
     const templatePath = path.join(__dirname, 'views/artisan-workshop-form.xian');
