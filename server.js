@@ -1900,6 +1900,70 @@ app.get('/artisan/profile', requireAuth, requireRole('artisan'), async (req, res
     }
 });
 
+// Update artisan profile
+app.post('/artisan/profile', requireAuth, requireRole('artisan'), upload.single('profile_photo'), async (req, res) => {
+    try {
+        console.log('📝 Profile update request body:', req.body);
+        console.log('📎 Profile photo:', req.file);
+        
+        const artisanId = req.session.user.id;
+        const { name, email, phone, bio, specialty, location, facebook, instagram, website } = req.body;
+        
+        // Handle profile photo upload
+        const profilePhoto = req.file ? `uploads/profiles/${req.file.filename}` : null;
+        
+        // Convert undefined to null for database
+        const safeValue = (val) => val === undefined || val === '' ? null : val;
+        
+        // Validate required fields
+        if (!name || !email) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'Name and email are required' 
+            });
+        }
+        
+        // Build update query
+        let updateQuery = 'UPDATE users SET name = ?, email = ?, phone = ?, bio = ?, specialty = ?, location = ?, facebook = ?, instagram = ?, website = ?';
+        let updateParams = [
+            safeValue(name),
+            safeValue(email),
+            safeValue(phone),
+            safeValue(bio),
+            safeValue(specialty),
+            safeValue(location),
+            safeValue(facebook),
+            safeValue(instagram),
+            safeValue(website)
+        ];
+        
+        // If new photo uploaded, update photo field
+        if (profilePhoto) {
+            updateQuery += ', profile_photo = ?';
+            updateParams.push(profilePhoto);
+        }
+        
+        updateQuery += ' WHERE id = ?';
+        updateParams.push(artisanId);
+        
+        console.log('📊 Update query:', updateQuery);
+        console.log('📊 Update params:', updateParams);
+        
+        await db.execute(updateQuery, updateParams);
+        
+        // Update session data
+        req.session.user.name = name;
+        req.session.user.email = email;
+        
+        console.log('✅ Profile updated for artisan:', artisanId);
+        res.json({ success: true, message: 'Profile updated successfully' });
+    } catch (error) {
+        console.error('❌ Error updating profile:', error);
+        console.error('❌ Error stack:', error.stack);
+        res.status(500).json({ success: false, message: 'Failed to update profile: ' + error.message });
+    }
+});
+
 // Artisan Products Management
 app.get('/artisan/products', requireAuth, requireRole('artisan'), async (req, res) => {
     try {
