@@ -2165,12 +2165,25 @@ app.get('/product/:id', async (req, res) => {
         const product = products[0];
         console.log('✅ Product found:', product.name);
         
+        // Fetch related products from same artisan
+        let relatedProducts = [];
+        try {
+            const [related] = await db.execute(
+                'SELECT * FROM artisan_products WHERE artisan_id = ? AND id != ? AND status = \'active\' ORDER BY created_at DESC LIMIT 4',
+                [product.artisan_id, productId]
+            );
+            relatedProducts = related || [];
+        } catch (error) {
+            console.log('⚠️ Error fetching related products:', error.message);
+        }
+        
         const templatePath = path.join(__dirname, 'views/product-detail.xian');
         const html = renderTemplate(templatePath, {
             title: `${product.name} - HeritageLink`,
             user: req.session.user,
             product: product,
-            productId: req.params.id
+            productId: req.params.id,
+            relatedProducts: relatedProducts
         });
         res.send(html);
     } catch (error) {
@@ -2198,12 +2211,25 @@ app.get('/showcase/products/:id', async (req, res) => {
         const product = products[0];
         console.log('✅ Product found:', product.name);
         
+        // Fetch related products from same artisan
+        let relatedProducts = [];
+        try {
+            const [related] = await db.execute(
+                'SELECT * FROM artisan_products WHERE artisan_id = ? AND id != ? AND status = \'active\' ORDER BY created_at DESC LIMIT 4',
+                [product.artisan_id, productId]
+            );
+            relatedProducts = related || [];
+        } catch (error) {
+            console.log('⚠️ Error fetching related products:', error.message);
+        }
+        
         const templatePath = path.join(__dirname, 'views/product-detail.xian');
         const html = renderTemplate(templatePath, {
             title: `${product.name} - HeritageLink`,
             user: req.session.user,
             product: product,
-            productId: req.params.id
+            productId: req.params.id,
+            relatedProducts: relatedProducts
         });
         res.send(html);
     } catch (error) {
