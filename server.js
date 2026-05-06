@@ -94,7 +94,42 @@ app.use(session({
 // Serve static files (CSS, JS, images)
 app.use('/css', express.static(path.join(__dirname, 'public/css')));
 app.use('/js', express.static(path.join(__dirname, 'public/js')));
-app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
+
+// Custom middleware for uploads - serve placeholder for missing files
+app.use('/uploads', (req, res, next) => {
+    const filePath = path.join(__dirname, 'public/uploads', req.path);
+    
+    // Check if file exists
+    if (fs.existsSync(filePath)) {
+        // File exists, serve it normally
+        express.static(path.join(__dirname, 'public/uploads'))(req, res, next);
+    } else {
+        // File doesn't exist, serve placeholder SVG
+        const isImage = /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(req.path);
+        
+        if (isImage) {
+            // Return placeholder SVG image
+            res.setHeader('Content-Type', 'image/svg+xml');
+            res.setHeader('Cache-Control', 'no-cache');
+            res.send(`<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300">
+                <rect fill="#f3f4f6" width="400" height="300"/>
+                <text x="50%" y="45%" dominant-baseline="middle" text-anchor="middle" font-family="Arial" font-size="18" fill="#9ca3af">
+                    <tspan x="50%" dy="0">📁 File Not Found</tspan>
+                </text>
+                <text x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" font-family="Arial" font-size="14" fill="#6b7280">
+                    <tspan x="50%" dy="0">This file was deleted during server restart</tspan>
+                </text>
+                <text x="50%" y="65%" dominant-baseline="middle" text-anchor="middle" font-family="Arial" font-size="12" fill="#9ca3af">
+                    <tspan x="50%" dy="0">Please re-upload or set up cloud storage</tspan>
+                </text>
+            </svg>`);
+        } else {
+            // For non-images, return 404
+            res.status(404).send('File not found');
+        }
+    }
+});
+
 app.use('/assets', express.static(path.join(__dirname, 'public')));
 
 // Debug route to check if uploads exist
