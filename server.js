@@ -1312,15 +1312,67 @@ app.get('/admin/heritage/new', requireAuth, requireRole('admin'), (req, res) => 
     res.send(html);
 });
 
-app.get('/admin/heritage/:id/edit', requireAuth, requireRole('admin'), (req, res) => {
-    const templatePath = path.join(__dirname, 'views/admin-heritage-form.xian');
-    const html = renderTemplate(templatePath, {
-        title: 'Edit Heritage Item - Admin',
-        user: req.session.user,
-        editMode: true,
-        heritageId: req.params.id
-    });
-    res.send(html);
+app.get('/admin/heritage/:id/edit', requireAuth, requireRole('admin'), async (req, res) => {
+    try {
+        const heritageId = req.params.id;
+        
+        // Fetch heritage item details from database
+        const [items] = await db.execute(
+            'SELECT * FROM heritage_gallery WHERE id = ? LIMIT 1',
+            [heritageId]
+        );
+        
+        if (!items || items.length === 0) {
+            return res.status(404).send('Heritage item not found');
+        }
+        
+        const item = items[0];
+        
+        const templatePath = path.join(__dirname, 'views/admin-heritage-form.xian');
+        const html = renderTemplate(templatePath, {
+            title: 'Edit Heritage Item - Admin',
+            user: req.session.user,
+            editMode: true,
+            heritageId: req.params.id,
+            heritage: item
+        });
+        res.send(html);
+    } catch (error) {
+        console.error('Error loading heritage item for edit:', error);
+        res.status(500).send('Error loading heritage item');
+    }
+});
+
+// Alias route for /admin/heritage-gallery/edit/:id
+app.get('/admin/heritage-gallery/edit/:id', requireAuth, requireRole('admin'), async (req, res) => {
+    try {
+        const heritageId = req.params.id;
+        
+        // Fetch heritage item details from database
+        const [items] = await db.execute(
+            'SELECT * FROM heritage_gallery WHERE id = ? LIMIT 1',
+            [heritageId]
+        );
+        
+        if (!items || items.length === 0) {
+            return res.status(404).send('Heritage item not found');
+        }
+        
+        const item = items[0];
+        
+        const templatePath = path.join(__dirname, 'views/admin-heritage-form.xian');
+        const html = renderTemplate(templatePath, {
+            title: 'Edit Heritage Item - Admin',
+            user: req.session.user,
+            editMode: true,
+            heritageId: req.params.id,
+            heritage: item
+        });
+        res.send(html);
+    } catch (error) {
+        console.error('Error loading heritage item for edit:', error);
+        res.status(500).send('Error loading heritage item');
+    }
 });
 
 // Admin Map Places Management
