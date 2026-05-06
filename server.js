@@ -1129,6 +1129,53 @@ app.get('/admin/events/edit/:id', requireAuth, requireRole('admin'), async (req,
     }
 });
 
+// Save event (create or update)
+app.post('/admin/events/save', requireAuth, requireRole('admin'), upload.single('event_image'), async (req, res) => {
+    try {
+        const { id, title, description, event_date, event_time, location, organizer, category, price, capacity, status } = req.body;
+        const eventImage = req.file ? `uploads/events/${req.file.filename}` : null;
+        
+        if (id) {
+            // Update existing event
+            let updateQuery = 'UPDATE events SET title = ?, description = ?, event_date = ?, event_time = ?, location = ?, organizer = ?, category = ?, price = ?, capacity = ?, status = ?';
+            let updateParams = [title, description, event_date, event_time, location, organizer, category, price || 0, capacity || 0, status || 'active'];
+            
+            if (eventImage) {
+                updateQuery += ', event_image = ?';
+                updateParams.push(eventImage);
+            }
+            
+            updateQuery += ' WHERE id = ?';
+            updateParams.push(id);
+            
+            await db.execute(updateQuery, updateParams);
+            console.log('✅ Event updated:', id);
+            res.json({ success: true, message: 'Event updated successfully', eventId: id });
+        } else {
+            // Create new event
+            const insertQuery = 'INSERT INTO events (title, description, event_date, event_time, location, organizer, category, price, capacity, status, event_image) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
+            const [result] = await db.execute(insertQuery, [
+                title,
+                description,
+                event_date,
+                event_time,
+                location,
+                organizer,
+                category || 'cultural',
+                price || 0,
+                capacity || 0,
+                status || 'active',
+                eventImage
+            ]);
+            console.log('✅ Event created:', result.insertId);
+            res.json({ success: true, message: 'Event created successfully', eventId: result.insertId });
+        }
+    } catch (error) {
+        console.error('❌ Error saving event:', error);
+        res.status(500).json({ success: false, message: 'Failed to save event: ' + error.message });
+    }
+});
+
 // Admin Heritage Management
 app.get('/admin/heritage', requireAuth, requireRole('admin'), async (req, res) => {
     try {
