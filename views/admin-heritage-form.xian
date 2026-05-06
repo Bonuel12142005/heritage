@@ -310,13 +310,20 @@
                         </div>
                         <input type="file" id="mediaFile" name="media_file" accept="image/*,video/*,audio/*,.pdf" style="display: none;" onchange="previewFile(this)">
                         <div class="preview-container" id="previewContainer"></div>
-                        <% if (item && item.media_url) { %>
+                        <% if (item && item.media_url) { 
+                            // Ensure absolute path for media URL
+                            let currentMediaPath = item.media_url;
+                            if (!currentMediaPath.startsWith('http') && !currentMediaPath.startsWith('/')) {
+                                currentMediaPath = '/' + currentMediaPath;
+                            }
+                        %>
                             <div class="current-media">
                                 <p style="font-weight: 600; margin-bottom: 0.5rem;">Current file:</p>
                                 <% if (item.media_type === 'photo') { %>
-                                    <img src="<%= item.media_url %>" alt="Current media">
+                                    <img src="<%= currentMediaPath %>" alt="Current media" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                                    <p style="display:none; color: #ef4444; font-size: 0.85rem;"><i class="fas fa-exclamation-triangle"></i> Image file not found. Please re-upload.</p>
                                 <% } else { %>
-                                    <a href="<%= item.media_url %>" target="_blank"><%= item.media_url %></a>
+                                    <a href="<%= currentMediaPath %>" target="_blank"><%= item.media_url %></a>
                                 <% } %>
                             </div>
                         <% } %>
