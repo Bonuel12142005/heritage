@@ -930,6 +930,17 @@ app.get('/admin/event/new', requireAuth, requireRole('admin'), (req, res) => {
     res.send(html);
 });
 
+// Alias route for /admin/events/add
+app.get('/admin/events/add', requireAuth, requireRole('admin'), (req, res) => {
+    const templatePath = path.join(__dirname, 'views/admin-event-form.xian');
+    const html = renderTemplate(templatePath, {
+        title: 'Add New Event - Admin',
+        user: req.session.user,
+        editMode: false
+    });
+    res.send(html);
+});
+
 app.get('/admin/event/:id/edit', requireAuth, requireRole('admin'), (req, res) => {
     const templatePath = path.join(__dirname, 'views/admin-event-form.xian');
     const html = renderTemplate(templatePath, {
