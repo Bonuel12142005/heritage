@@ -8,8 +8,21 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="/css/heritagelink-unified.css">
     <style>
-        /* Ensure content is above background */
-        .navbar, .hero, .features, .footer {
+        /* Ensure proper z-index layering */
+        .navbar {
+            position: sticky;
+            z-index: 1000 !important;
+        }
+        
+        .nav-overlay {
+            z-index: 999 !important;
+        }
+        
+        .nav-links {
+            z-index: 1001 !important;
+        }
+        
+        .hero, .features, .footer {
             position: relative;
             z-index: 1;
         }
