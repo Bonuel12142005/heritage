@@ -3496,9 +3496,8 @@ async function startServer() {
     const dbInitialized = await initializeDatabase();
     
     if (!dbInitialized) {
-        console.error('❌ Failed to initialize database. Server will not start.');
-        console.error('Please check your database configuration and try again.');
-        process.exit(1);
+        console.error('⚠️  Database connection failed - server will start but database features will not work.');
+        console.error('Please set DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME environment variables.');
     }
     
     const PORT = process.env.PORT || 3000;
