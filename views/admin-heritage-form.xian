@@ -61,20 +61,61 @@
             .main-content { margin-left: 70px; }
             .form-row { grid-template-columns: 1fr; }
         }
+        
+        /* Section headers */
+        .menu-section { 
+            color: rgba(255,255,255,0.5); 
+            font-size: 0.75rem; 
+            font-weight: 700; 
+            text-transform: uppercase; 
+            letter-spacing: 0.05em; 
+            padding: 1.5rem 2rem 0.5rem; 
+            margin-top: 1rem;
+        }
+        
+        /* Submenu styles */
+        .submenu { 
+            max-height: 0; 
+            overflow: hidden; 
+            transition: max-height 0.3s ease; 
+            background: rgba(0,0,0,0.2); 
+            margin: 0 1rem; 
+            border-radius: 0.5rem;
+        }
+        .submenu.open { max-height: 500px; }
+        .submenu .menu-link { padding-left: 3rem; font-size: 0.9rem; }
+        .menu-link .caret { margin-left: auto; transition: transform 0.3s; }
     </style>
 </head>
 <body>
     <aside class="sidebar">
         <div class="sidebar-logo">
-            <h2><img src="/uploads/logo.jpg" alt="HeritageLink" style="width: 40px; height: 40px; object-fit: contain;"> <span>HeritageLink</span> <span class="badge">Admin</span></h2>
+            <h2><img src="/uploads/logo.jpg" alt="HeritageLink" style="width: 40px; height: 40px; object-fit: contain;"> <span>HeritageLink</span> <span class="badge">ADMIN</span></h2>
         </div>
         <ul class="sidebar-menu">
+            <li class="menu-section">MAIN</li>
             <li class="menu-item"><a href="/admin/dashboard" class="menu-link"><i class="fas fa-th-large"></i><span>Dashboard</span></a></li>
-            <li class="menu-item"><a href="/admin/destinations" class="menu-link"><i class="fas fa-map-marked-alt"></i><span>Destinations</span></a></li>
             <li class="menu-item"><a href="/admin/events" class="menu-link"><i class="fas fa-calendar-alt"></i><span>Events</span></a></li>
             <li class="menu-item"><a href="/admin/heritage-gallery" class="menu-link active"><i class="fas fa-landmark"></i><span>Heritage Gallery</span></a></li>
+            <li class="menu-item">
+                <a href="#" class="menu-link" onclick="toggleLocationsMenu(event)">
+                    <i class="fas fa-globe"></i><span>Locations</span>
+                    <i class="fas fa-chevron-down caret" id="locations-caret"></i>
+                </a>
+                <ul class="submenu" id="locations-submenu">
+                    <li class="menu-item"><a href="/admin/destinations" class="menu-link"><i class="fas fa-map-marked-alt"></i><span>Destinations</span></a></li>
+                    <li class="menu-item"><a href="/admin/map-places" class="menu-link"><i class="fas fa-map-pin"></i><span>Map Places</span></a></li>
+                </ul>
+            </li>
             <li class="menu-item"><a href="/admin/users" class="menu-link"><i class="fas fa-users"></i><span>Users</span></a></li>
+            
+            <li class="menu-section">MANAGEMENT</li>
             <li class="menu-item"><a href="/admin/moderate" class="menu-link"><i class="fas fa-shield-alt"></i><span>Moderation</span></a></li>
+            <li class="menu-item"><a href="/admin/feedback" class="menu-link"><i class="fas fa-comment-dots"></i><span>Feedback</span></a></li>
+            <li class="menu-item"><a href="/admin/analytics" class="menu-link"><i class="fas fa-chart-line"></i><span>Analytics</span></a></li>
+            <li class="menu-item"><a href="/admin/settings" class="menu-link"><i class="fas fa-cog"></i><span>Settings</span></a></li>
+            
+            <li class="menu-section" style="margin-top: 2rem;"></li>
             <li class="menu-item"><a href="/" class="menu-link"><i class="fas fa-home"></i><span>Home</span></a></li>
             <li class="menu-item"><a href="/logout" class="menu-link"><i class="fas fa-sign-out-alt"></i><span>Logout</span></a></li>
         </ul>
