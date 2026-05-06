@@ -2125,14 +2125,11 @@ app.post('/artisan/products/save', requireAuth, requireRole('artisan'), upload.a
         console.log('📝 Product save request body:', req.body);
         console.log('📎 Product save files:', req.files);
         
-        const { id, name, description, category, price_range, external_link, status } = req.body;
+        const { id, name, description, category, price_range, external_link } = req.body;
         const artisanId = req.session.user.id;
         
-        // Handle multiple image uploads
-        let images = [];
-        if (req.files && req.files.length > 0) {
-            images = req.files.map(file => `uploads/products/${file.filename}`);
-        }
+        // Note: Images are uploaded but not stored in database (table doesn't have images column)
+        // Files are saved to uploads/products/ folder
         
         // Convert undefined to null for database
         const safeValue = (val) => val === undefined || val === '' ? null : val;
@@ -2148,23 +2145,16 @@ app.post('/artisan/products/save', requireAuth, requireRole('artisan'), upload.a
         if (id) {
             // Update existing product
             console.log('🔄 Updating product:', id);
-            let updateQuery = 'UPDATE artisan_products SET name = ?, description = ?, category = ?, price_range = ?, external_link = ?';
-            let updateParams = [
+            const updateQuery = 'UPDATE artisan_products SET name = ?, description = ?, category = ?, price_range = ?, external_link = ? WHERE id = ? AND artisan_id = ?';
+            const updateParams = [
                 safeValue(name), 
                 safeValue(description), 
                 safeValue(category), 
                 safeValue(price_range), 
-                safeValue(external_link)
+                safeValue(external_link),
+                id,
+                artisanId
             ];
-            
-            // If new images uploaded, update images field
-            if (images.length > 0) {
-                updateQuery += ', images = ?';
-                updateParams.push(JSON.stringify(images));
-            }
-            
-            updateQuery += ' WHERE id = ? AND artisan_id = ?';
-            updateParams.push(id, artisanId);
             
             console.log('📊 Update query:', updateQuery);
             console.log('📊 Update params:', updateParams);
@@ -2175,15 +2165,14 @@ app.post('/artisan/products/save', requireAuth, requireRole('artisan'), upload.a
         } else {
             // Create new product
             console.log('➕ Creating new product');
-            const insertQuery = 'INSERT INTO artisan_products (artisan_id, name, description, category, price_range, external_link, images) VALUES (?, ?, ?, ?, ?, ?, ?)';
+            const insertQuery = 'INSERT INTO artisan_products (artisan_id, name, description, category, price_range, external_link) VALUES (?, ?, ?, ?, ?, ?)';
             const insertParams = [
                 artisanId,
                 safeValue(name),
                 safeValue(description),
                 safeValue(category),
                 safeValue(price_range),
-                safeValue(external_link),
-                images.length > 0 ? JSON.stringify(images) : null
+                safeValue(external_link)
             ];
             
             console.log('📊 Insert query:', insertQuery);
