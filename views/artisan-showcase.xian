@@ -356,12 +356,13 @@
         const price = p.price ? '₱' + Number(p.price).toFixed(2) : 'Contact';
         const category = p.category || 'Handcraft';
         const artisan = p.artisan_name || 'Local Artisan';
-        const image = p.image_url || p.image;
+        const rawImage = p.image_url || p.image;
+        const image = rawImage ? (rawImage.startsWith('/') ? rawImage : '/' + rawImage) : null;
         const rating = p.rating || null;
         return `
           <a href="/products/${p.id}" class="product-card" style="text-decoration:none">
             <div class="product-img">
-              ${image ? `<img src="${escapeHtml(image)}" alt="${escapeHtml(name)}" onerror="this.style.display='none'">` : '<i class="fas fa-box-open placeholder"></i>'}
+              ${image ? `<img src="${escapeHtml(image)}" alt="${escapeHtml(name)}" onerror="this.style.display='none'; this.parentElement.innerHTML='<i class=\\'fas fa-box-open placeholder\\'></i>';">` : '<i class="fas fa-box-open placeholder"></i>'}
               ${p.featured ? '<span class="product-badge">Featured</span>' : ''}
             </div>
             <div class="product-body">
@@ -450,7 +451,7 @@
         return `
           <div class="workshop-card" data-id="${w.id}" data-status="${status}" data-price="${price > 0 ? 'paid' : 'free'}">
             <div class="workshop-img">
-              ${w.image_path ? `<img src="/${escapeHtml(w.image_path)}" alt="${escapeHtml(w.title)}" loading="lazy">` : '<i class="fas fa-chalkboard-teacher no-img"></i>'}
+              ${(w.image_url || w.image_path) ? `<img src="/${escapeHtml(w.image_url || w.image_path)}" alt="${escapeHtml(w.title)}" loading="lazy" onerror="this.style.display='none'; this.parentElement.innerHTML='<i class=\\'fas fa-chalkboard-teacher no-img\\'></i>';">` : '<i class="fas fa-chalkboard-teacher no-img"></i>'}
               <span class="workshop-status status-${status}">${status}</span>
             </div>
             <div class="workshop-body">
@@ -514,7 +515,7 @@
           <div class="workshop-artisan"><i class="fas fa-user-circle"></i> Hosted by ${escapeHtml(workshop.artisan_name || 'Local Artisan')}</div>
         </div>
         <div class="modal-body">
-          ${workshop.image_path ? `<img src="/${escapeHtml(workshop.image_path)}" alt="${escapeHtml(workshop.title)}" style="width:100%;height:200px;object-fit:cover;border-radius:var(--radius-md);margin-bottom:1rem;">` : ''}
+          ${(workshop.image_url || workshop.image_path) ? `<img src="/${escapeHtml(workshop.image_url || workshop.image_path)}" alt="${escapeHtml(workshop.title)}" style="width:100%;height:200px;object-fit:cover;border-radius:var(--radius-md);margin-bottom:1rem;">` : ''}
           <p style="color:var(--slate-gray);line-height:1.6;margin-bottom:1.5rem;">${escapeHtml(workshop.description) || 'Learn traditional crafts from local artisans in Gloria, Oriental Mindoro.'}</p>
           <div class="detail-grid">
             <div class="detail-item"><i class="fas fa-calendar-alt"></i><div><label>Date</label><span>${workshop.workshop_date ? new Date(workshop.workshop_date).toLocaleDateString('en-PH', {weekday:'long',month:'long',day:'numeric',year:'numeric'}) : 'To be announced'}</span></div></div>
