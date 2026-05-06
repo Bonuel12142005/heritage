@@ -438,6 +438,15 @@
         // Initialize on page load
         document.addEventListener('DOMContentLoaded', updateUploadHint);
         
+        // Toggle locations submenu
+        function toggleLocationsMenu(e) {
+            e.preventDefault();
+            const submenu = document.getElementById('locations-submenu');
+            const caret = document.getElementById('locations-caret');
+            if (submenu) submenu.classList.toggle('open');
+            if (caret) caret.style.transform = submenu && submenu.classList.contains('open') ? 'rotate(180deg)' : '';
+        }
+        
         // Handle form submission with AJAX
         document.querySelector('form').addEventListener('submit', async function(e) {
             e.preventDefault();
