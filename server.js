@@ -1983,6 +1983,87 @@ app.get('/artisan/products/edit/:id', requireAuth, requireRole('artisan'), async
     }
 });
 
+// Save artisan product (create or update)
+app.post('/artisan/products/save', requireAuth, requireRole('artisan'), upload.array('images', 5), async (req, res) => {
+    try {
+        console.log('📝 Product save request body:', req.body);
+        console.log('📎 Product save files:', req.files);
+        
+        const { id, name, description, category, price_range, external_link, status } = req.body;
+        const artisanId = req.session.user.id;
+        
+        // Handle multiple image uploads
+        let images = [];
+        if (req.files && req.files.length > 0) {
+            images = req.files.map(file => `uploads/products/${file.filename}`);
+        }
+        
+        // Convert undefined to null for database
+        const safeValue = (val) => val === undefined || val === '' ? null : val;
+        
+        // Validate required fields
+        if (!name) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'Product name is required' 
+            });
+        }
+        
+        if (id) {
+            // Update existing product
+            console.log('🔄 Updating product:', id);
+            let updateQuery = 'UPDATE artisan_products SET name = ?, description = ?, category = ?, price_range = ?, external_link = ?';
+            let updateParams = [
+                safeValue(name), 
+                safeValue(description), 
+                safeValue(category), 
+                safeValue(price_range), 
+                safeValue(external_link)
+            ];
+            
+            // If new images uploaded, update images field
+            if (images.length > 0) {
+                updateQuery += ', images = ?';
+                updateParams.push(JSON.stringify(images));
+            }
+            
+            updateQuery += ' WHERE id = ? AND artisan_id = ?';
+            updateParams.push(id, artisanId);
+            
+            console.log('📊 Update query:', updateQuery);
+            console.log('📊 Update params:', updateParams);
+            
+            await db.execute(updateQuery, updateParams);
+            console.log('✅ Product updated:', id);
+            res.json({ success: true, message: 'Product updated successfully', productId: id });
+        } else {
+            // Create new product
+            console.log('➕ Creating new product');
+            const insertQuery = 'INSERT INTO artisan_products (artisan_id, name, description, category, price_range, external_link, images) VALUES (?, ?, ?, ?, ?, ?, ?)';
+            const insertParams = [
+                artisanId,
+                safeValue(name),
+                safeValue(description),
+                safeValue(category),
+                safeValue(price_range),
+                safeValue(external_link),
+                images.length > 0 ? JSON.stringify(images) : null
+            ];
+            
+            console.log('📊 Insert query:', insertQuery);
+            console.log('📊 Insert params:', insertParams);
+            
+            const [result] = await db.execute(insertQuery, insertParams);
+            console.log('✅ Product created:', result.insertId);
+            res.json({ success: true, message: 'Product created successfully', productId: result.insertId });
+        }
+    } catch (error) {
+        console.error('❌ Error saving product:', error);
+        console.error('❌ Error stack:', error.stack);
+        res.status(500).json({ success: false, message: 'Failed to save product: ' + error.message });
+    }
+});
+
 // Artisan Workshop Forms
 app.get('/artisan/workshop/new', requireAuth, requireRole('artisan'), (req, res) => {
     const templatePath = path.join(__dirname, 'views/artisan-workshop-form.xian');
