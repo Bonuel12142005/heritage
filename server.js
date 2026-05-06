@@ -2070,20 +2070,75 @@ app.get('/artisan/workshop/new', requireAuth, requireRole('artisan'), (req, res)
     const html = renderTemplate(templatePath, {
         title: 'Create Workshop - Artisan',
         user: req.session.user,
-        editMode: false
+        editMode: false,
+        workshop: null
     });
     res.send(html);
 });
 
-app.get('/artisan/workshop/:id/edit', requireAuth, requireRole('artisan'), (req, res) => {
-    const templatePath = path.join(__dirname, 'views/artisan-workshop-form.xian');
-    const html = renderTemplate(templatePath, {
-        title: 'Edit Workshop - Artisan',
-        user: req.session.user,
-        editMode: true,
-        workshopId: req.params.id
-    });
-    res.send(html);
+app.get('/artisan/workshop/:id/edit', requireAuth, requireRole('artisan'), async (req, res) => {
+    try {
+        const workshopId = req.params.id;
+        const artisanId = req.session.user.id;
+        
+        // Fetch the workshop from database
+        const [workshops] = await db.execute(
+            'SELECT * FROM workshops WHERE id = ? AND artisan_id = ?',
+            [workshopId, artisanId]
+        );
+        
+        if (workshops.length === 0) {
+            return res.status(404).send('Workshop not found or you do not have permission to edit it');
+        }
+        
+        const workshop = workshops[0];
+        
+        const templatePath = path.join(__dirname, 'views/artisan-workshop-form.xian');
+        const html = renderTemplate(templatePath, {
+            title: 'Edit Workshop - Artisan',
+            user: req.session.user,
+            editMode: true,
+            workshop: workshop,
+            workshopId: workshopId
+        });
+        res.send(html);
+    } catch (error) {
+        console.error('Error loading workshop for edit:', error);
+        res.status(500).send('Error loading workshop');
+    }
+});
+
+// Alias route for /artisan/workshops/edit/:id
+app.get('/artisan/workshops/edit/:id', requireAuth, requireRole('artisan'), async (req, res) => {
+    try {
+        const workshopId = req.params.id;
+        const artisanId = req.session.user.id;
+        
+        // Fetch the workshop from database
+        const [workshops] = await db.execute(
+            'SELECT * FROM workshops WHERE id = ? AND artisan_id = ?',
+            [workshopId, artisanId]
+        );
+        
+        if (workshops.length === 0) {
+            return res.status(404).send('Workshop not found or you do not have permission to edit it');
+        }
+        
+        const workshop = workshops[0];
+        
+        const templatePath = path.join(__dirname, 'views/artisan-workshop-form.xian');
+        const html = renderTemplate(templatePath, {
+            title: 'Edit Workshop - Artisan',
+            user: req.session.user,
+            editMode: true,
+            workshop: workshop,
+            workshopId: workshopId
+        });
+        res.send(html);
+    } catch (error) {
+        console.error('Error loading workshop for edit:', error);
+        res.status(500).send('Error loading workshop');
+    }
 });
 
 // Artisan Messages - WITH DATA FETCHING
