@@ -292,20 +292,20 @@
 
                     <div class="form-grid">
                         <div class="form-group">
-                            <label class="form-label">Ticket Price (?)</label>
-                            <input type="number" name="ticket_price" class="form-input" step="0.01" value="<%= event ? event.ticket_price : '0' %>" placeholder="0.00">
+                            <label class="form-label">Ticket Price (₱)</label>
+                            <input type="number" name="price" class="form-input" step="0.01" value="<%= event ? event.ticket_price : '0' %>" placeholder="0.00">
                             <div class="form-hint"><i class="fas fa-info-circle"></i> Enter 0 for free events</div>
                         </div>
                         <div class="form-group">
                             <label class="form-label">Max Attendees</label>
-                            <input type="number" name="max_attendees" class="form-input" value="<%= event ? event.max_attendees : '100' %>" placeholder="100">
+                            <input type="number" name="capacity" class="form-input" value="<%= event ? event.max_attendees : '100' %>" placeholder="100">
                         </div>
                     </div>
 
                     <div class="form-group">
                         <div class="checkbox-group">
-                            <input type="checkbox" name="is_active" id="is_active" <%= event && event.is_active ? 'checked' : 'checked' %>>
-                            <label for="is_active">Event is active and visible to users</label>
+                            <input type="checkbox" name="status" id="status" value="active" <%= event && event.status === 'active' ? 'checked' : 'checked' %>>
+                            <label for="status">Event is active and visible to users</label>
                         </div>
                     </div>
 
@@ -358,6 +358,47 @@
             if (submenu) submenu.classList.toggle('open');
             if (caret) caret.style.transform = submenu && submenu.classList.contains('open') ? 'rotate(180deg)' : '';
         }
+        
+        // Handle form submission with AJAX
+        document.querySelector('form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const form = e.target;
+            const submitBtn = form.querySelector('button[type="submit"]');
+            const originalBtnText = submitBtn.innerHTML;
+            
+            // Disable submit button and show loading
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+            
+            try {
+                const formData = new FormData(form);
+                
+                const response = await fetch('/admin/events/save', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Show success message
+                    alert('✅ ' + data.message);
+                    // Redirect to events list
+                    window.location.href = '/admin/events';
+                } else {
+                    // Show error message
+                    alert('❌ ' + data.message);
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalBtnText;
+                }
+            } catch (error) {
+                console.error('Error saving event:', error);
+                alert('❌ Failed to save event. Please try again.');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalBtnText;
+            }
+        });
     </script>
 </body>
 </html>
