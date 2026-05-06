@@ -207,10 +207,11 @@
                 <% if (events && events.length > 0) { %>
                     <% events.forEach(event => { %>
                         <div class="event-card">
-                            <!-- Debug: <%= event.image_url ? 'Image URL: ' + event.image_url : 'No image URL' %> -->
                             <div class="event-header">
-                                <% if (event.image_url) { %>
-                                    <img src="<%= event.image_url %>" alt="<%= event.title %>" style="width: 100%; height: 100%; object-fit: cover;" onerror="console.log('Image failed to load:', '<%= event.image_url %>'); this.style.display='none'; this.parentElement.innerHTML='<i class=\'fas fa-calendar-star\'></i>';">
+                                <% if (event.image_url) { 
+                                    const eventImagePath = event.image_url.startsWith('/') || event.image_url.startsWith('http') ? event.image_url : '/' + event.image_url;
+                                %>
+                                    <img src="<%= eventImagePath %>" alt="<%= event.title %>" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.style.display='none'; this.parentElement.innerHTML='<i class=\'fas fa-calendar-star\'></i>';">
                                 <% } else { %>
                                     <i class="fas fa-calendar-star"></i>
                                 <% } %>

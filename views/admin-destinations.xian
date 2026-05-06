@@ -177,8 +177,11 @@
                         <% destinations.forEach(dest => { %>
                         <div class="dest-card" data-category="<%= dest.category || 'Cultural' %>">
                             <div class="dest-img">
-                                <% if (dest.image_url || dest.photo) { %>
-                                <img src="<%= dest.image_url || dest.photo %>" alt="<%= dest.name %>">
+                                <% if (dest.image_url || dest.photo) { 
+                                    const destImagePath = (dest.image_url || dest.photo);
+                                    const destImageFullPath = destImagePath.startsWith('/') || destImagePath.startsWith('http') ? destImagePath : '/' + destImagePath;
+                                %>
+                                <img src="<%= destImageFullPath %>" alt="<%= dest.name %>" onerror="this.parentElement.innerHTML='<div class=dest-img-placeholder><i class=fas fa-image></i></div><span class=dest-badge><%= dest.category || \'Cultural\' %></span>';">
                                 <% } else { %>
                                 <div class="dest-img-placeholder"><i class="fas fa-image"></i></div>
                                 <% } %>
