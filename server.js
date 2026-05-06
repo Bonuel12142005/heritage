@@ -1912,32 +1912,75 @@ app.get('/artisan/product/new', requireAuth, requireRole('artisan'), (req, res) 
     const html = renderTemplate(templatePath, {
         title: 'Add New Product - Artisan',
         user: req.session.user,
-        editMode: false
+        editMode: false,
+        product: null
     });
     res.send(html);
 });
 
-app.get('/artisan/product/:id/edit', requireAuth, requireRole('artisan'), (req, res) => {
-    const templatePath = path.join(__dirname, 'views/artisan-product-form.xian');
-    const html = renderTemplate(templatePath, {
-        title: 'Edit Product - Artisan',
-        user: req.session.user,
-        editMode: true,
-        productId: req.params.id
-    });
-    res.send(html);
+app.get('/artisan/product/:id/edit', requireAuth, requireRole('artisan'), async (req, res) => {
+    try {
+        const productId = req.params.id;
+        const artisanId = req.session.user.id;
+        
+        // Fetch the product from database
+        const [products] = await pool.query(
+            'SELECT * FROM products WHERE id = ? AND user_id = ?',
+            [productId, artisanId]
+        );
+        
+        if (products.length === 0) {
+            return res.status(404).send('Product not found or you do not have permission to edit it');
+        }
+        
+        const product = products[0];
+        
+        const templatePath = path.join(__dirname, 'views/artisan-product-form.xian');
+        const html = renderTemplate(templatePath, {
+            title: 'Edit Product - Artisan',
+            user: req.session.user,
+            editMode: true,
+            product: product,
+            productId: productId
+        });
+        res.send(html);
+    } catch (error) {
+        console.error('Error loading product for edit:', error);
+        res.status(500).send('Error loading product');
+    }
 });
 
 // Alias route for /artisan/products/edit/:id
-app.get('/artisan/products/edit/:id', requireAuth, requireRole('artisan'), (req, res) => {
-    const templatePath = path.join(__dirname, 'views/artisan-product-form.xian');
-    const html = renderTemplate(templatePath, {
-        title: 'Edit Product - Artisan',
-        user: req.session.user,
-        editMode: true,
-        productId: req.params.id
-    });
-    res.send(html);
+app.get('/artisan/products/edit/:id', requireAuth, requireRole('artisan'), async (req, res) => {
+    try {
+        const productId = req.params.id;
+        const artisanId = req.session.user.id;
+        
+        // Fetch the product from database
+        const [products] = await pool.query(
+            'SELECT * FROM products WHERE id = ? AND user_id = ?',
+            [productId, artisanId]
+        );
+        
+        if (products.length === 0) {
+            return res.status(404).send('Product not found or you do not have permission to edit it');
+        }
+        
+        const product = products[0];
+        
+        const templatePath = path.join(__dirname, 'views/artisan-product-form.xian');
+        const html = renderTemplate(templatePath, {
+            title: 'Edit Product - Artisan',
+            user: req.session.user,
+            editMode: true,
+            product: product,
+            productId: productId
+        });
+        res.send(html);
+    } catch (error) {
+        console.error('Error loading product for edit:', error);
+        res.status(500).send('Error loading product');
+    }
 });
 
 // Artisan Workshop Forms
