@@ -2698,12 +2698,41 @@ app.get('/destinations', async (req, res) => {
         const [destinations] = await db.execute(
             'SELECT * FROM destinations WHERE status = "active" ORDER BY name'
         );
+
+        // Try to fetch map_places, fall back to destinations if table doesn't exist
+        let places = [];
+        try {
+            const [mapPlaces] = await db.execute(
+                'SELECT * FROM map_places WHERE status = "active" ORDER BY name'
+            );
+            places = mapPlaces || [];
+        } catch (e) {
+            // map_places table doesn't exist - use destinations as places
+            places = [];
+        }
+
+        // If no map_places, use destinations that have coordinates as places
+        if (places.length === 0) {
+            places = (destinations || [])
+                .filter(d => d.latitude && d.longitude)
+                .map(d => ({
+                    id: d.id,
+                    name: d.name,
+                    type: d.site_type || d.category || 'destination',
+                    latitude: d.latitude,
+                    longitude: d.longitude,
+                    image_url: d.image_url || d.photo || null,
+                    description: d.description || ''
+                }));
+        }
         
         const templatePath = path.join(__dirname, 'views/destinations.xian');
         const html = renderTemplate(templatePath, {
             title: 'Destinations - HeritageLink',
             user: req.session.user,
-            destinations: destinations || []
+            destinations: destinations || [],
+            places: places,
+            routes: []
         });
         res.send(html);
     } catch (error) {
@@ -2712,7 +2741,9 @@ app.get('/destinations', async (req, res) => {
         const html = renderTemplate(templatePath, {
             title: 'Destinations - HeritageLink',
             user: req.session.user,
-            destinations: []
+            destinations: [],
+            places: [],
+            routes: []
         });
         res.send(html);
     }
