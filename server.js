@@ -1876,13 +1876,28 @@ app.get('/artisan', requireAuth, requireRole('artisan'), async (req, res) => {
 });
 
 // Artisan Profile Management
-app.get('/artisan/profile', requireAuth, requireRole('artisan'), (req, res) => {
-    const templatePath = path.join(__dirname, 'views/artisan-profile.xian');
-    const html = renderTemplate(templatePath, {
-        title: 'My Profile - Artisan',
-        user: req.session.user
-    });
-    res.send(html);
+app.get('/artisan/profile', requireAuth, requireRole('artisan'), async (req, res) => {
+    try {
+        const artisanId = req.session.user.id;
+        
+        // Fetch artisan profile data
+        const [users] = await db.execute(
+            'SELECT * FROM users WHERE id = ?',
+            [artisanId]
+        );
+        
+        const user = users[0] || req.session.user;
+        
+        const templatePath = path.join(__dirname, 'views/artisan-profile.xian');
+        const html = renderTemplate(templatePath, {
+            title: 'My Profile - Artisan',
+            user: user
+        });
+        res.send(html);
+    } catch (error) {
+        console.error('Error loading artisan profile:', error);
+        res.status(500).send('Error loading profile');
+    }
 });
 
 // Artisan Products Management
