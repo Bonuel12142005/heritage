@@ -2141,6 +2141,90 @@ app.get('/artisan/workshops/edit/:id', requireAuth, requireRole('artisan'), asyn
     }
 });
 
+// Save workshop (create or update)
+app.post('/artisan/workshops/save', requireAuth, requireRole('artisan'), upload.single('workshop_image'), async (req, res) => {
+    try {
+        console.log('📝 Workshop save request body:', req.body);
+        console.log('📎 Workshop save file:', req.file);
+        
+        const { id, title, description, workshop_date, workshop_time, location, max_participants, fee, status } = req.body;
+        const artisanId = req.session.user.id;
+        
+        // Handle image upload
+        const workshopImage = req.file ? `uploads/workshops/${req.file.filename}` : null;
+        
+        // Convert undefined to null for database
+        const safeValue = (val) => val === undefined || val === '' ? null : val;
+        
+        // Validate required fields
+        if (!title || !workshop_date) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'Title and workshop date are required' 
+            });
+        }
+        
+        if (id) {
+            // Update existing workshop
+            console.log('🔄 Updating workshop:', id);
+            let updateQuery = 'UPDATE workshops SET title = ?, description = ?, workshop_date = ?, workshop_time = ?, location = ?, max_participants = ?, fee = ?, status = ?';
+            let updateParams = [
+                safeValue(title), 
+                safeValue(description), 
+                safeValue(workshop_date), 
+                safeValue(workshop_time), 
+                safeValue(location), 
+                safeValue(max_participants) || 10, 
+                safeValue(fee) || 0, 
+                safeValue(status) || 'active'
+            ];
+            
+            // If new image uploaded, update image field
+            if (workshopImage) {
+                updateQuery += ', image_url = ?';
+                updateParams.push(workshopImage);
+            }
+            
+            updateQuery += ' WHERE id = ? AND artisan_id = ?';
+            updateParams.push(id, artisanId);
+            
+            console.log('📊 Update query:', updateQuery);
+            console.log('📊 Update params:', updateParams);
+            
+            await db.execute(updateQuery, updateParams);
+            console.log('✅ Workshop updated:', id);
+            res.json({ success: true, message: 'Workshop updated successfully', workshopId: id });
+        } else {
+            // Create new workshop
+            console.log('➕ Creating new workshop');
+            const insertQuery = 'INSERT INTO workshops (artisan_id, title, description, workshop_date, workshop_time, location, max_participants, fee, status, image_url) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
+            const insertParams = [
+                artisanId,
+                safeValue(title),
+                safeValue(description),
+                safeValue(workshop_date),
+                safeValue(workshop_time),
+                safeValue(location),
+                safeValue(max_participants) || 10,
+                safeValue(fee) || 0,
+                safeValue(status) || 'active',
+                workshopImage
+            ];
+            
+            console.log('📊 Insert query:', insertQuery);
+            console.log('📊 Insert params:', insertParams);
+            
+            const [result] = await db.execute(insertQuery, insertParams);
+            console.log('✅ Workshop created:', result.insertId);
+            res.json({ success: true, message: 'Workshop created successfully', workshopId: result.insertId });
+        }
+    } catch (error) {
+        console.error('❌ Error saving workshop:', error);
+        console.error('❌ Error stack:', error.stack);
+        res.status(500).json({ success: false, message: 'Failed to save workshop: ' + error.message });
+    }
+});
+
 // Artisan Messages - WITH DATA FETCHING
 app.get('/artisan/messages', requireAuth, requireRole('artisan'), async (req, res) => {
     try {
