@@ -1913,12 +1913,23 @@ app.get('/event/:id', async (req, res) => {
         const event = events[0];
         console.log('✅ Event found:', event.title);
         
+        // Create images array from event photo/image
+        let images = [];
+        if (event.image_url || event.photo) {
+            images = [{
+                url: event.image_url || event.photo,
+                image_url: event.image_url || event.photo,
+                photo: event.image_url || event.photo
+            }];
+        }
+        
         const templatePath = path.join(__dirname, 'views/event.xian');
         const html = renderTemplate(templatePath, {
             title: `${event.title} - HeritageLink`,
             user: req.session.user,
             event: event,
-            eventId: req.params.id
+            eventId: req.params.id,
+            images: images
         });
         res.send(html);
     } catch (error) {
@@ -1946,12 +1957,23 @@ app.get('/events/:id', async (req, res) => {
         const event = events[0];
         console.log('✅ Event found:', event.title);
         
+        // Create images array from event photo/image
+        let images = [];
+        if (event.image_url || event.photo) {
+            images = [{
+                url: event.image_url || event.photo,
+                image_url: event.image_url || event.photo,
+                photo: event.image_url || event.photo
+            }];
+        }
+        
         const templatePath = path.join(__dirname, 'views/event.xian');
         const html = renderTemplate(templatePath, {
             title: `${event.title} - HeritageLink`,
             user: req.session.user,
             event: event,
-            eventId: req.params.id
+            eventId: req.params.id,
+            images: images
         });
         res.send(html);
     } catch (error) {
