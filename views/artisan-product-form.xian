@@ -165,6 +165,47 @@
                 document.getElementById('images').click();
             }
         });
+
+        // Handle form submission with AJAX
+        document.querySelector('form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const form = e.target;
+            const submitBtn = form.querySelector('button[type="submit"]');
+            const originalBtnText = submitBtn.innerHTML;
+            
+            // Disable submit button and show loading
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+            
+            try {
+                const formData = new FormData(form);
+                
+                const response = await fetch('/artisan/products/save', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Show success message
+                    alert('✅ ' + data.message);
+                    // Redirect to products list
+                    window.location.href = '/artisan/products';
+                } else {
+                    // Show error message
+                    alert('❌ ' + data.message);
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalBtnText;
+                }
+            } catch (error) {
+                console.error('Error saving product:', error);
+                alert('❌ Failed to save product. Please try again.');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalBtnText;
+            }
+        });
     </script>
 </body>
 </html>
