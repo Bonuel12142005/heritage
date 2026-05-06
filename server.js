@@ -1833,7 +1833,7 @@ app.get('/artisan', requireAuth, requireRole('artisan'), async (req, res) => {
         
         // Get product count
         const [productResult] = await db.execute(
-            'SELECT COUNT(*) as count FROM artisan_products WHERE artisan_id = ? AND status = "active"',
+            'SELECT COUNT(*) as count FROM artisan_products WHERE artisan_id = ?',
             [artisanId]
         );
         
