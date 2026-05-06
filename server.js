@@ -2085,7 +2085,8 @@ app.get('/heritage-item/:id', (req, res) => {
 });
 
 // Artisan/Showcase routes
-app.get('/showcase', async (req, res) => {
+// Products showcase handler function
+async function handleProductsShowcase(req, res) {
     try {
         // Fetch active products with artisan information
         const [products] = await db.execute(`
@@ -2096,15 +2097,27 @@ app.get('/showcase', async (req, res) => {
             ORDER BY ap.created_at DESC
         `);
         
+        // Parse images for each product
+        const parsedProducts = (products || []).map(p => {
+            if (p.images && typeof p.images === 'string') {
+                try {
+                    p.images = JSON.parse(p.images);
+                } catch (e) {
+                    p.images = [];
+                }
+            }
+            return p;
+        });
+        
         // Get unique categories
-        const categories = [...new Set(products.map(p => p.category).filter(Boolean))]
+        const categories = [...new Set(parsedProducts.map(p => p.category).filter(Boolean))]
             .map(cat => ({ id: cat, name: cat, icon: 'fa-tag' }));
         
         const templatePath = path.join(__dirname, 'views/products-showcase.xian');
         const html = renderTemplate(templatePath, {
             title: 'Artisan Showcase - HeritageLink',
             user: req.session.user,
-            products: products || [],
+            products: parsedProducts,
             categories: categories || [],
             filters: {
                 search: req.query.search || '',
@@ -2126,7 +2139,9 @@ app.get('/showcase', async (req, res) => {
         });
         res.send(html);
     }
-});
+}
+
+app.get('/showcase', handleProductsShowcase);
 
 app.get('/artisans', (req, res) => {
     const templatePath = path.join(__dirname, 'views/artisans.xian');
@@ -2165,6 +2180,15 @@ app.get('/product/:id', async (req, res) => {
         const product = products[0];
         console.log('✅ Product found:', product.name);
         
+        // Parse images if it's a JSON string
+        if (product.images && typeof product.images === 'string') {
+            try {
+                product.images = JSON.parse(product.images);
+            } catch (e) {
+                product.images = [];
+            }
+        }
+        
         // Fetch related products from same artisan
         let relatedProducts = [];
         try {
@@ -2172,7 +2196,17 @@ app.get('/product/:id', async (req, res) => {
                 'SELECT * FROM artisan_products WHERE artisan_id = ? AND id != ? AND status = \'active\' ORDER BY created_at DESC LIMIT 4',
                 [product.artisan_id, productId]
             );
-            relatedProducts = related || [];
+            relatedProducts = (related || []).map(p => {
+                // Parse images if it's a JSON string
+                if (p.images && typeof p.images === 'string') {
+                    try {
+                        p.images = JSON.parse(p.images);
+                    } catch (e) {
+                        p.images = [];
+                    }
+                }
+                return p;
+            });
         } catch (error) {
             console.log('⚠️ Error fetching related products:', error.message);
         }
@@ -2211,6 +2245,15 @@ app.get('/showcase/products/:id', async (req, res) => {
         const product = products[0];
         console.log('✅ Product found:', product.name);
         
+        // Parse images if it's a JSON string
+        if (product.images && typeof product.images === 'string') {
+            try {
+                product.images = JSON.parse(product.images);
+            } catch (e) {
+                product.images = [];
+            }
+        }
+        
         // Fetch related products from same artisan
         let relatedProducts = [];
         try {
@@ -2218,7 +2261,17 @@ app.get('/showcase/products/:id', async (req, res) => {
                 'SELECT * FROM artisan_products WHERE artisan_id = ? AND id != ? AND status = \'active\' ORDER BY created_at DESC LIMIT 4',
                 [product.artisan_id, productId]
             );
-            relatedProducts = related || [];
+            relatedProducts = (related || []).map(p => {
+                // Parse images if it's a JSON string
+                if (p.images && typeof p.images === 'string') {
+                    try {
+                        p.images = JSON.parse(p.images);
+                    } catch (e) {
+                        p.images = [];
+                    }
+                }
+                return p;
+            });
         } catch (error) {
             console.log('⚠️ Error fetching related products:', error.message);
         }
@@ -2237,6 +2290,9 @@ app.get('/showcase/products/:id', async (req, res) => {
         res.status(500).send('Error loading product details');
     }
 });
+
+// Products listing route (must come after /showcase/products/:id)
+app.get('/showcase/products', handleProductsShowcase);
 
 // Workshops routes
 app.get('/workshops', async (req, res) => {
