@@ -1376,6 +1376,89 @@ app.get('/admin/heritage-gallery/edit/:id', requireAuth, requireRole('admin'), a
     }
 });
 
+// Save heritage item (create or update)
+app.post('/admin/heritage-gallery/save', requireAuth, requireRole('admin'), upload.single('media_file'), async (req, res) => {
+    try {
+        console.log('📝 Heritage save request body:', req.body);
+        console.log('📎 Heritage save file:', req.file);
+        
+        const { id, title, description, category, media_type, historical_date, location, contributor_name, source, tags, status } = req.body;
+        const mediaFile = req.file ? `uploads/heritage/${req.file.filename}` : null;
+        
+        // Convert undefined to null for database
+        const safeValue = (val) => val === undefined || val === '' ? null : val;
+        
+        // Validate required fields
+        if (!title) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'Missing required field: title' 
+            });
+        }
+        
+        if (id) {
+            // Update existing heritage item
+            console.log('🔄 Updating heritage item:', id);
+            let updateQuery = 'UPDATE heritage_gallery SET title = ?, description = ?, category = ?, media_type = ?, historical_date = ?, location = ?, contributor_name = ?, source = ?, tags = ?, status = ?';
+            let updateParams = [
+                safeValue(title), 
+                safeValue(description), 
+                safeValue(category) || 'traditional_crafts', 
+                safeValue(media_type) || 'photo', 
+                safeValue(historical_date), 
+                safeValue(location), 
+                safeValue(contributor_name), 
+                safeValue(source), 
+                safeValue(tags), 
+                safeValue(status) || 'active'
+            ];
+            
+            if (mediaFile) {
+                updateQuery += ', media_url = ?';
+                updateParams.push(mediaFile);
+            }
+            
+            updateQuery += ' WHERE id = ?';
+            updateParams.push(id);
+            
+            console.log('📊 Update query:', updateQuery);
+            console.log('📊 Update params:', updateParams);
+            
+            await db.execute(updateQuery, updateParams);
+            console.log('✅ Heritage item updated:', id);
+            res.json({ success: true, message: 'Heritage item updated successfully', itemId: id });
+        } else {
+            // Create new heritage item
+            console.log('➕ Creating new heritage item');
+            const insertQuery = 'INSERT INTO heritage_gallery (title, description, category, media_type, historical_date, location, contributor_name, source, tags, status, media_url) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
+            const insertParams = [
+                safeValue(title),
+                safeValue(description),
+                safeValue(category) || 'traditional_crafts',
+                safeValue(media_type) || 'photo',
+                safeValue(historical_date),
+                safeValue(location),
+                safeValue(contributor_name),
+                safeValue(source),
+                safeValue(tags),
+                safeValue(status) || 'active',
+                mediaFile
+            ];
+            
+            console.log('📊 Insert query:', insertQuery);
+            console.log('📊 Insert params:', insertParams);
+            
+            const [result] = await db.execute(insertQuery, insertParams);
+            console.log('✅ Heritage item created:', result.insertId);
+            res.json({ success: true, message: 'Heritage item created successfully', itemId: result.insertId });
+        }
+    } catch (error) {
+        console.error('❌ Error saving heritage item:', error);
+        console.error('❌ Error stack:', error.stack);
+        res.status(500).json({ success: false, message: 'Failed to save heritage item: ' + error.message });
+    }
+});
+
 // Admin Map Places Management
 app.get('/admin/map-places', requireAuth, requireRole('admin'), async (req, res) => {
     try {
