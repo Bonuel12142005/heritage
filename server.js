@@ -229,17 +229,23 @@ app.get('/health', (req, res) => {
 // Authentication API
 app.post('/api/login', async (req, res) => {
     try {
+        console.log('🔐 API Login attempt:', req.body.email);
         const { email, password } = req.body;
         
         if (!email || !password) {
+            console.log('❌ Missing email or password');
             return res.status(400).json({ 
                 success: false, 
                 message: 'Email and password are required' 
             });
         }
         
+        console.log('📊 Querying database for user:', email);
         const [users] = await db.execute('SELECT * FROM users WHERE email = ?', [email]);
+        console.log('📊 Query result:', users.length, 'users found');
+        
         if (users.length === 0) {
+            console.log('❌ User not found');
             return res.status(401).json({ 
                 success: false, 
                 message: 'Invalid email or password' 
@@ -247,9 +253,15 @@ app.post('/api/login', async (req, res) => {
         }
         
         const user = users[0];
+        console.log('👤 User found:', user.email, 'Role:', user.role);
+        console.log('🔒 User password hash exists:', !!user.password);
+        
+        console.log('🔒 Comparing passwords...');
         const isValidPassword = await bcrypt.compare(password, user.password);
+        console.log('🔒 Password valid:', isValidPassword);
         
         if (!isValidPassword) {
+            console.log('❌ Invalid password');
             return res.status(401).json({ 
                 success: false, 
                 message: 'Invalid email or password' 
@@ -271,6 +283,8 @@ app.post('/api/login', async (req, res) => {
             redirect = '/artisan';
         }
         
+        console.log('✅ API Login successful, redirecting to:', redirect);
+        
         res.json({
             success: true,
             message: 'Login successful',
@@ -278,7 +292,9 @@ app.post('/api/login', async (req, res) => {
             redirect: redirect
         });
     } catch (error) {
-        console.error('Login error:', error);
+        console.error('❌ API Login error:', error);
+        console.error('❌ Error message:', error.message);
+        console.error('❌ Error stack:', error.stack);
         res.status(500).json({ 
             success: false, 
             message: 'Internal server error. Please try again.' 
