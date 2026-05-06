@@ -1307,7 +1307,8 @@ app.get('/admin/heritage/new', requireAuth, requireRole('admin'), (req, res) => 
     const html = renderTemplate(templatePath, {
         title: 'Add Heritage Item - Admin',
         user: req.session.user,
-        editMode: false
+        editMode: false,
+        item: null
     });
     res.send(html);
 });
@@ -1326,7 +1327,7 @@ app.get('/admin/heritage/:id/edit', requireAuth, requireRole('admin'), async (re
             return res.status(404).send('Heritage item not found');
         }
         
-        const item = items[0];
+        const heritageItem = items[0];
         
         const templatePath = path.join(__dirname, 'views/admin-heritage-form.xian');
         const html = renderTemplate(templatePath, {
@@ -1334,7 +1335,7 @@ app.get('/admin/heritage/:id/edit', requireAuth, requireRole('admin'), async (re
             user: req.session.user,
             editMode: true,
             heritageId: req.params.id,
-            heritage: item
+            item: heritageItem
         });
         res.send(html);
     } catch (error) {
@@ -1358,7 +1359,7 @@ app.get('/admin/heritage-gallery/edit/:id', requireAuth, requireRole('admin'), a
             return res.status(404).send('Heritage item not found');
         }
         
-        const item = items[0];
+        const heritageItem = items[0];
         
         const templatePath = path.join(__dirname, 'views/admin-heritage-form.xian');
         const html = renderTemplate(templatePath, {
@@ -1366,7 +1367,7 @@ app.get('/admin/heritage-gallery/edit/:id', requireAuth, requireRole('admin'), a
             user: req.session.user,
             editMode: true,
             heritageId: req.params.id,
-            heritage: item
+            item: heritageItem
         });
         res.send(html);
     } catch (error) {
