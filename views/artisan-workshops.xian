@@ -291,8 +291,8 @@
                     %>
                         <div class="workshop-card" data-status="<%= statusLabel %>">
                             <div class="workshop-header">
-                                <% if (workshop.image_path) { %>
-                                    <img src="/<%= workshop.image_path %>" alt="<%= workshop.title %>" style="width:100%;height:100%;object-fit:cover;">
+                                <% if (workshop.image_url) { %>
+                                    <img src="/<%= workshop.image_url %>" alt="<%= workshop.title %>" style="width:100%;height:100%;object-fit:cover;" onerror="this.style.display='none'; this.parentElement.innerHTML='<i class=\'fas fa-chalkboard-teacher\'></i>';">
                                 <% } else { %>
                                     <i class="fas fa-chalkboard-teacher"></i>
                                 <% } %>

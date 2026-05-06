@@ -562,8 +562,8 @@
                     <% products.forEach(product => { %>
                         <div class="product-card">
                             <div class="product-image">
-                                <% if (product.product_image) { %>
-                                    <img src="/<%= product.product_image %>" alt="<%= product.name %>">
+                                <% if (product.image_url) { %>
+                                    <img src="/<%= product.image_url %>" alt="<%= product.name %>" onerror="this.style.display='none'; this.parentElement.innerHTML='<i class=\'fas fa-box-open\'></i>';">
                                 <% } else { %>
                                     <i class="fas fa-box-open"></i>
                                 <% } %>

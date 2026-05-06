@@ -149,10 +149,33 @@ app.get('/favicon.ico', (req, res) => {
     res.sendFile(path.join(__dirname, 'public/uploads/logo.jpg'));
 });
 
-// File upload configuration
+// File upload configuration with dynamic subdirectories
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        const uploadPath = path.join(__dirname, 'public/uploads');
+        // Determine subdirectory based on the route
+        let subdir = 'general';
+        
+        if (req.path.includes('/products')) {
+            subdir = 'products';
+        } else if (req.path.includes('/workshops')) {
+            subdir = 'workshops';
+        } else if (req.path.includes('/events')) {
+            subdir = 'events';
+        } else if (req.path.includes('/heritage')) {
+            subdir = 'heritage';
+        } else if (req.path.includes('/destinations')) {
+            subdir = 'destinations';
+        } else if (req.path.includes('/portfolio')) {
+            subdir = 'portfolio';
+        } else if (req.path.includes('/profile')) {
+            subdir = 'profiles';
+        } else if (req.path.includes('/gallery')) {
+            subdir = 'gallery';
+        } else if (req.path.includes('/places')) {
+            subdir = 'places';
+        }
+        
+        const uploadPath = path.join(__dirname, 'public/uploads', subdir);
         if (!fs.existsSync(uploadPath)) {
             fs.mkdirSync(uploadPath, { recursive: true });
         }
@@ -160,7 +183,27 @@ const storage = multer.diskStorage({
     },
     filename: function (req, file, cb) {
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
+        // Use a prefix based on the subdirectory
+        let prefix = file.fieldname;
+        if (req.path.includes('/products')) {
+            prefix = 'images';
+        } else if (req.path.includes('/workshops')) {
+            prefix = 'workshop_image';
+        } else if (req.path.includes('/events')) {
+            prefix = 'event_image';
+        } else if (req.path.includes('/heritage')) {
+            prefix = 'media_file';
+        } else if (req.path.includes('/destinations')) {
+            prefix = 'dest';
+        } else if (req.path.includes('/portfolio')) {
+            prefix = 'portfolio_images';
+        } else if (req.path.includes('/profile')) {
+            prefix = 'profile_photo';
+        } else if (req.path.includes('/gallery')) {
+            prefix = 'gallery_images';
+        }
+        
+        cb(null, prefix + '-' + uniqueSuffix + path.extname(file.originalname));
     }
 });
 
@@ -213,16 +256,42 @@ function renderTemplate(templatePath, data = {}) {
 }
 
 // Health check endpoint
-app.get('/health', (req, res) => {
-    res.json({ 
-        status: 'OK', 
-        timestamp: new Date().toISOString(),
-        service: 'HeritageLink Unified Server (SQLite)',
-        version: '1.0.0',
-        database: 'SQLite Connected',
-        frontend: 'Integrated',
-        backend: 'Active'
-    });
+app.get('/health', async (req, res) => {
+    try {
+        // Check database connection
+        let dbStatus = 'Not Connected';
+        let dbError = null;
+        
+        if (db) {
+            try {
+                await db.execute('SELECT 1');
+                dbStatus = 'Connected';
+            } catch (error) {
+                dbStatus = 'Error';
+                dbError = error.message;
+            }
+        }
+        
+        res.json({ 
+            status: 'OK', 
+            timestamp: new Date().toISOString(),
+            service: 'HeritageLink Unified Server (MySQL)',
+            version: '1.0.0',
+            database: dbStatus,
+            databaseError: dbError,
+            environment: process.env.NODE_ENV || 'development',
+            dbHost: process.env.DB_HOST || 'localhost',
+            dbName: process.env.DB_NAME || 'heritagelink',
+            frontend: 'Integrated',
+            backend: 'Active'
+        });
+    } catch (error) {
+        res.status(500).json({
+            status: 'ERROR',
+            message: error.message,
+            timestamp: new Date().toISOString()
+        });
+    }
 });
 
 // API Routes
@@ -2125,11 +2194,16 @@ app.post('/artisan/products/save', requireAuth, requireRole('artisan'), upload.a
         console.log('📝 Product save request body:', req.body);
         console.log('📎 Product save files:', req.files);
         
-        const { id, name, description, category, price_range, external_link } = req.body;
+        const { id, name, description, category, price, price_range, external_link } = req.body;
         const artisanId = req.session.user.id;
         
-        // Note: Images are uploaded but not stored in database (table doesn't have images column)
-        // Files are saved to uploads/products/ folder
+        // Get the first uploaded image path (if any)
+        let imageUrl = null;
+        if (req.files && req.files.length > 0) {
+            // Store relative path from public folder
+            imageUrl = `uploads/products/${req.files[0].filename}`;
+            console.log('📸 Image uploaded:', imageUrl);
+        }
         
         // Convert undefined to null for database
         const safeValue = (val) => val === undefined || val === '' ? null : val;
@@ -2145,16 +2219,24 @@ app.post('/artisan/products/save', requireAuth, requireRole('artisan'), upload.a
         if (id) {
             // Update existing product
             console.log('🔄 Updating product:', id);
-            const updateQuery = 'UPDATE artisan_products SET name = ?, description = ?, category = ?, price_range = ?, external_link = ? WHERE id = ? AND artisan_id = ?';
-            const updateParams = [
+            let updateQuery = 'UPDATE artisan_products SET name = ?, description = ?, category = ?, price = ?, price_range = ?, external_link = ?';
+            let updateParams = [
                 safeValue(name), 
                 safeValue(description), 
-                safeValue(category), 
+                safeValue(category),
+                safeValue(price) || 0,
                 safeValue(price_range), 
-                safeValue(external_link),
-                id,
-                artisanId
+                safeValue(external_link)
             ];
+            
+            // Only update image if a new one was uploaded
+            if (imageUrl) {
+                updateQuery += ', image_url = ?';
+                updateParams.push(imageUrl);
+            }
+            
+            updateQuery += ' WHERE id = ? AND artisan_id = ?';
+            updateParams.push(id, artisanId);
             
             console.log('📊 Update query:', updateQuery);
             console.log('📊 Update params:', updateParams);
@@ -2165,14 +2247,16 @@ app.post('/artisan/products/save', requireAuth, requireRole('artisan'), upload.a
         } else {
             // Create new product
             console.log('➕ Creating new product');
-            const insertQuery = 'INSERT INTO artisan_products (artisan_id, name, description, category, price_range, external_link) VALUES (?, ?, ?, ?, ?, ?)';
+            const insertQuery = 'INSERT INTO artisan_products (artisan_id, name, description, category, price, price_range, external_link, image_url) VALUES (?, ?, ?, ?, ?, ?, ?, ?)';
             const insertParams = [
                 artisanId,
                 safeValue(name),
                 safeValue(description),
                 safeValue(category),
+                safeValue(price) || 0,
                 safeValue(price_range),
-                safeValue(external_link)
+                safeValue(external_link),
+                imageUrl
             ];
             
             console.log('📊 Insert query:', insertQuery);
@@ -2287,8 +2371,13 @@ app.post('/artisan/workshops/save', requireAuth, requireRole('artisan'), upload.
         const { id, title, description, workshop_date, workshop_time, location, max_participants, fee, status } = req.body;
         const artisanId = req.session.user.id;
         
-        // Handle image upload
-        const workshopImage = req.file ? `uploads/workshops/${req.file.filename}` : null;
+        // Get uploaded image path (if any)
+        let imageUrl = null;
+        if (req.file) {
+            // Store relative path from public folder
+            imageUrl = `uploads/workshops/${req.file.filename}`;
+            console.log('📸 Image uploaded:', imageUrl);
+        }
         
         // Convert undefined to null for database
         const safeValue = (val) => val === undefined || val === '' ? null : val;
@@ -2316,10 +2405,10 @@ app.post('/artisan/workshops/save', requireAuth, requireRole('artisan'), upload.
                 safeValue(status) || 'active'
             ];
             
-            // If new image uploaded, update image field
-            if (workshopImage) {
+            // Only update image if a new one was uploaded
+            if (imageUrl) {
                 updateQuery += ', image_url = ?';
-                updateParams.push(workshopImage);
+                updateParams.push(imageUrl);
             }
             
             updateQuery += ' WHERE id = ? AND artisan_id = ?';
@@ -2345,7 +2434,7 @@ app.post('/artisan/workshops/save', requireAuth, requireRole('artisan'), upload.
                 safeValue(max_participants) || 10,
                 safeValue(fee) || 0,
                 safeValue(status) || 'active',
-                workshopImage
+                imageUrl
             ];
             
             console.log('📊 Insert query:', insertQuery);
@@ -3401,10 +3490,16 @@ app.use((req, res) => {
 
 // Initialize and start server
 async function startServer() {
-    console.log('🚀 Starting HeritageLink Unified Server (SQLite)...');
+    console.log('🚀 Starting HeritageLink Unified Server (MySQL)...');
     
     // Initialize database
-    await initializeDatabase();
+    const dbInitialized = await initializeDatabase();
+    
+    if (!dbInitialized) {
+        console.error('❌ Failed to initialize database. Server will not start.');
+        console.error('Please check your database configuration and try again.');
+        process.exit(1);
+    }
     
     const PORT = process.env.PORT || 3000;
     app.listen(PORT, '0.0.0.0', () => {
