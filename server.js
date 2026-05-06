@@ -1135,10 +1135,24 @@ app.post('/admin/events/save', requireAuth, requireRole('admin'), upload.single(
         const { id, title, description, event_date, event_time, location, organizer, category, price, capacity, status } = req.body;
         const eventImage = req.file ? `uploads/events/${req.file.filename}` : null;
         
+        // Convert undefined to null for database
+        const safeValue = (val) => val === undefined || val === '' ? null : val;
+        
         if (id) {
             // Update existing event
             let updateQuery = 'UPDATE events SET title = ?, description = ?, event_date = ?, event_time = ?, location = ?, organizer = ?, category = ?, price = ?, capacity = ?, status = ?';
-            let updateParams = [title, description, event_date, event_time, location, organizer, category, price || 0, capacity || 0, status || 'active'];
+            let updateParams = [
+                safeValue(title), 
+                safeValue(description), 
+                safeValue(event_date), 
+                safeValue(event_time), 
+                safeValue(location), 
+                safeValue(organizer), 
+                safeValue(category) || 'cultural', 
+                safeValue(price) || 0, 
+                safeValue(capacity) || 0, 
+                safeValue(status) || 'active'
+            ];
             
             if (eventImage) {
                 updateQuery += ', event_image = ?';
@@ -1155,16 +1169,16 @@ app.post('/admin/events/save', requireAuth, requireRole('admin'), upload.single(
             // Create new event
             const insertQuery = 'INSERT INTO events (title, description, event_date, event_time, location, organizer, category, price, capacity, status, event_image) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
             const [result] = await db.execute(insertQuery, [
-                title,
-                description,
-                event_date,
-                event_time,
-                location,
-                organizer,
-                category || 'cultural',
-                price || 0,
-                capacity || 0,
-                status || 'active',
+                safeValue(title),
+                safeValue(description),
+                safeValue(event_date),
+                safeValue(event_time),
+                safeValue(location),
+                safeValue(organizer),
+                safeValue(category) || 'cultural',
+                safeValue(price) || 0,
+                safeValue(capacity) || 0,
+                safeValue(status) || 'active',
                 eventImage
             ]);
             console.log('✅ Event created:', result.insertId);
