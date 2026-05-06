@@ -320,8 +320,7 @@
                             <div class="current-media">
                                 <p style="font-weight: 600; margin-bottom: 0.5rem;">Current file:</p>
                                 <% if (item.media_type === 'photo') { %>
-                                    <img src="<%= currentMediaPath %>" alt="Current media" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-                                    <p style="display:none; color: #ef4444; font-size: 0.85rem;"><i class="fas fa-exclamation-triangle"></i> Image file not found. Please re-upload.</p>
+                                    <img src="<%= currentMediaPath %>" alt="Current media" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22150%22%3E%3Crect fill=%22%23f3f4f6%22 width=%22200%22 height=%22150%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 font-family=%22Arial%22 font-size=%2214%22 fill=%22%23999%22%3EImage Missing%3C/text%3E%3Ctext x=%2250%25%22 y=%2265%25%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 font-family=%22Arial%22 font-size=%2210%22 fill=%22%23999%22%3EPlease re-upload%3C/text%3E%3C/svg%3E'; this.style.border='2px dashed #e5e7eb';">
                                 <% } else { %>
                                     <a href="<%= currentMediaPath %>" target="_blank"><%= item.media_url %></a>
                                 <% } %>

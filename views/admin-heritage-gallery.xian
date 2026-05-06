@@ -173,7 +173,7 @@
                                 const mediaPath = item.thumbnail_url || item.file_url || item.media_url;
                                 const fullPath = mediaPath.startsWith('/') ? mediaPath : '/' + mediaPath;
                             %>
-                            <img src="<%= fullPath %>" alt="<%= item.title %>" onerror="this.style.display='none'">
+                            <img src="<%= fullPath %>" alt="<%= item.title %>" onerror="this.parentElement.innerHTML='<div class=thumb-placeholder><i class=fas fa-exclamation-triangle></i></div>'">
                             <% } else { %>
                             <div class="thumb-placeholder"><i class="fas fa-<%= item.media_type === 'video' ? 'video' : item.media_type === 'audio' ? 'microphone' : 'image' %>"></i></div>
                             <% } %>
