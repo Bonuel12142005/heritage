@@ -189,10 +189,11 @@
         <% products.forEach(product => { %>
           <a href="/showcase/products/<%= product.id %>" class="product-card">
             <div class="product-img">
-              <% if (product.images && product.images[0]) { %>
-                <img src="<%= product.images[0] %>" alt="<%= product.name %>" loading="lazy" onerror="this.style.display='none'">
+              <% const productImg = product.image_url ? '/' + product.image_url : (product.images && product.images[0] ? product.images[0] : null); %>
+              <% if (productImg) { %>
+                <img src="<%= productImg %>" alt="<%= product.name %>" loading="lazy" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
               <% } %>
-              <i class="fas fa-box-open placeholder"></i>
+              <i class="fas fa-box-open placeholder" style="<%= productImg ? 'display:none' : '' %>"></i>
               <% if (product.featured) { %><span class="product-badge"><i class="fas fa-star"></i> Featured</span><% } %>
               <% if (product.stock_status === 'made_to_order') { %><span class="product-stock">Made to Order</span><% } %>
             </div>
