@@ -1895,14 +1895,69 @@ app.get('/events', (req, res) => {
     res.send(html);
 });
 
-app.get('/event/:id', (req, res) => {
-    const templatePath = path.join(__dirname, 'views/event.xian');
-    const html = renderTemplate(templatePath, {
-        title: 'Event Details - HeritageLink',
-        user: req.session.user,
-        eventId: req.params.id
-    });
-    res.send(html);
+app.get('/event/:id', async (req, res) => {
+    try {
+        const eventId = req.params.id;
+        console.log('🎉 Loading event:', eventId);
+        
+        // Fetch event details
+        const [events] = await db.execute(
+            'SELECT * FROM events WHERE id = ? LIMIT 1',
+            [eventId]
+        );
+        
+        if (!events || events.length === 0) {
+            return res.status(404).send('Event not found');
+        }
+        
+        const event = events[0];
+        console.log('✅ Event found:', event.title);
+        
+        const templatePath = path.join(__dirname, 'views/event.xian');
+        const html = renderTemplate(templatePath, {
+            title: `${event.title} - HeritageLink`,
+            user: req.session.user,
+            event: event,
+            eventId: req.params.id
+        });
+        res.send(html);
+    } catch (error) {
+        console.error('❌ Event detail error:', error);
+        res.status(500).send('Error loading event details');
+    }
+});
+
+// Alias route for /events/:id (plural)
+app.get('/events/:id', async (req, res) => {
+    try {
+        const eventId = req.params.id;
+        console.log('🎉 Loading event (plural route):', eventId);
+        
+        // Fetch event details
+        const [events] = await db.execute(
+            'SELECT * FROM events WHERE id = ? LIMIT 1',
+            [eventId]
+        );
+        
+        if (!events || events.length === 0) {
+            return res.status(404).send('Event not found');
+        }
+        
+        const event = events[0];
+        console.log('✅ Event found:', event.title);
+        
+        const templatePath = path.join(__dirname, 'views/event.xian');
+        const html = renderTemplate(templatePath, {
+            title: `${event.title} - HeritageLink`,
+            user: req.session.user,
+            event: event,
+            eventId: req.params.id
+        });
+        res.send(html);
+    } catch (error) {
+        console.error('❌ Event detail error:', error);
+        res.status(500).send('Error loading event details');
+    }
 });
 
 // Heritage Gallery routes
