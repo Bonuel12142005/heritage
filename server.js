@@ -230,6 +230,16 @@ app.get('/health', (req, res) => {
 app.post('/api/login', async (req, res) => {
     try {
         console.log('🔐 API Login attempt:', req.body.email);
+        
+        // Check if database is connected
+        if (!db) {
+            console.error('❌ Database not initialized!');
+            return res.status(500).json({ 
+                success: false, 
+                message: 'Database connection error. Please try again.' 
+            });
+        }
+        
         const { email, password } = req.body;
         
         if (!email || !password) {
@@ -255,6 +265,14 @@ app.post('/api/login', async (req, res) => {
         const user = users[0];
         console.log('👤 User found:', user.email, 'Role:', user.role);
         console.log('🔒 User password hash exists:', !!user.password);
+        
+        if (!user.password) {
+            console.error('❌ User has no password hash!');
+            return res.status(500).json({ 
+                success: false, 
+                message: 'Account configuration error. Please contact support.' 
+            });
+        }
         
         console.log('🔒 Comparing passwords...');
         const isValidPassword = await bcrypt.compare(password, user.password);
@@ -297,7 +315,7 @@ app.post('/api/login', async (req, res) => {
         console.error('❌ Error stack:', error.stack);
         res.status(500).json({ 
             success: false, 
-            message: 'Internal server error. Please try again.' 
+            message: 'Login failed: ' + error.message 
         });
     }
 });
