@@ -2031,6 +2031,18 @@ app.get('/artisan/products', requireAuth, requireRole('artisan'), async (req, re
     }
 });
 
+// Alias route for /artisan/products/add
+app.get('/artisan/products/add', requireAuth, requireRole('artisan'), (req, res) => {
+    const templatePath = path.join(__dirname, 'views/artisan-product-form.xian');
+    const html = renderTemplate(templatePath, {
+        title: 'Add New Product - Artisan',
+        user: req.session.user,
+        editMode: false,
+        product: null
+    });
+    res.send(html);
+});
+
 app.get('/artisan/product/new', requireAuth, requireRole('artisan'), (req, res) => {
     const templatePath = path.join(__dirname, 'views/artisan-product-form.xian');
     const html = renderTemplate(templatePath, {
@@ -2189,6 +2201,18 @@ app.post('/artisan/products/save', requireAuth, requireRole('artisan'), upload.a
 });
 
 // Artisan Workshop Forms
+// Alias route for /artisan/workshops/add
+app.get('/artisan/workshops/add', requireAuth, requireRole('artisan'), (req, res) => {
+    const templatePath = path.join(__dirname, 'views/artisan-workshop-form.xian');
+    const html = renderTemplate(templatePath, {
+        title: 'Create Workshop - Artisan',
+        user: req.session.user,
+        editMode: false,
+        workshop: null
+    });
+    res.send(html);
+});
+
 app.get('/artisan/workshop/new', requireAuth, requireRole('artisan'), (req, res) => {
     const templatePath = path.join(__dirname, 'views/artisan-workshop-form.xian');
     const html = renderTemplate(templatePath, {
