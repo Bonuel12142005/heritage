@@ -166,8 +166,11 @@
                     <% items.forEach(item => { %>
                     <div class="gallery-card" data-category="<%= item.category %>" data-media="<%= item.media_type %>" data-title="<%= (item.title || '').toLowerCase() %>" data-tags="<%= item.tags ? item.tags.toLowerCase() : '' %>">
                         <div class="gallery-thumb">
-                            <% if (item.thumbnail_url || item.file_url || item.media_url) { %>
-                            <img src="<%= item.thumbnail_url || item.file_url || item.media_url %>" alt="<%= item.title %>" onerror="this.style.display='none'">
+                            <% if (item.thumbnail_url || item.file_url || item.media_url) { 
+                                const mediaPath = item.thumbnail_url || item.file_url || item.media_url;
+                                const fullPath = mediaPath.startsWith('/') ? mediaPath : '/' + mediaPath;
+                            %>
+                            <img src="<%= fullPath %>" alt="<%= item.title %>" onerror="this.style.display='none'">
                             <% } else { %>
                             <div class="thumb-placeholder"><i class="fas fa-<%= item.media_type === 'video' ? 'video' : item.media_type === 'audio' ? 'microphone' : 'image' %>"></i></div>
                             <% } %>
@@ -183,7 +186,11 @@
                             </div>
                             <div class="gallery-actions">
                                 <a href="/admin/heritage-gallery/edit/<%= item.id %>" class="btn-action btn-edit"><i class="fas fa-edit"></i> Edit</a>
-                                <button type="button" class="btn-action btn-view" onclick="showViewModal('<%= item.title ? item.title.replace(/'/g, "\\'") : 'Untitled' %>', '<%= item.description ? item.description.replace(/'/g, "\\'").replace(/\n/g, ' ') : 'No description' %>', '<%= item.thumbnail_url || item.file_url || item.media_url || '' %>', '<%= item.media_type || 'image' %>', '<%= item.category ? item.category.replace(/_/g, ' ') : 'Other' %>', '<%= item.location || '' %>', '<%= item.historical_date || '' %>', '<%= item.tags || '' %>')"><i class="fas fa-eye"></i> View</button>
+                                <% 
+                                    const viewMediaPath = item.thumbnail_url || item.file_url || item.media_url || '';
+                                    const viewFullPath = viewMediaPath && !viewMediaPath.startsWith('/') ? '/' + viewMediaPath : viewMediaPath;
+                                %>
+                                <button type="button" class="btn-action btn-view" onclick="showViewModal('<%= item.title ? item.title.replace(/'/g, "\\'") : 'Untitled' %>', '<%= item.description ? item.description.replace(/'/g, "\\'").replace(/\n/g, ' ') : 'No description' %>', '<%= viewFullPath %>', '<%= item.media_type || 'image' %>', '<%= item.category ? item.category.replace(/_/g, ' ') : 'Other' %>', '<%= item.location || '' %>', '<%= item.historical_date || '' %>', '<%= item.tags || '' %>')"><i class="fas fa-eye"></i> View</button>
                                 <button type="button" class="btn-action btn-delete" onclick="showDeleteModal('<%= item.id %>', '<%= item.title ? item.title.replace(/'/g, "\\'") : 'this item' %>')"><i class="fas fa-trash"></i></button>
                             </div>
                         </div>
