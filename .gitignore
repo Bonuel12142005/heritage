@@ -42,22 +42,12 @@ Thumbs.db
 *.swo
 *~
 
-# Uploads (keep structure but ignore content)
-public/uploads/*
-!public/uploads/.gitkeep
+# Uploads (temporarily allowing uploads for deployment)
+# TODO: Move to cloud storage (Cloudinary/S3) for production
+# public/uploads/*
+# !public/uploads/.gitkeep
 !public/uploads/festival-bg.jpg
 !public/uploads/logo.jpg
-# Keep subdirectory structure
-!public/uploads/destinations/
-!public/uploads/events/
-!public/uploads/gallery/
-!public/uploads/general/
-!public/uploads/heritage/
-!public/uploads/places/
-!public/uploads/portfolio/
-!public/uploads/products/
-!public/uploads/profiles/
-!public/uploads/workshops/
 
 # Temporary files
 tmp/
