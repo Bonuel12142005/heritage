@@ -547,6 +547,15 @@
         if(toggle) toggle.addEventListener('click', openMenu);
         if(close) close.addEventListener('click', closeMenu);
         if(overlay) overlay.addEventListener('click', closeMenu);
+        
+        // Close menu when clicking on any nav link (for mobile)
+        const navLinksElements = links.querySelectorAll('.nav-link, .btn');
+        navLinksElements.forEach(link => {
+            link.addEventListener('click', closeMenu);
+        });
+        
+        // Ensure menu is closed on page load
+        closeMenu();
     })();
     </script>
 
