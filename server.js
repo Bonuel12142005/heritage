@@ -97,6 +97,18 @@ app.use('/js', express.static(path.join(__dirname, 'public/js')));
 app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
 app.use('/assets', express.static(path.join(__dirname, 'public')));
 
+// Debug route to check if uploads exist
+app.get('/debug/uploads/:folder/:filename', (req, res) => {
+    const filePath = path.join(__dirname, 'public/uploads', req.params.folder, req.params.filename);
+    const exists = fs.existsSync(filePath);
+    res.json({
+        path: filePath,
+        exists: exists,
+        cwd: __dirname,
+        files: exists ? null : fs.readdirSync(path.join(__dirname, 'public/uploads', req.params.folder)).slice(0, 5)
+    });
+});
+
 // Serve favicon
 app.get('/favicon.ico', (req, res) => {
     res.sendFile(path.join(__dirname, 'public/uploads/logo.jpg'));
