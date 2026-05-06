@@ -270,6 +270,47 @@
 
         // Initialize on page load
         document.addEventListener('DOMContentLoaded', updateUploadHint);
+        
+        // Handle form submission with AJAX
+        document.querySelector('form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const form = e.target;
+            const submitBtn = form.querySelector('button[type="submit"]');
+            const originalBtnText = submitBtn.innerHTML;
+            
+            // Disable submit button and show loading
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+            
+            try {
+                const formData = new FormData(form);
+                
+                const response = await fetch('/admin/heritage-gallery/save', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Show success message
+                    alert('✅ ' + data.message);
+                    // Redirect to heritage gallery list
+                    window.location.href = '/admin/heritage-gallery';
+                } else {
+                    // Show error message
+                    alert('❌ ' + data.message);
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalBtnText;
+                }
+            } catch (error) {
+                console.error('Error saving heritage item:', error);
+                alert('❌ Failed to save heritage item. Please try again.');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalBtnText;
+            }
+        });
     </script>
 </body>
 </html>
