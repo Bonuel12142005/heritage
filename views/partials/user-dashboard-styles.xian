@@ -5,20 +5,20 @@
 <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     :root {
-        --primary: #166534;
-        --primary-light: #22c55e;
-        --primary-dark: #14532d;
-        --accent: #f97316;
-        --accent-dark: #ea580c;
-        --bg-main: #f0fdf4;
+        --primary: #0077B6;
+        --primary-light: #00B4D8;
+        --primary-dark: #005A8D;
+        --accent: #D4AF37;
+        --accent-dark: #B8941E;
+        --bg-main: #f8faf9;
         --bg-card: #ffffff;
-        --text-primary: #14532d;
+        --text-primary: #064e3b;
         --text-secondary: #4b5563;
         --text-muted: #9ca3af;
-        --border: #d1fae5;
+        --border: #E0F7FA;
         --border-light: #ecfdf5;
-        --sidebar-bg: #14532d;
-        --sidebar-hover: #166534;
+        --sidebar-bg: #0077B6;
+        --sidebar-hover: #00B4D8;
         --success: #10b981;
         --warning: #f59e0b;
         --danger: #ef4444;
@@ -27,7 +27,7 @@
     
     body {
         font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-        background: linear-gradient(135deg, var(--bg-main) 0%, #ecfdf5 50%, var(--bg-main) 100%);
+        background: var(--bg-main);
         color: var(--text-primary);
         overflow-x: hidden;
         line-height: 1.6;
@@ -40,7 +40,7 @@
         top: 0;
         height: 100vh;
         width: 280px;
-        background: linear-gradient(180deg, var(--sidebar-bg) 0%, #0f3d1f 100%);
+        background: linear-gradient(180deg, #0077B6 0%, #005A8D 100%);
         padding: 2rem 0;
         z-index: 1000;
         box-shadow: 4px 0 20px rgba(0,0,0,0.15);
@@ -86,7 +86,7 @@
     
     .menu-section {
         padding: 1.5rem 2rem 0.5rem;
-        color: rgba(167, 243, 208, 0.8);
+        color: rgba(224, 247, 250, 0.8);
         font-size: 0.7rem;
         font-weight: 700;
         text-transform: uppercase;
@@ -98,7 +98,7 @@
         align-items: center;
         gap: 0.875rem;
         padding: 0.75rem 1rem;
-        color: rgba(209, 250, 229, 0.9);
+        color: rgba(224, 247, 250, 0.9);
         text-decoration: none;
         border-radius: 0.75rem;
         transition: all 0.2s ease;
