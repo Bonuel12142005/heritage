@@ -1132,14 +1132,26 @@ app.get('/admin/events/edit/:id', requireAuth, requireRole('admin'), async (req,
 // Save event (create or update)
 app.post('/admin/events/save', requireAuth, requireRole('admin'), upload.single('event_image'), async (req, res) => {
     try {
+        console.log('📝 Event save request body:', req.body);
+        console.log('📎 Event save file:', req.file);
+        
         const { id, title, description, event_date, event_time, location, organizer, category, price, capacity, status } = req.body;
         const eventImage = req.file ? `uploads/events/${req.file.filename}` : null;
         
         // Convert undefined to null for database
         const safeValue = (val) => val === undefined || val === '' ? null : val;
         
+        // Validate required fields
+        if (!title || !event_date || !event_time || !location || !organizer) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'Missing required fields: title, event_date, event_time, location, organizer' 
+            });
+        }
+        
         if (id) {
             // Update existing event
+            console.log('🔄 Updating event:', id);
             let updateQuery = 'UPDATE events SET title = ?, description = ?, event_date = ?, event_time = ?, location = ?, organizer = ?, category = ?, ticket_price = ?, max_attendees = ?, status = ?';
             let updateParams = [
                 safeValue(title), 
@@ -1162,13 +1174,17 @@ app.post('/admin/events/save', requireAuth, requireRole('admin'), upload.single(
             updateQuery += ' WHERE id = ?';
             updateParams.push(id);
             
+            console.log('📊 Update query:', updateQuery);
+            console.log('📊 Update params:', updateParams);
+            
             await db.execute(updateQuery, updateParams);
             console.log('✅ Event updated:', id);
             res.json({ success: true, message: 'Event updated successfully', eventId: id });
         } else {
             // Create new event
+            console.log('➕ Creating new event');
             const insertQuery = 'INSERT INTO events (title, description, event_date, event_time, location, organizer, category, ticket_price, max_attendees, status, image_url) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
-            const [result] = await db.execute(insertQuery, [
+            const insertParams = [
                 safeValue(title),
                 safeValue(description),
                 safeValue(event_date),
@@ -1180,12 +1196,18 @@ app.post('/admin/events/save', requireAuth, requireRole('admin'), upload.single(
                 safeValue(capacity) || 0,
                 safeValue(status) || 'active',
                 eventImage
-            ]);
+            ];
+            
+            console.log('📊 Insert query:', insertQuery);
+            console.log('📊 Insert params:', insertParams);
+            
+            const [result] = await db.execute(insertQuery, insertParams);
             console.log('✅ Event created:', result.insertId);
             res.json({ success: true, message: 'Event created successfully', eventId: result.insertId });
         }
     } catch (error) {
         console.error('❌ Error saving event:', error);
+        console.error('❌ Error stack:', error.stack);
         res.status(500).json({ success: false, message: 'Failed to save event: ' + error.message });
     }
 });
