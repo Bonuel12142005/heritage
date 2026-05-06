@@ -1907,7 +1907,7 @@ app.post('/artisan/profile', requireAuth, requireRole('artisan'), upload.single(
         console.log('📎 Profile photo:', req.file);
         
         const artisanId = req.session.user.id;
-        const { name, email, phone, bio, specialty, location, facebook, instagram, website } = req.body;
+        const { name, email, phone, bio, specialization, business_name, address } = req.body;
         
         // Handle profile photo upload
         const profilePhoto = req.file ? `uploads/profiles/${req.file.filename}` : null;
@@ -1923,18 +1923,16 @@ app.post('/artisan/profile', requireAuth, requireRole('artisan'), upload.single(
             });
         }
         
-        // Build update query
-        let updateQuery = 'UPDATE users SET name = ?, email = ?, phone = ?, bio = ?, specialty = ?, location = ?, facebook = ?, instagram = ?, website = ?';
+        // Build update query with only existing columns
+        let updateQuery = 'UPDATE users SET name = ?, email = ?, phone = ?, bio = ?, specialization = ?, business_name = ?, address = ?';
         let updateParams = [
             safeValue(name),
             safeValue(email),
             safeValue(phone),
             safeValue(bio),
-            safeValue(specialty),
-            safeValue(location),
-            safeValue(facebook),
-            safeValue(instagram),
-            safeValue(website)
+            safeValue(specialization),
+            safeValue(business_name),
+            safeValue(address)
         ];
         
         // If new photo uploaded, update photo field
