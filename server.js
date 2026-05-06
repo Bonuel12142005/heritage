@@ -2147,14 +2147,69 @@ app.get('/artisan/:id', (req, res) => {
     res.send(html);
 });
 
-app.get('/product/:id', (req, res) => {
-    const templatePath = path.join(__dirname, 'views/product-detail.xian');
-    const html = renderTemplate(templatePath, {
-        title: 'Product Details - HeritageLink',
-        user: req.session.user,
-        productId: req.params.id
-    });
-    res.send(html);
+app.get('/product/:id', async (req, res) => {
+    try {
+        const productId = req.params.id;
+        console.log('🛍️ Loading product:', productId);
+        
+        // Fetch product details
+        const [products] = await db.execute(
+            'SELECT ap.*, u.name as artisan_name, u.profile_photo as artisan_photo FROM artisan_products ap LEFT JOIN users u ON ap.artisan_id = u.id WHERE ap.id = ? LIMIT 1',
+            [productId]
+        );
+        
+        if (!products || products.length === 0) {
+            return res.status(404).send('Product not found');
+        }
+        
+        const product = products[0];
+        console.log('✅ Product found:', product.name);
+        
+        const templatePath = path.join(__dirname, 'views/product-detail.xian');
+        const html = renderTemplate(templatePath, {
+            title: `${product.name} - HeritageLink`,
+            user: req.session.user,
+            product: product,
+            productId: req.params.id
+        });
+        res.send(html);
+    } catch (error) {
+        console.error('❌ Product detail error:', error);
+        res.status(500).send('Error loading product details');
+    }
+});
+
+// Alias route for /showcase/products/:id
+app.get('/showcase/products/:id', async (req, res) => {
+    try {
+        const productId = req.params.id;
+        console.log('🛍️ Loading product (showcase route):', productId);
+        
+        // Fetch product details
+        const [products] = await db.execute(
+            'SELECT ap.*, u.name as artisan_name, u.profile_photo as artisan_photo FROM artisan_products ap LEFT JOIN users u ON ap.artisan_id = u.id WHERE ap.id = ? LIMIT 1',
+            [productId]
+        );
+        
+        if (!products || products.length === 0) {
+            return res.status(404).send('Product not found');
+        }
+        
+        const product = products[0];
+        console.log('✅ Product found:', product.name);
+        
+        const templatePath = path.join(__dirname, 'views/product-detail.xian');
+        const html = renderTemplate(templatePath, {
+            title: `${product.name} - HeritageLink`,
+            user: req.session.user,
+            product: product,
+            productId: req.params.id
+        });
+        res.send(html);
+    } catch (error) {
+        console.error('❌ Product detail error:', error);
+        res.status(500).send('Error loading product details');
+    }
 });
 
 // Workshops routes
